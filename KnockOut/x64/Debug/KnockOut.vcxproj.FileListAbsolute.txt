@@ -1,0 +1,2 @@
+C:\Users\Eddy\Documents\GitHub\KnockOut\KnockOut\x64\Debug\KnockOut.exe
+C:\Users\Eddy\Documents\GitHub\KnockOut\KnockOut\x64\Debug\KnockOut.pdb
