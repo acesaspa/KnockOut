@@ -38,8 +38,6 @@
 
 #include <ctype.h>
 
-//#include "../../../KNOCKOUT/imgui/imgui.h"
-
 #include "../include/physx/PxPhysicsAPI.h"
 
 #include "../include/physx/vehicle/PxVehicleUtil.h"
