@@ -30,7 +30,7 @@
 #ifndef SNIPPET_VEHICLE_CONCURRENCY_H
 #define SNIPPET_VEHICLE_CONCURRENCY_H
 
-#include "PxPhysicsAPI.h"
+#include "../include/physx/PxPhysicsAPI.h"
 #include <new>
 
 namespace snippetvehicle

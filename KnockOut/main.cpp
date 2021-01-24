@@ -1,13 +1,22 @@
 #include <GL/glew.h>
+#include <GLFW/glfw3.h>
 #include "..\KnockOut\Dependencies\imgui\imgui.h"
 #include "..\KnockOut\Dependencies\GLFW\include\GLFW\glfw3.h"
 #include "..\KnockOut\Dependencies\imgui\imgui_impl_glfw.h"
 #include "..\KnockOut\Dependencies\imgui\imgui_impl_opengl3.h"
-#include <GLFW/glfw3.h>
 #include <iostream>
+#include "physx\PxPhysicsAPI.h"
 
-int main(void)
+extern int snippetMain(int, const char* const*);
+void initializePhysics();
+
+int main(int argc, char** argv)
 {
+    // Uncomment to run snippet code
+    //return snippetMain(argc, argv);
+
+    initializePhysics();
+
     const char* glsl_version = "#version 130";
 
     GLFWwindow* window;
@@ -38,7 +47,7 @@ int main(void)
     ImGuiIO& io = ImGui::GetIO(); (void)io;
 
     // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
@@ -96,5 +105,12 @@ int main(void)
     ImGui::DestroyContext();
 
     glfwTerminate();
+
     return 0;
+}
+
+void initializePhysics() 
+{
+    physx::PxPhysics* gPhysics = NULL;
+    std::cout << "PhysX initialized" << std::endl;
 }

@@ -1,49 +1,7 @@
-﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(477,5): warning MSB8004: Output Directory does not end with a trailing slash.  This build instance will add the slash as it is required to allow proper evaluation of the Output Directory.
-  ClassicMain.cpp
-  SnippetVehicle4W.cpp
-  SnippetVehicle4WRender.cpp
-  SnippetVehicle4WCreate.cpp
-  SnippetVehicleCreate.cpp
-  SnippetVehicleFilterShader.cpp
-  SnippetVehicleNoDriveCreate.cpp
-  SnippetVehicleSceneQuery.cpp
-  SnippetVehicleTankCreate.cpp
-  SnippetVehicleTireFriction.cpp
+﻿  main.cpp
   Generating code
-  Previous IPDB not found, fall back to full compilation.
-  All 486 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  1 of 1 functions (100.0%) were compiled.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
-PhysXExtensions_static_64.lib(ExtCpuWorkerThread.obj) : warning LNK4099: PDB '' was not found with 'PhysXExtensions_static_64.lib(ExtCpuWorkerThread.obj)' or at ''; linking object as if no debug info
-PhysXExtensions_static_64.lib(ExtDefaultCpuDispatcher.obj) : warning LNK4099: PDB 'PhysXExtensions_static_64.pdb' was not found with 'PhysXExtensions_static_64.lib(ExtDefaultCpuDispatcher.obj)' or at 'C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\PhysXExtensions_static_64.pdb'; linking object as if no debug info
-PhysXExtensions_static_64.lib(ExtDefaultErrorCallback.obj) : warning LNK4099: PDB 'PhysXExtensions_static_64.pdb' was not found with 'PhysXExtensions_static_64.lib(ExtDefaultErrorCallback.obj)' or at 'C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\PhysXExtensions_static_64.pdb'; linking object as if no debug info
-PhysXExtensions_static_64.lib(ExtDefaultStreams.obj) : warning LNK4099: PDB 'PhysXExtensions_static_64.pdb' was not found with 'PhysXExtensions_static_64.lib(ExtDefaultStreams.obj)' or at 'C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\PhysXExtensions_static_64.pdb'; linking object as if no debug info
-PhysXExtensions_static_64.lib(ExtRigidBodyExt.obj) : warning LNK4099: PDB 'PhysXExtensions_static_64.pdb' was not found with 'PhysXExtensions_static_64.lib(ExtRigidBodyExt.obj)' or at 'C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\PhysXExtensions_static_64.pdb'; linking object as if no debug info
-PhysXExtensions_static_64.lib(ExtSimpleFactory.obj) : warning LNK4099: PDB 'PhysXExtensions_static_64.pdb' was not found with 'PhysXExtensions_static_64.lib(ExtSimpleFactory.obj)' or at 'C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\PhysXExtensions_static_64.pdb'; linking object as if no debug info
-PhysXPvdSDK_static_64.lib(PxProfileEventImpl.obj) : warning LNK4099: PDB 'PhysXPvdSDK_static_64.pdb' was not found with 'PhysXPvdSDK_static_64.lib(PxProfileEventImpl.obj)' or at 'C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\PhysXPvdSDK_static_64.pdb'; linking object as if no debug info
-PhysXPvdSDK_static_64.lib(PxPvd.obj) : warning LNK4099: PDB 'PhysXPvdSDK_static_64.pdb' was not found with 'PhysXPvdSDK_static_64.lib(PxPvd.obj)' or at 'C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\PhysXPvdSDK_static_64.pdb'; linking object as if no debug info
-PhysXPvdSDK_static_64.lib(PxPvdDataStream.obj) : warning LNK4099: PDB 'PhysXPvdSDK_static_64.pdb' was not found with 'PhysXPvdSDK_static_64.lib(PxPvdDataStream.obj)' or at 'C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\PhysXPvdSDK_static_64.pdb'; linking object as if no debug info
-PhysXPvdSDK_static_64.lib(PxPvdDefaultSocketTransport.obj) : warning LNK4099: PDB 'PhysXPvdSDK_static_64.pdb' was not found with 'PhysXPvdSDK_static_64.lib(PxPvdDefaultSocketTransport.obj)' or at 'C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\PhysXPvdSDK_static_64.pdb'; linking object as if no debug info
-PhysXPvdSDK_static_64.lib(PxPvdImpl.obj) : warning LNK4099: PDB 'PhysXPvdSDK_static_64.pdb' was not found with 'PhysXPvdSDK_static_64.lib(PxPvdImpl.obj)' or at 'C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\PhysXPvdSDK_static_64.pdb'; linking object as if no debug info
-PhysXPvdSDK_static_64.lib(PxPvdMemClient.obj) : warning LNK4099: PDB 'PhysXPvdSDK_static_64.pdb' was not found with 'PhysXPvdSDK_static_64.lib(PxPvdMemClient.obj)' or at 'C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\PhysXPvdSDK_static_64.pdb'; linking object as if no debug info
-PhysXPvdSDK_static_64.lib(PxPvdObjectModelMetaData.obj) : warning LNK4099: PDB 'PhysXPvdSDK_static_64.pdb' was not found with 'PhysXPvdSDK_static_64.lib(PxPvdObjectModelMetaData.obj)' or at 'C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\PhysXPvdSDK_static_64.pdb'; linking object as if no debug info
-PhysXPvdSDK_static_64.lib(PxPvdObjectRegistrar.obj) : warning LNK4099: PDB 'PhysXPvdSDK_static_64.pdb' was not found with 'PhysXPvdSDK_static_64.lib(PxPvdObjectRegistrar.obj)' or at 'C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\PhysXPvdSDK_static_64.pdb'; linking object as if no debug info
-PhysXPvdSDK_static_64.lib(PxPvdProfileZoneClient.obj) : warning LNK4099: PDB 'PhysXPvdSDK_static_64.pdb' was not found with 'PhysXPvdSDK_static_64.lib(PxPvdProfileZoneClient.obj)' or at 'C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\PhysXPvdSDK_static_64.pdb'; linking object as if no debug info
-PhysXVehicle_static_64.lib(PxVehicleComponents.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(PxVehicleComponents.obj)' or at 'C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\PhysXVehicle_static_64.pdb'; linking object as if no debug info
-PhysXVehicle_static_64.lib(PxVehicleDrive.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(PxVehicleDrive.obj)' or at 'C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\PhysXVehicle_static_64.pdb'; linking object as if no debug info
-PhysXVehicle_static_64.lib(PxVehicleDrive4W.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(PxVehicleDrive4W.obj)' or at 'C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\PhysXVehicle_static_64.pdb'; linking object as if no debug info
-PhysXVehicle_static_64.lib(PxVehicleDriveNW.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(PxVehicleDriveNW.obj)' or at 'C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\PhysXVehicle_static_64.pdb'; linking object as if no debug info
-PhysXVehicle_static_64.lib(PxVehicleDriveTank.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(PxVehicleDriveTank.obj)' or at 'C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\PhysXVehicle_static_64.pdb'; linking object as if no debug info
-PhysXVehicle_static_64.lib(PxVehicleMetaData.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(PxVehicleMetaData.obj)' or at 'C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\PhysXVehicle_static_64.pdb'; linking object as if no debug info
-PhysXVehicle_static_64.lib(PxVehicleNoDrive.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(PxVehicleNoDrive.obj)' or at 'C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\PhysXVehicle_static_64.pdb'; linking object as if no debug info
-PhysXVehicle_static_64.lib(PxVehicleSDK.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(PxVehicleSDK.obj)' or at 'C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\PhysXVehicle_static_64.pdb'; linking object as if no debug info
-PhysXVehicle_static_64.lib(PxVehicleSerialization.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(PxVehicleSerialization.obj)' or at 'C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\PhysXVehicle_static_64.pdb'; linking object as if no debug info
-PhysXVehicle_static_64.lib(PxVehicleSuspWheelTire4.obj) : warning LNK4099: PDB '' was not found with 'PhysXVehicle_static_64.lib(PxVehicleSuspWheelTire4.obj)' or at ''; linking object as if no debug info
-PhysXVehicle_static_64.lib(PxVehicleTireFriction.obj) : warning LNK4099: PDB '' was not found with 'PhysXVehicle_static_64.lib(PxVehicleTireFriction.obj)' or at ''; linking object as if no debug info
-PhysXVehicle_static_64.lib(PxVehicleUpdate.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(PxVehicleUpdate.obj)' or at 'C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\PhysXVehicle_static_64.pdb'; linking object as if no debug info
-PhysXVehicle_static_64.lib(PxVehicleWheels.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(PxVehicleWheels.obj)' or at 'C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\PhysXVehicle_static_64.pdb'; linking object as if no debug info
-PhysXVehicle_static_64.lib(VehicleUtilControl.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(VehicleUtilControl.obj)' or at 'C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\PhysXVehicle_static_64.pdb'; linking object as if no debug info
-PhysXVehicle_static_64.lib(VehicleUtilSetup.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(VehicleUtilSetup.obj)' or at 'C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\PhysXVehicle_static_64.pdb'; linking object as if no debug info
-PhysXVehicle_static_64.lib(VehicleUtilTelemetry.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(VehicleUtilTelemetry.obj)' or at 'C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\PhysXVehicle_static_64.pdb'; linking object as if no debug info
-PhysXVehicle_static_64.lib(PxVehicleAutoGeneratedMetaDataObjects.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(PxVehicleAutoGeneratedMetaDataObjects.obj)' or at 'C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\PhysXVehicle_static_64.pdb'; linking object as if no debug info
-PhysXVehicle_static_64.lib(PxVehicleMetaDataObjects.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(PxVehicleMetaDataObjects.obj)' or at 'C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\PhysXVehicle_static_64.pdb'; linking object as if no debug info
   KnockOut.vcxproj -> C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\KnockOut.exe

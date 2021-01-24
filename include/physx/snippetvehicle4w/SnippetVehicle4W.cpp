@@ -46,6 +46,9 @@
 #include "../include/physx/snippetvehiclecommon/SnippetVehicleTireFriction.h"
 #include "../include/physx/snippetvehiclecommon/SnippetVehicleCreate.h"
 
+#include "../include/physx/snippetvehiclecommon/SnippetVehicleConcurrency.h"
+#include "../include/physx/snippetvehiclecommon/SnippetVehicleWheelQueryResult.h"
+
 #include "../include/physx/snippetcommon/SnippetPrint.h"
 #include "../include/physx/snippetcommon/SnippetPVD.h"
 #include "../include/physx/snippetutils/SnippetUtils.h"
@@ -81,7 +84,7 @@ PxVehicleDrive4W*		gVehicle4W		= NULL;
 
 bool					gIsVehicleInAir = true;
 
-//#define					RENDER_SNIPPET = true;
+#define					RENDER_SNIPPET = true;
 
 PxF32 gSteerVsForwardSpeedData[2*8]=
 {
