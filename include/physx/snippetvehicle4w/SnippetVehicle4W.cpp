@@ -456,6 +456,7 @@ void incrementDrivingMode(const PxF32 timestep)
 
 void stepPhysics()
 {
+	std::cout << "test\n";
 
 	const PxF32 timestep = 1.0f/60.0f;
 
@@ -527,8 +528,8 @@ void keyPress(unsigned char key, const PxTransform& camera)
 int snippetMain(int, const char*const*)
 {
 #ifdef RENDER_SNIPPET
-	extern void renderLoop();
-	renderLoop();
+	//extern void renderLoop();
+	//renderLoop();
 #else
 	initPhysics();
 	while(!gVehicleOrderComplete)

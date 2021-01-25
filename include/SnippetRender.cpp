@@ -263,6 +263,11 @@ void setupDefaultWindow(const char *name)
 	glutReshapeFunc(reshapeCallback);
 	
 	delete[] namestr;
+
+	GLFWwindow* window;
+	glfwInit();
+	window = glfwCreateWindow(1280, 720, "Knock Out", NULL, NULL);
+	glfwMakeContextCurrent(window);
 }
 
 void setupDefaultRenderState()

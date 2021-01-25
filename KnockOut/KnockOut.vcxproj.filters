@@ -42,33 +42,6 @@
     <ClCompile Include="Dependencies\imgui\imgui_widgets.cpp">
       <Filter>Source Files\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="..\include\physx\snippetvehiclecommon\SnippetVehicle4WCreate.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\include\physx\snippetvehiclecommon\SnippetVehicleCreate.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\include\physx\snippetvehiclecommon\SnippetVehicleFilterShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\include\physx\snippetvehiclecommon\SnippetVehicleNoDriveCreate.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\include\physx\snippetvehiclecommon\SnippetVehicleSceneQuery.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\include\physx\snippetvehiclecommon\SnippetVehicleTankCreate.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\include\physx\snippetvehiclecommon\SnippetVehicleTireFriction.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\include\physx\snippetvehicle4w\SnippetVehicle4W.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\include\physx\snippetvehicle4w\SnippetVehicle4WRender.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Dependencies\imgui\imconfig.h">
@@ -94,24 +67,6 @@
     </ClInclude>
     <ClInclude Include="Dependencies\imgui\imstb_truetype.h">
       <Filter>Source Files\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\physx\snippetvehiclecommon\SnippetVehicleConcurrency.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\physx\snippetvehiclecommon\SnippetVehicleCreate.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\physx\snippetvehiclecommon\SnippetVehicleFilterShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\physx\snippetvehiclecommon\SnippetVehicleSceneQuery.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\physx\snippetvehiclecommon\SnippetVehicleTireFriction.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\physx\snippetvehiclecommon\SnippetVehicleWheelQueryResult.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
