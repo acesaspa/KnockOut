@@ -1,7 +1,9 @@
 ﻿  main.cpp
+LINK : warning LNK4098: defaultlib 'LIBCMT' conflicts with use of other libs; use /NODEFAULTLIB:library
   Generating code
-  1 of 1 functions (100.0%) were compiled.
+  5 of 1081 functions ( 0.5%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    0 functions had inline decision re-evaluated but remain unchanged
+    12 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
-  KnockOut.vcxproj -> C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Release\KnockOut.exe
+glew32s.lib(glew.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'glew32s.lib(glew.obj)' or at 'C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\x64\Release\vc120.pdb'; linking object as if no debug info
+  KnockOut.vcxproj -> C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\x64\Release\KnockOut.exe

@@ -59,6 +59,8 @@ void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent)
 
 void initPhysics(bool interactive)
 {
+    std::cout << "Initializing Physx\n";
+
     gFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, gAllocator, gErrorCallback);
 
     gPvd = PxCreatePvd(*gFoundation);
@@ -95,7 +97,7 @@ void initPhysics(bool interactive)
 
 void stepPhysics(bool /*interactive*/)
 {
-    std::cout << "hello\n";
+    //std::cout << "hello\n";
     gScene->simulate(1.0f / 60.0f);
     gScene->fetchResults(true);
 }
