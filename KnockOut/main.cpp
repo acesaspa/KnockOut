@@ -9,6 +9,7 @@
 
 extern int snippetMain(int, const char* const*);
 void initializePhysics();
+void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 int main(int argc, char** argv)
 {
@@ -55,6 +56,9 @@ int main(int argc, char** argv)
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
+
+    // Setup Keyboard Input
+    glfwSetKeyCallback(window, KeyCallback);
 
     // Our state
     bool show_demo_window = true;
@@ -114,3 +118,12 @@ void initializePhysics()
     physx::PxPhysics* gPhysics = NULL;
     std::cout << "PhysX initialized" << std::endl;
 }
+
+void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    //press 1 to display part 1 - Squares and Diamonds
+    if (key == GLFW_KEY_1 && action == GLFW_PRESS) {
+        std::cout << "1" << std::endl;
+    }
+}
+
