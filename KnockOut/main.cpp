@@ -1,3 +1,4 @@
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "..\KnockOut\Dependencies\imgui\imgui.h"
@@ -9,104 +10,62 @@
 #include <ctype.h>
 
 #include "../include/physx/PxPhysicsAPI.h"
-
 #include "../include/physx/snippetcommon/SnippetPrint.h"
 #include "../include/physx/snippetcommon/SnippetPVD.h"
 #include "../include/physx/snippetutils/SnippetUtils.h"
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+#include "Shader.cpp"
+
 using namespace physx;
 
+
+//MARK: Function Prototypes
+void processInput(GLFWwindow* window);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+
+
+//MARK: Var
 PxDefaultAllocator		gAllocator;
 PxDefaultErrorCallback	gErrorCallback;
-
 PxFoundation* gFoundation = NULL;
 PxPhysics* gPhysics = NULL;
-
 PxDefaultCpuDispatcher* gDispatcher = NULL;
 PxScene* gScene = NULL;
-
+PxCooking* gCooking = NULL;
 PxMaterial* gMaterial = NULL;
-
 PxPvd* gPvd = NULL;
-
 PxReal stackZ = 10.0f;
+float deltaTime = 0.0f;	// time between current frame and last frame
+float lastFrame = 0.0f;
+float yaw = -90.0f;
+float pitch = 0.0f;
+float lastX = 400, lastY = 300;
+bool firstMouse = true;
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+glm::vec3 direction;
 
-PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, const PxVec3& velocity = PxVec3(0))
-{
-    PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, t, geometry, *gMaterial, 10.0f);
-    dynamic->setAngularDamping(0.5f);
-    dynamic->setLinearVelocity(velocity);
-    gScene->addActor(*dynamic);
-    return dynamic;
-}
 
-void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent)
-{
-    PxShape* shape = gPhysics->createShape(PxBoxGeometry(halfExtent, halfExtent, halfExtent), *gMaterial);
-    for (PxU32 i = 0; i < size; i++)
-    {
-        for (PxU32 j = 0; j < size - i; j++)
-        {
-            PxTransform localTm(PxVec3(PxReal(j * 2) - PxReal(size - i), PxReal(i * 2 + 1), 0) * halfExtent);
-            PxRigidDynamic* body = gPhysics->createRigidDynamic(t.transform(localTm));
-            body->attachShape(*shape);
-            PxRigidBodyExt::updateMassAndInertia(*body, 10.0f);
-            gScene->addActor(*body);
-        }
-    }
-    shape->release();
-}
 
-void initPhysics(bool interactive)
-{
-    std::cout << "Initializing Physx\n";
 
-    gFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, gAllocator, gErrorCallback);
-
-    gPvd = PxCreatePvd(*gFoundation);
-    PxPvdTransport* transport = PxDefaultPvdSocketTransportCreate(PVD_HOST, 5425, 10);
-    gPvd->connect(*transport, PxPvdInstrumentationFlag::eALL);
-
-    gPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, PxTolerancesScale(), true, gPvd);
-
-    PxSceneDesc sceneDesc(gPhysics->getTolerancesScale());
-    sceneDesc.gravity = PxVec3(0.0f, -9.81f, 0.0f);
-    gDispatcher = PxDefaultCpuDispatcherCreate(2);
-    sceneDesc.cpuDispatcher = gDispatcher;
-    sceneDesc.filterShader = PxDefaultSimulationFilterShader;
-    gScene = gPhysics->createScene(sceneDesc);
-
-    PxPvdSceneClient* pvdClient = gScene->getScenePvdClient();
-    if (pvdClient)
-    {
-        pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true);
-        pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
-        pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
-    }
-    gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f);
-
-    PxRigidStatic* groundPlane = PxCreatePlane(*gPhysics, PxPlane(0, 1, 0, 0), *gMaterial);
-    gScene->addActor(*groundPlane);
-
-    for (PxU32 i = 0; i < 5; i++)
-        createStack(PxTransform(PxVec3(0, 0, stackZ -= 10.0f)), 10, 2.0f);
-
-    if (!interactive)
-        createDynamic(PxTransform(PxVec3(0, 40, 100)), PxSphereGeometry(10), PxVec3(0, -50, -100));
-}
-
-void stepPhysics(bool /*interactive*/)
-{
-    //std::cout << "hello\n";
+//MARK: PhysX Functions
+void stepPhysics(bool /*interactive*/){
     gScene->simulate(1.0f / 60.0f);
     gScene->fetchResults(true);
 }
 
-void cleanupPhysics(bool /*interactive*/)
-{
+void cleanupPhysics(bool /*interactive*/){
     PX_RELEASE(gScene);
     PX_RELEASE(gDispatcher);
     PX_RELEASE(gPhysics);
+    PX_RELEASE(gCooking);
     if (gPvd)
     {
         PxPvdTransport* transport = gPvd->getTransport();
@@ -114,128 +73,400 @@ void cleanupPhysics(bool /*interactive*/)
         PX_RELEASE(transport);
     }
     PX_RELEASE(gFoundation);
-
-    printf("SnippetHelloWorld done.\n");
 }
 
-void keyPress(unsigned char key, const PxTransform& camera)
-{
-    switch (toupper(key))
-    {
-    case 'B':	createStack(PxTransform(PxVec3(0, 0, stackZ -= 10.0f)), 10, 2.0f);						break;
-    case ' ':	createDynamic(camera, PxSphereGeometry(3.0f), camera.rotate(PxVec3(0, 0, -1)) * 200);	break;
-    }
-}
 
-int main(int argc, char** argv)
-{
-    // Uncomment to run snippet code
-    //snippetMain(argc, argv);
 
-    //initializePhysics();
+
+
+
+
+
+
+
+
+
+//MARK: Main
+int main(int argc, char** argv){
+    //MARK: INIT PHYSX & PVD
     static const PxU32 frameCount = 100;
-    initPhysics(false);
-    //for (PxU32 i = 0; i < frameCount; i++)
-    //   stepPhysics(false);
-    //cleanupPhysics(false);
+    gFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, gAllocator, gErrorCallback);
+    gPvd = PxCreatePvd(*gFoundation);
+    PxPvdTransport* transport = PxDefaultPvdSocketTransportCreate(PVD_HOST, 5425, 10);
+    gPvd->connect(*transport, PxPvdInstrumentationFlag::eALL);
+    gPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, PxTolerancesScale(), true, gPvd);
+    PxSceneDesc sceneDesc(gPhysics->getTolerancesScale());
+    sceneDesc.gravity = PxVec3(0.0f, -9.81f, 0.0f);
+    gDispatcher = PxDefaultCpuDispatcherCreate(2);
+    sceneDesc.cpuDispatcher = gDispatcher;
+    sceneDesc.filterShader = PxDefaultSimulationFilterShader;
+    gCooking = PxCreateCooking(PX_PHYSICS_VERSION, *gFoundation, PxCookingParams(PxTolerancesScale()));
+    gScene = gPhysics->createScene(sceneDesc);
+    PxPvdSceneClient* pvdClient = gScene->getScenePvdClient();
+    if (pvdClient) {
+        pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true);
+        pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
+        pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
+    }
 
+
+
+    //MARK: INIT GLFW
     const char* glsl_version = "#version 130";
-
     GLFWwindow* window;
-
-    // Initialize the library
-    if (!glfwInit())
-        return -1;
-
-    // Create a windowed mode window and its OpenGL context
-    window = glfwCreateWindow(1280, 720, "Knock Out", NULL, NULL);
-    if (!window)
-    {
+    if (!glfwInit()) return -1;
+    window = glfwCreateWindow(800, 800, "Knock Out", NULL, NULL);
+    if (!window) {
         glfwTerminate();
         return -1;
     }
-
-    // Make the window's context current
     glfwMakeContextCurrent(window);
-
-    if (glewInit() != GLEW_OK)
-        std::cout << "Error!" << std::endl;
-
+    if (glewInit() != GLEW_OK) std::cout << "Error!" << std::endl;
     std::cout << glGetString(GL_VERSION) << std::endl;
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetCursorPosCallback(window, mouse_callback);
+    Shader ourShader("5.1.transform.vs", "5.1.transform.fs");
 
-    // Setup Dear ImGui context
+
+
+    //MARK: INIT IMGUI
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
-
-    // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-
-    // Setup Dear ImGui style
     ImGui::StyleColorsDark();
-
-    // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
-
-    // Our state
     bool show_demo_window = true;
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-    // Loop until the user closes the window
-    while (!glfwWindowShouldClose(window))
+
+
+    //MARK: SCENE RENDER PREP
+    glEnable(GL_DEPTH_TEST); //to make sure the fragment shader takes into account that some geometry has to be drawn in front of another
+    float vertices[] = { //vertices of our cube
+       //positions          //texture coords
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+    };
+    unsigned int indices[] = { //for how to form a square face from 2 triangles
+        0, 1, 3, // first triangle
+        1, 2, 3  // second triangle
+    };
+    glm::vec3 cubePosition = glm::vec3(0.0f, 0.0f, 0.0f);
+    unsigned int VBO, VAO, EBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0); //position attribute
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float))); //texture coord attribute
+    glEnableVertexAttribArray(1);
+
+
+
+
+
+
+
+
+
+
+
+
+    //TODO: only 1 triangle from the box currently renders ---------------------------------------------------------------------------
+
+    //MARK: INIT PHYSX OBJECTS
+    gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f);
+    PxRigidStatic* groundPlane = PxCreatePlane(*gPhysics, PxPlane(0, 1, 0, 0), *gMaterial);
+    gScene->addActor(*groundPlane);
+
+    PxTriangleMeshDesc meshDesc; //mesh cooking from a triangle mesh
+    float verts[] = { 
+        -0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f,  0.5f, -0.5f,
+         0.5f,  0.5f, -0.5f,
+        -0.5f,  0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
+
+        //-0.5f, -0.5f,  0.5f,
+        // 0.5f, -0.5f,  0.5f,
+        // 0.5f,  0.5f,  0.5f,
+        // 0.5f,  0.5f,  0.5f,
+        //-0.5f,  0.5f,  0.5f,
+        //-0.5f, -0.5f,  0.5f,
+
+        //-0.5f,  0.5f,  0.5f,
+        //-0.5f,  0.5f, -0.5f,
+        //-0.5f, -0.5f, -0.5f,
+        //-0.5f, -0.5f, -0.5f,
+        //-0.5f, -0.5f,  0.5f,
+        //-0.5f,  0.5f,  0.5f,
+
+        // 0.5f,  0.5f,  0.5f,
+        // 0.5f,  0.5f, -0.5f,
+        // 0.5f, -0.5f, -0.5f,
+        // 0.5f, -0.5f, -0.5f,
+        // 0.5f, -0.5f,  0.5f,
+        // 0.5f,  0.5f,  0.5f,
+
+        //-0.5f, -0.5f, -0.5f,
+        // 0.5f, -0.5f, -0.5f,
+        // 0.5f, -0.5f,  0.5f,
+        // 0.5f, -0.5f,  0.5f,
+        //-0.5f, -0.5f,  0.5f,
+        //-0.5f, -0.5f, -0.5f,
+
+        //-0.5f,  0.5f, -0.5f,
+        // 0.5f,  0.5f, -0.5f,
+        // 0.5f,  0.5f,  0.5f,
+        // 0.5f,  0.5f,  0.5f,
+        //-0.5f,  0.5f,  0.5f,
+        //-0.5f,  0.5f, -0.5f,
+    };
+    meshDesc.points.count = 6; //TODO: I'm guessing something's wrong here with the values
+    meshDesc.points.stride = sizeof(PxVec3);
+    meshDesc.points.data = verts;
+    meshDesc.triangles.count = 2;
+    meshDesc.triangles.stride = 3 * sizeof(PxU32);
+    meshDesc.triangles.data = indices;
+
+    //PxCookingParams params = gCooking->getParams();
+    ////TODO: potentially do this
+    //gCooking->setParams(params);
+
+    PxTriangleMesh* triMesh = NULL;
+    PxU32 meshSize = 0;
+    triMesh = gCooking->createTriangleMesh(meshDesc, gPhysics->getPhysicsInsertionCallback()); //insert directly into PxPhysics
+    PxRigidStatic* boxBody = gPhysics->createRigidStatic(PxTransform(PxVec3(0, 0, 0)));
+    PxShape* boxShape = gPhysics->createShape(PxTriangleMeshGeometry(triMesh), *gMaterial);
+    boxBody->attachShape(*boxShape);
+    gScene->addActor(*boxBody);
+    triMesh->release();
+
+    //TODO: only 1 triangle from the box currently renders ---------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //MARK: TEXTURE PREP
+    unsigned int texture1, texture2;
+    glGenTextures(1, &texture1); //TEXTURE 1
+    glBindTexture(GL_TEXTURE_2D, texture1);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); //set the texture wrapping parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); //set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    int width, height, nrChannels; //load image, create texture and generate mipmaps
+    stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
+    unsigned char* data = stbi_load("container_texture.jpg", &width, &height, &nrChannels, 0);
+    if (data)
     {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }else std::cout << "Failed to load texture" << std::endl;
+    stbi_image_free(data);
+
+    glGenTextures(1, &texture2); //TEXTURE 2
+    glBindTexture(GL_TEXTURE_2D, texture2);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    data = stbi_load("face_texture.png", &width, &height, &nrChannels, 0);
+    if (data){
+        // note that the awesomeface.png has transparency and thus an alpha channel, so make sure to tell OpenGL the data type is of GL_RGBA
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else std::cout << "Failed to load texture" << std::endl;
+    stbi_image_free(data);
+
+    ourShader.use(); //tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
+    ourShader.setInt("texture1", 0);
+    ourShader.setInt("texture2", 1);
+
+
+
+    //MARK: CAMERA SETUP
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)800 / (float)800, 0.1f, 100.0f);
+    ourShader.setMat4("projection", projection);
+
+
+
+
+    //MARK: RENDER LOOP ---------------------------------------------------------------------------------------------------------------
+    while (!glfwWindowShouldClose(window)){
+
+        //MARK: Frame Start
+        float currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+        processInput(window);
         stepPhysics(false);
-        // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        // Render here
-        glClear(GL_COLOR_BUFFER_BIT);
 
-        glBegin(GL_TRIANGLES);
-        glVertex2f(-0.5f, -0.5f);
-        glVertex2f(0.0f, 0.5f);
-        glVertex2f(0.5f, -0.5f);
-        glEnd();
+        //MARK: Render Scene
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f); //background color
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Show a simple window
+        // bind textures on corresponding texture units
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture1);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture2);
+
+        // activate shader
+        ourShader.use();
+
+        // create transformations
+        glm::mat4 view = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+        view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+        ourShader.setMat4("view", view);
+
+        glBindVertexArray(VAO); //render box and calculate the model matrix before drawing
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, cubePosition);
+        model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.3f, 0.5f));
+        ourShader.setMat4("model", model);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+
+        //MARK: Render ImgUI
         {
-
-            // Create a window
             ImGui::Begin("Debug Menu");
-
-            // Display FPS
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
             ImGui::End();
         }
-
         ImGui::Render();
-
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        // Swap front and back buffers
-        glfwSwapBuffers(window);
 
-        // Poll for and process events
+        //MARK: Frame End
+        glfwSwapBuffers(window);
         glfwPollEvents();
     }
+    //---------------------------------------------------------------------------------------------------------------------------------
 
-    // Cleanup
+
+
+
+    //MARK: Clean up & Terminate
     cleanupPhysics(false);
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
-
     glfwTerminate();
-
     return 0;
 }
 
-void initializePhysics() 
-{
-    physx::PxPhysics* gPhysics = NULL;
-    std::cout << "PhysX initialized" << std::endl;
+
+
+
+//MARK: Input Functions
+void processInput(GLFWwindow* window){
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) glfwSetWindowShouldClose(window, true);
+
+    float cameraSpeed = 2.5 * deltaTime;
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) cameraPos += cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) cameraPos -= cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 }
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos){
+    if (firstMouse){
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos;
+    lastX = xpos;
+    lastY = ypos;
+
+    float sensitivity = 0.1f;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    yaw += xoffset;
+    pitch += yoffset;
+
+    if (pitch > 89.0f) pitch = 89.0f;
+    if (pitch < -89.0f) pitch = -89.0f;
+
+    glm::vec3 direction;
+    direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    direction.y = sin(glm::radians(pitch));
+    direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    cameraFront = glm::normalize(direction);
+}
+
+
+
+
+
