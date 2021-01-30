@@ -14,6 +14,16 @@
 #include "../include/physx/snippetcommon/SnippetPVD.h"
 #include "../include/physx/snippetutils/SnippetUtils.h"
 
+#include "../include/physx/vehicle/PxVehicleUtil.h"
+#include "../include/physx/snippetvehiclecommon/SnippetVehicleSceneQuery.h"
+#include "../include/physx/snippetvehiclecommon/SnippetVehicleFilterShader.h"
+#include "../include/physx/snippetvehiclecommon/SnippetVehicleTireFriction.h"
+#include "../include/physx/snippetvehiclecommon/SnippetVehicleCreate.h"
+
+#include "../include/physx/snippetcommon/SnippetPrint.h"
+#include "../include/physx/snippetcommon/SnippetPVD.h"
+#include "../include/physx/snippetutils/SnippetUtils.h"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -23,6 +33,7 @@
 #include "Shader.cpp"
 
 using namespace physx;
+using namespace snippetvehicle;
 
 
 //MARK: Function Prototypes
@@ -40,6 +51,16 @@ PxScene* gScene = NULL;
 PxCooking* gCooking = NULL;
 PxMaterial* gMaterial = NULL;
 PxPvd* gPvd = NULL;
+VehicleSceneQueryData* gVehicleSceneQueryData = NULL;
+PxBatchQuery* gBatchQuery = NULL;
+
+PxVehicleDrivableSurfaceToTireFrictionPairs* gFrictionPairs = NULL;
+
+PxRigidStatic* gGroundPlane = NULL;
+PxVehicleDrive4W* gVehicle4W = NULL;
+
+bool					gIsVehicleInAir = true;
+
 PxReal stackZ = 10.0f;
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
@@ -53,64 +74,443 @@ glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 glm::vec3 direction;
 
 
+PxF32 gSteerVsForwardSpeedData[2 * 8] =
+{
+	0.0f,		0.75f,
+	5.0f,		0.75f,
+	30.0f,		0.125f,
+	120.0f,		0.1f,
+	PX_MAX_F32, PX_MAX_F32,
+	PX_MAX_F32, PX_MAX_F32,
+	PX_MAX_F32, PX_MAX_F32,
+	PX_MAX_F32, PX_MAX_F32
+};
+PxFixedSizeLookupTable<8> gSteerVsForwardSpeedTable(gSteerVsForwardSpeedData, 4);
 
+PxVehicleKeySmoothingData gKeySmoothingData =
+{
+	{
+		6.0f,	//rise rate eANALOG_INPUT_ACCEL
+		6.0f,	//rise rate eANALOG_INPUT_BRAKE		
+		6.0f,	//rise rate eANALOG_INPUT_HANDBRAKE	
+		2.5f,	//rise rate eANALOG_INPUT_STEER_LEFT
+		2.5f,	//rise rate eANALOG_INPUT_STEER_RIGHT
+	},
+	{
+		10.0f,	//fall rate eANALOG_INPUT_ACCEL
+		10.0f,	//fall rate eANALOG_INPUT_BRAKE		
+		10.0f,	//fall rate eANALOG_INPUT_HANDBRAKE	
+		5.0f,	//fall rate eANALOG_INPUT_STEER_LEFT
+		5.0f	//fall rate eANALOG_INPUT_STEER_RIGHT
+	}
+};
 
-//MARK: PhysX Functions
-void stepPhysics(bool /*interactive*/){
-    gScene->simulate(1.0f / 60.0f);
-    gScene->fetchResults(true);
+PxVehiclePadSmoothingData gPadSmoothingData =
+{
+	{
+		6.0f,	//rise rate eANALOG_INPUT_ACCEL
+		6.0f,	//rise rate eANALOG_INPUT_BRAKE		
+		6.0f,	//rise rate eANALOG_INPUT_HANDBRAKE	
+		2.5f,	//rise rate eANALOG_INPUT_STEER_LEFT
+		2.5f,	//rise rate eANALOG_INPUT_STEER_RIGHT
+	},
+	{
+		10.0f,	//fall rate eANALOG_INPUT_ACCEL
+		10.0f,	//fall rate eANALOG_INPUT_BRAKE		
+		10.0f,	//fall rate eANALOG_INPUT_HANDBRAKE	
+		5.0f,	//fall rate eANALOG_INPUT_STEER_LEFT
+		5.0f	//fall rate eANALOG_INPUT_STEER_RIGHT
+	}
+};
+
+PxVehicleDrive4WRawInputData gVehicleInputData;
+
+enum DriveMode
+{
+	eDRIVE_MODE_ACCEL_FORWARDS = 0,
+	eDRIVE_MODE_ACCEL_REVERSE,
+	eDRIVE_MODE_HARD_TURN_LEFT,
+	eDRIVE_MODE_HANDBRAKE_TURN_LEFT,
+	eDRIVE_MODE_HARD_TURN_RIGHT,
+	eDRIVE_MODE_HANDBRAKE_TURN_RIGHT,
+	eDRIVE_MODE_BRAKE,
+	eDRIVE_MODE_NONE
+};
+
+DriveMode gDriveModeOrder[] =
+{
+	eDRIVE_MODE_BRAKE,
+	eDRIVE_MODE_ACCEL_FORWARDS,
+	eDRIVE_MODE_BRAKE,
+	eDRIVE_MODE_ACCEL_REVERSE,
+	eDRIVE_MODE_BRAKE,
+	eDRIVE_MODE_HARD_TURN_LEFT,
+	eDRIVE_MODE_BRAKE,
+	eDRIVE_MODE_HARD_TURN_RIGHT,
+	eDRIVE_MODE_ACCEL_FORWARDS,
+	eDRIVE_MODE_HANDBRAKE_TURN_LEFT,
+	eDRIVE_MODE_ACCEL_FORWARDS,
+	eDRIVE_MODE_HANDBRAKE_TURN_RIGHT,
+	eDRIVE_MODE_NONE
+};
+
+PxF32					gVehicleModeLifetime = 4.0f;
+PxF32					gVehicleModeTimer = 0.0f;
+PxU32					gVehicleOrderProgress = 0;
+bool					gVehicleOrderComplete = false;
+bool					gMimicKeyInputs = false;
+
+VehicleDesc initVehicleDesc()
+{
+	//Set up the chassis mass, dimensions, moment of inertia, and center of mass offset.
+	//The moment of inertia is just the moment of inertia of a cuboid but modified for easier steering.
+	//Center of mass offset is 0.65m above the base of the chassis and 0.25m towards the front.
+	const PxF32 chassisMass = 1500.0f;
+	const PxVec3 chassisDims(2.5f, 2.0f, 5.0f);
+	const PxVec3 chassisMOI
+	((chassisDims.y * chassisDims.y + chassisDims.z * chassisDims.z) * chassisMass / 12.0f,
+		(chassisDims.x * chassisDims.x + chassisDims.z * chassisDims.z) * 0.8f * chassisMass / 12.0f,
+		(chassisDims.x * chassisDims.x + chassisDims.y * chassisDims.y) * chassisMass / 12.0f);
+	const PxVec3 chassisCMOffset(0.0f, -chassisDims.y * 0.5f + 0.65f, 0.25f);
+
+	//Set up the wheel mass, radius, width, moment of inertia, and number of wheels.
+	//Moment of inertia is just the moment of inertia of a cylinder.
+	const PxF32 wheelMass = 20.0f;
+	const PxF32 wheelRadius = 0.5f;
+	const PxF32 wheelWidth = 0.4f;
+	const PxF32 wheelMOI = 0.5f * wheelMass * wheelRadius * wheelRadius;
+	const PxU32 nbWheels = 6;
+
+	VehicleDesc vehicleDesc;
+
+	vehicleDesc.chassisMass = chassisMass;
+	vehicleDesc.chassisDims = chassisDims;
+	vehicleDesc.chassisMOI = chassisMOI;
+	vehicleDesc.chassisCMOffset = chassisCMOffset;
+	vehicleDesc.chassisMaterial = gMaterial;
+	vehicleDesc.chassisSimFilterData = PxFilterData(COLLISION_FLAG_CHASSIS, COLLISION_FLAG_CHASSIS_AGAINST, 0, 0);
+
+	vehicleDesc.wheelMass = wheelMass;
+	vehicleDesc.wheelRadius = wheelRadius;
+	vehicleDesc.wheelWidth = wheelWidth;
+	vehicleDesc.wheelMOI = wheelMOI;
+	vehicleDesc.numWheels = nbWheels;
+	vehicleDesc.wheelMaterial = gMaterial;
+	vehicleDesc.chassisSimFilterData = PxFilterData(COLLISION_FLAG_WHEEL, COLLISION_FLAG_WHEEL_AGAINST, 0, 0);
+
+	return vehicleDesc;
 }
 
-void cleanupPhysics(bool /*interactive*/){
-    PX_RELEASE(gScene);
-    PX_RELEASE(gDispatcher);
-    PX_RELEASE(gPhysics);
-    PX_RELEASE(gCooking);
-    if (gPvd)
-    {
-        PxPvdTransport* transport = gPvd->getTransport();
-        gPvd->release();	gPvd = NULL;
-        PX_RELEASE(transport);
-    }
-    PX_RELEASE(gFoundation);
+void startAccelerateForwardsMode()
+{
+	if (gMimicKeyInputs)
+	{
+		gVehicleInputData.setDigitalAccel(true);
+	}
+	else
+	{
+		gVehicleInputData.setAnalogAccel(1.0f);
+	}
+}
+
+void startAccelerateReverseMode()
+{
+	gVehicle4W->mDriveDynData.forceGearChange(PxVehicleGearsData::eREVERSE);
+
+	if (gMimicKeyInputs)
+	{
+		gVehicleInputData.setDigitalAccel(true);
+	}
+	else
+	{
+		gVehicleInputData.setAnalogAccel(1.0f);
+	}
+}
+
+void startBrakeMode()
+{
+	if (gMimicKeyInputs)
+	{
+		gVehicleInputData.setDigitalBrake(true);
+	}
+	else
+	{
+		gVehicleInputData.setAnalogBrake(1.0f);
+	}
+}
+
+void startTurnHardLeftMode()
+{
+	if (gMimicKeyInputs)
+	{
+		gVehicleInputData.setDigitalAccel(true);
+		gVehicleInputData.setDigitalSteerLeft(true);
+	}
+	else
+	{
+		gVehicleInputData.setAnalogAccel(true);
+		gVehicleInputData.setAnalogSteer(-1.0f);
+	}
+}
+
+void startTurnHardRightMode()
+{
+	if (gMimicKeyInputs)
+	{
+		gVehicleInputData.setDigitalAccel(true);
+		gVehicleInputData.setDigitalSteerRight(true);
+	}
+	else
+	{
+		gVehicleInputData.setAnalogAccel(1.0f);
+		gVehicleInputData.setAnalogSteer(1.0f);
+	}
+}
+
+void startHandbrakeTurnLeftMode()
+{
+	if (gMimicKeyInputs)
+	{
+		gVehicleInputData.setDigitalSteerLeft(true);
+		gVehicleInputData.setDigitalHandbrake(true);
+	}
+	else
+	{
+		gVehicleInputData.setAnalogSteer(-1.0f);
+		gVehicleInputData.setAnalogHandbrake(1.0f);
+	}
+}
+
+void startHandbrakeTurnRightMode()
+{
+	if (gMimicKeyInputs)
+	{
+		gVehicleInputData.setDigitalSteerRight(true);
+		gVehicleInputData.setDigitalHandbrake(true);
+	}
+	else
+	{
+		gVehicleInputData.setAnalogSteer(1.0f);
+		gVehicleInputData.setAnalogHandbrake(1.0f);
+	}
 }
 
 
+void releaseAllControls()
+{
+	if (gMimicKeyInputs)
+	{
+		gVehicleInputData.setDigitalAccel(false);
+		gVehicleInputData.setDigitalSteerLeft(false);
+		gVehicleInputData.setDigitalSteerRight(false);
+		gVehicleInputData.setDigitalBrake(false);
+		gVehicleInputData.setDigitalHandbrake(false);
+	}
+	else
+	{
+		gVehicleInputData.setAnalogAccel(0.0f);
+		gVehicleInputData.setAnalogSteer(0.0f);
+		gVehicleInputData.setAnalogBrake(0.0f);
+		gVehicleInputData.setAnalogHandbrake(0.0f);
+	}
+}
 
+void initPhysics()
+{
+	gFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, gAllocator, gErrorCallback);
+	gPvd = PxCreatePvd(*gFoundation);
+	PxPvdTransport* transport = PxDefaultPvdSocketTransportCreate(PVD_HOST, 5425, 10);
+	gPvd->connect(*transport, PxPvdInstrumentationFlag::eALL);
+	gPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, PxTolerancesScale(), true, gPvd);
 
+	PxSceneDesc sceneDesc(gPhysics->getTolerancesScale());
+	sceneDesc.gravity = PxVec3(0.0f, -9.81f, 0.0f);
 
+	PxU32 numWorkers = 1;
+	gDispatcher = PxDefaultCpuDispatcherCreate(numWorkers);
+	sceneDesc.cpuDispatcher = gDispatcher;
+	sceneDesc.filterShader = VehicleFilterShader;
 
+	gScene = gPhysics->createScene(sceneDesc);
+	PxPvdSceneClient* pvdClient = gScene->getScenePvdClient();
+	if (pvdClient)
+	{
+		pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true);
+		pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
+		pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
+	}
+	gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f);
 
+	gCooking = PxCreateCooking(PX_PHYSICS_VERSION, *gFoundation, PxCookingParams(PxTolerancesScale()));
 
+	/////////////////////////////////////////////
 
+	PxInitVehicleSDK(*gPhysics);
+	PxVehicleSetBasisVectors(PxVec3(0, 1, 0), PxVec3(0, 0, 1));
+	PxVehicleSetUpdateMode(PxVehicleUpdateMode::eVELOCITY_CHANGE);
 
+	//Create the batched scene queries for the suspension raycasts.
+	gVehicleSceneQueryData = VehicleSceneQueryData::allocate(1, PX_MAX_NB_WHEELS, 1, 1, WheelSceneQueryPreFilterBlocking, NULL, gAllocator);
+	gBatchQuery = VehicleSceneQueryData::setUpBatchedSceneQuery(0, *gVehicleSceneQueryData, gScene);
+
+	//Create the friction table for each combination of tire and surface type.
+	gFrictionPairs = createFrictionPairs(gMaterial);
+
+	//Create a plane to drive on.
+	PxFilterData groundPlaneSimFilterData(COLLISION_FLAG_GROUND, COLLISION_FLAG_GROUND_AGAINST, 0, 0);
+	gGroundPlane = createDrivablePlane(groundPlaneSimFilterData, gMaterial, gPhysics);
+	gScene->addActor(*gGroundPlane);
+
+	//Create a vehicle that will drive on the plane.
+	VehicleDesc vehicleDesc = initVehicleDesc();
+	gVehicle4W = createVehicle4W(vehicleDesc, gPhysics, gCooking);
+	PxTransform startTransform(PxVec3(0, (vehicleDesc.chassisDims.y * 0.5f + vehicleDesc.wheelRadius + 1.0f), 0), PxQuat(PxIdentity));
+	gVehicle4W->getRigidDynamicActor()->setGlobalPose(startTransform);
+	gScene->addActor(*gVehicle4W->getRigidDynamicActor());
+
+	//Set the vehicle to rest in first gear.
+	//Set the vehicle to use auto-gears.
+	gVehicle4W->setToRestState();
+	gVehicle4W->mDriveDynData.forceGearChange(PxVehicleGearsData::eFIRST);
+	gVehicle4W->mDriveDynData.setUseAutoGears(true);
+
+	gVehicleModeTimer = 0.0f;
+	gVehicleOrderProgress = 0;
+	startBrakeMode();
+}
+
+void incrementDrivingMode(const PxF32 timestep)
+{
+	gVehicleModeTimer += timestep;
+	if (gVehicleModeTimer > gVehicleModeLifetime)
+	{
+		//If the mode just completed was eDRIVE_MODE_ACCEL_REVERSE then switch back to forward gears.
+		if (eDRIVE_MODE_ACCEL_REVERSE == gDriveModeOrder[gVehicleOrderProgress])
+		{
+			gVehicle4W->mDriveDynData.forceGearChange(PxVehicleGearsData::eFIRST);
+		}
+
+		//Increment to next driving mode.
+		gVehicleModeTimer = 0.0f;
+		gVehicleOrderProgress++;
+		releaseAllControls();
+
+		//If we are at the end of the list of driving modes then start again.
+		if (eDRIVE_MODE_NONE == gDriveModeOrder[gVehicleOrderProgress])
+		{
+			gVehicleOrderProgress = 0;
+			gVehicleOrderComplete = true;
+		}
+
+		//Start driving in the selected mode.
+		DriveMode eDriveMode = gDriveModeOrder[gVehicleOrderProgress];
+		switch (eDriveMode)
+		{
+		case eDRIVE_MODE_ACCEL_FORWARDS:
+			startAccelerateForwardsMode();
+			break;
+		case eDRIVE_MODE_ACCEL_REVERSE:
+			startAccelerateReverseMode();
+			break;
+		case eDRIVE_MODE_HARD_TURN_LEFT:
+			startTurnHardLeftMode();
+			break;
+		case eDRIVE_MODE_HANDBRAKE_TURN_LEFT:
+			startHandbrakeTurnLeftMode();
+			break;
+		case eDRIVE_MODE_HARD_TURN_RIGHT:
+			startTurnHardRightMode();
+			break;
+		case eDRIVE_MODE_HANDBRAKE_TURN_RIGHT:
+			startHandbrakeTurnRightMode();
+			break;
+		case eDRIVE_MODE_BRAKE:
+			startBrakeMode();
+			break;
+		case eDRIVE_MODE_NONE:
+			break;
+		};
+
+		//If the mode about to start is eDRIVE_MODE_ACCEL_REVERSE then switch to reverse gears.
+		if (eDRIVE_MODE_ACCEL_REVERSE == gDriveModeOrder[gVehicleOrderProgress])
+		{
+			gVehicle4W->mDriveDynData.forceGearChange(PxVehicleGearsData::eREVERSE);
+		}
+	}
+}
+
+void stepPhysics()
+{
+	const PxF32 timestep = 1.0f / 60.0f;
+
+	//Cycle through the driving modes to demonstrate how to accelerate/reverse/brake/turn etc.
+	incrementDrivingMode(timestep);
+
+	//Update the control inputs for the vehicle.
+	if (gMimicKeyInputs)
+	{
+		PxVehicleDrive4WSmoothDigitalRawInputsAndSetAnalogInputs(gKeySmoothingData, gSteerVsForwardSpeedTable, gVehicleInputData, timestep, gIsVehicleInAir, *gVehicle4W);
+	}
+	else
+	{
+		PxVehicleDrive4WSmoothAnalogRawInputsAndSetAnalogInputs(gPadSmoothingData, gSteerVsForwardSpeedTable, gVehicleInputData, timestep, gIsVehicleInAir, *gVehicle4W);
+	}
+
+	//Raycasts.
+	PxVehicleWheels* vehicles[1] = { gVehicle4W };
+	PxRaycastQueryResult* raycastResults = gVehicleSceneQueryData->getRaycastQueryResultBuffer(0);
+	const PxU32 raycastResultsSize = gVehicleSceneQueryData->getQueryResultBufferSize();
+	PxVehicleSuspensionRaycasts(gBatchQuery, 1, vehicles, raycastResultsSize, raycastResults);
+
+	//Vehicle update.
+	const PxVec3 grav = gScene->getGravity();
+	PxWheelQueryResult wheelQueryResults[PX_MAX_NB_WHEELS];
+	PxVehicleWheelQueryResult vehicleQueryResults[1] = { {wheelQueryResults, gVehicle4W->mWheelsSimData.getNbWheels()} };
+	PxVehicleUpdates(timestep, grav, *gFrictionPairs, 1, vehicles, vehicleQueryResults);
+
+	//Work out if the vehicle is in the air.
+	gIsVehicleInAir = gVehicle4W->getRigidDynamicActor()->isSleeping() ? false : PxVehicleIsInAir(vehicleQueryResults[0]);
+
+	//Scene update.
+	gScene->simulate(timestep);
+	gScene->fetchResults(true);
+}
+
+void cleanupPhysics()
+{
+	gVehicle4W->getRigidDynamicActor()->release();
+	gVehicle4W->free();
+	PX_RELEASE(gGroundPlane);
+	PX_RELEASE(gBatchQuery);
+	gVehicleSceneQueryData->free(gAllocator);
+	PX_RELEASE(gFrictionPairs);
+	PxCloseVehicleSDK();
+
+	PX_RELEASE(gMaterial);
+	PX_RELEASE(gCooking);
+	PX_RELEASE(gScene);
+	PX_RELEASE(gDispatcher);
+	PX_RELEASE(gPhysics);
+	if (gPvd)
+	{
+		PxPvdTransport* transport = gPvd->getTransport();
+		gPvd->release();	gPvd = NULL;
+		PX_RELEASE(transport);
+	}
+	PX_RELEASE(gFoundation);
+
+	printf("SnippetVehicle4W done.\n");
+}
+
+void keyPress(unsigned char key, const PxTransform& camera)
+{
+	PX_UNUSED(camera);
+	PX_UNUSED(key);
+}
 
 
 //MARK: Main
 int main(int argc, char** argv){
-
-    //MARK: INIT PHYSX & PVD
-    static const PxU32 frameCount = 100;
-    gFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, gAllocator, gErrorCallback);
-    gPvd = PxCreatePvd(*gFoundation);
-    PxPvdTransport* transport = PxDefaultPvdSocketTransportCreate(PVD_HOST, 5425, 10);
-    gPvd->connect(*transport, PxPvdInstrumentationFlag::eALL);
-    gPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, PxTolerancesScale(), true, gPvd);
-    PxSceneDesc sceneDesc(gPhysics->getTolerancesScale());
-    sceneDesc.gravity = PxVec3(0.0f, -9.81f, 0.0f);
-    gDispatcher = PxDefaultCpuDispatcherCreate(2);
-    sceneDesc.cpuDispatcher = gDispatcher;
-    sceneDesc.filterShader = PxDefaultSimulationFilterShader;
-    gCooking = PxCreateCooking(PX_PHYSICS_VERSION, *gFoundation, PxCookingParams(PxTolerancesScale()));
-    gScene = gPhysics->createScene(sceneDesc);
-    PxPvdSceneClient* pvdClient = gScene->getScenePvdClient();
-    if (pvdClient) {
-        pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true);
-        pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
-        pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
-    }
-
-
 
     //MARK: INIT GLFW
     const char* glsl_version = "#version 130";
@@ -142,8 +542,8 @@ int main(int argc, char** argv){
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-
-
+    //old stuff
+    /*
     //MARK: SCENE RENDER PREP
     glEnable(GL_DEPTH_TEST); //to make sure the fragment shader takes into account that some geometry has to be drawn in front of another
     float vertices[] = { //vertices of our cube
@@ -191,8 +591,8 @@ int main(int argc, char** argv){
         -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
     };
     unsigned int indices[] = { //for how to form a square face from 2 triangles
-        0, 1, 3, // first triangle
-        1, 2, 3  // second triangle
+        0, 1, 2, // first triangle
+        3, 4, 5  // second triangle
     };
     glm::vec3 cubePosition = glm::vec3(0.0f, 0.0f, 0.0f);
     unsigned int VBO, VAO, EBO;
@@ -215,19 +615,6 @@ int main(int argc, char** argv){
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float))); //texture coord attribute
     glEnableVertexAttribArray(1);
 
-
-
-
-
-
-
-
-
-
-
-
-    //TODO: only 1 triangle from the box currently shows in PVD ---------------------------------------------------------------------------
-
     //MARK: INIT PHYSX OBJECTS
     gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f); //create some material
     PxRigidStatic* groundPlane = PxCreatePlane(*gPhysics, PxPlane(0, 1, 0, 0), *gMaterial); //create a physics plane
@@ -235,54 +622,72 @@ int main(int argc, char** argv){
 
     PxTriangleMeshDesc meshDesc; //mesh cooking from a triangle mesh
     float verts[] = { 
-        -0.5f, -0.5f, -0.5f,
+         0.5f,  0.5f, -0.5f,
          0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
+        -0.5f,  0.5f, -0.5f,
          0.5f,  0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
+
+        -0.5f, -0.5f,  0.5f,
+         0.5f, -0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
+        -0.5f, -0.5f,  0.5f,
+
+        -0.5f,  0.5f,  0.5f,
         -0.5f,  0.5f, -0.5f,
         -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
 
-        //-0.5f, -0.5f,  0.5f,
-        // 0.5f, -0.5f,  0.5f,
-        // 0.5f,  0.5f,  0.5f,
-        // 0.5f,  0.5f,  0.5f,
-        //-0.5f,  0.5f,  0.5f,
-        //-0.5f, -0.5f,  0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f,  0.5f, -0.5f,
+         0.5f,  0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+         0.5f, -0.5f,  0.5f,
+         0.5f, -0.5f, -0.5f,
+         
+        -0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f,  0.5f,
+         0.5f, -0.5f,  0.5f,
+        -0.5f, -0.5f,  0.5f,
+        -0.5f, -0.5f, -0.5f,
 
-        //-0.5f,  0.5f,  0.5f,
-        //-0.5f,  0.5f, -0.5f,
-        //-0.5f, -0.5f, -0.5f,
-        //-0.5f, -0.5f, -0.5f,
-        //-0.5f, -0.5f,  0.5f,
-        //-0.5f,  0.5f,  0.5f,
-
-        // 0.5f,  0.5f,  0.5f,
-        // 0.5f,  0.5f, -0.5f,
-        // 0.5f, -0.5f, -0.5f,
-        // 0.5f, -0.5f, -0.5f,
-        // 0.5f, -0.5f,  0.5f,
-        // 0.5f,  0.5f,  0.5f,
-
-        //-0.5f, -0.5f, -0.5f,
-        // 0.5f, -0.5f, -0.5f,
-        // 0.5f, -0.5f,  0.5f,
-        // 0.5f, -0.5f,  0.5f,
-        //-0.5f, -0.5f,  0.5f,
-        //-0.5f, -0.5f, -0.5f,
-
-        //-0.5f,  0.5f, -0.5f,
-        // 0.5f,  0.5f, -0.5f,
-        // 0.5f,  0.5f,  0.5f,
-        // 0.5f,  0.5f,  0.5f,
-        //-0.5f,  0.5f,  0.5f,
-        //-0.5f,  0.5f, -0.5f,
+         0.5f,  0.5f,  0.5f,
+         0.5f,  0.5f, -0.5f,
+        -0.5f,  0.5f, -0.5f,
+        -0.5f,  0.5f, -0.5f,
+        -0.5f,  0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f
     };
-    meshDesc.points.count = 6; //TODO: I'm guessing something's wrong here with the values
+    unsigned int inds[] = { //for how to form a square face from 2 triangles
+        0, 1, 2, // first triangle
+        3, 4, 5,
+        6, 7, 8,
+        9, 10, 11,
+        12, 13, 14,
+        15, 16, 17,
+        18, 19, 20,
+        21, 22, 23,
+        24, 25, 26,
+        27, 28, 29,
+        30, 31, 32,
+        33, 34, 35
+    };
+    //std::cout << sizeof(verts) << "\n";
+    //std::cout << sizeof(PxVec3) << "\n";
+
+    meshDesc.points.count = 108; 
     meshDesc.points.stride = sizeof(PxVec3);
     meshDesc.points.data = verts;
-    meshDesc.triangles.count = 2;
+
+    meshDesc.triangles.count = 108/9;
     meshDesc.triangles.stride = 3 * sizeof(PxU32);
-    meshDesc.triangles.data = indices;
+    meshDesc.triangles.data = inds;
 
     //PxCookingParams params = gCooking->getParams();
     ////TODO: potentially do this
@@ -296,20 +701,6 @@ int main(int argc, char** argv){
     boxBody->attachShape(*boxShape); //attach the shape to the body
     gScene->addActor(*boxBody); //and add it to the scene
     triMesh->release(); //clean up
-
-    //TODO: only 1 triangle from the box currently shows in PVD ---------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -350,7 +741,10 @@ int main(int argc, char** argv){
     ourShader.setInt("texture1", 0);
     ourShader.setInt("texture2", 1);
 
+    */
 
+    
+    initPhysics();
 
     //MARK: CAMERA SETUP
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)800 / (float)800, 0.1f, 100.0f); //how to show perspective (fov, aspect ratio)
@@ -367,7 +761,7 @@ int main(int argc, char** argv){
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
         processInput(window);
-        stepPhysics(false);
+        stepPhysics();
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -377,10 +771,12 @@ int main(int argc, char** argv){
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f); //background color
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        /*
         glActiveTexture(GL_TEXTURE0); //bind textures on corresponding texture units
         glBindTexture(GL_TEXTURE_2D, texture1);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
+        */
 
         ourShader.use(); //activate our shader program (containing our vertex_shader.vs & fragment_shader.fs)
 
@@ -388,13 +784,14 @@ int main(int argc, char** argv){
         view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp); //apply a special built in matrix specifically made for camera views call the "Look At" matrix
         ourShader.setMat4("view", view); //set the camera view matrix in our fragment shader
 
+        /*
         glBindVertexArray(VAO); //tell OpenGL to render whatever we have in our Vertex Array Object
         glm::mat4 model = glm::mat4(1.0f); //identity matrix
         model = glm::translate(model, cubePosition); //model matrix converts the local coordinates (cubePosition) to the global world coordinates
         model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.3f, 0.5f)); //rotate
         ourShader.setMat4("model", model); //set the model matrix (which when applied converts the local position to global world coordinates...)
         glDrawArrays(GL_TRIANGLES, 0, 36); //draw the triangle data, starting at 0 with 36 vertex data points
-
+        */
 
         //MARK: Render ImgUI
         {
@@ -416,7 +813,7 @@ int main(int argc, char** argv){
 
 
     //MARK: Clean up & Terminate
-    cleanupPhysics(false);
+    cleanupPhysics();
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
