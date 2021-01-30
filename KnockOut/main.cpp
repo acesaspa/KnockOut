@@ -242,47 +242,65 @@ int main(int argc, char** argv){
         -0.5f,  0.5f, -0.5f,
         -0.5f, -0.5f, -0.5f,
 
-        //-0.5f, -0.5f,  0.5f,
-        // 0.5f, -0.5f,  0.5f,
-        // 0.5f,  0.5f,  0.5f,
-        // 0.5f,  0.5f,  0.5f,
-        //-0.5f,  0.5f,  0.5f,
-        //-0.5f, -0.5f,  0.5f,
+        -0.5f, -0.5f,  0.5f,
+         0.5f, -0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
+        -0.5f, -0.5f,  0.5f,
 
-        //-0.5f,  0.5f,  0.5f,
-        //-0.5f,  0.5f, -0.5f,
-        //-0.5f, -0.5f, -0.5f,
-        //-0.5f, -0.5f, -0.5f,
-        //-0.5f, -0.5f,  0.5f,
-        //-0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
 
-        // 0.5f,  0.5f,  0.5f,
-        // 0.5f,  0.5f, -0.5f,
-        // 0.5f, -0.5f, -0.5f,
-        // 0.5f, -0.5f, -0.5f,
-        // 0.5f, -0.5f,  0.5f,
-        // 0.5f,  0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+         0.5f,  0.5f, -0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
 
-        //-0.5f, -0.5f, -0.5f,
-        // 0.5f, -0.5f, -0.5f,
-        // 0.5f, -0.5f,  0.5f,
-        // 0.5f, -0.5f,  0.5f,
-        //-0.5f, -0.5f,  0.5f,
-        //-0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f,  0.5f,
+         0.5f, -0.5f,  0.5f,
+        -0.5f, -0.5f,  0.5f,
+        -0.5f, -0.5f, -0.5f,
 
-        //-0.5f,  0.5f, -0.5f,
-        // 0.5f,  0.5f, -0.5f,
-        // 0.5f,  0.5f,  0.5f,
-        // 0.5f,  0.5f,  0.5f,
-        //-0.5f,  0.5f,  0.5f,
-        //-0.5f,  0.5f, -0.5f,
+        -0.5f,  0.5f, -0.5f,
+         0.5f,  0.5f, -0.5f,
+         0.5f,  0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f, -0.5f,
     };
-    meshDesc.points.count = 6; //TODO: I'm guessing something's wrong here with the values
+    unsigned int inds[] = { //for how to form a square face from 2 triangles
+        0, 1, 2, // first triangle
+        3, 4, 5,
+        6, 7, 8,
+        9, 10, 11,
+        12, 13, 14,
+        15, 16, 17,
+        18, 19, 20,
+        21, 22, 23,
+        24, 25, 26,
+        27, 28, 29,
+        30, 31, 32,
+        33, 34, 35
+    };
+    //std::cout << sizeof(verts) << "\n";
+    //std::cout << sizeof(PxVec3) << "\n";
+
+    meshDesc.points.count = 108; 
     meshDesc.points.stride = sizeof(PxVec3);
     meshDesc.points.data = verts;
-    meshDesc.triangles.count = 2;
+
+    meshDesc.triangles.count = 108/9;
     meshDesc.triangles.stride = 3 * sizeof(PxU32);
-    meshDesc.triangles.data = indices;
+    meshDesc.triangles.data = inds;
 
     //PxCookingParams params = gCooking->getParams();
     ////TODO: potentially do this
