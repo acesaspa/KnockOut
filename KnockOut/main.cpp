@@ -235,12 +235,12 @@ int main(int argc, char** argv){
 
     PxTriangleMeshDesc meshDesc; //mesh cooking from a triangle mesh
     float verts[] = { 
-        -0.5f, -0.5f, -0.5f,
+         0.5f,  0.5f, -0.5f,
          0.5f, -0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
-        -0.5f,  0.5f, -0.5f,
         -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
+        -0.5f,  0.5f, -0.5f,
+         0.5f,  0.5f, -0.5f,
 
         -0.5f, -0.5f,  0.5f,
          0.5f, -0.5f,  0.5f,
@@ -256,13 +256,13 @@ int main(int argc, char** argv){
         -0.5f, -0.5f,  0.5f,
         -0.5f,  0.5f,  0.5f,
 
-         0.5f,  0.5f,  0.5f,
+         0.5f, -0.5f, -0.5f,
          0.5f,  0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f,  0.5f,
          0.5f,  0.5f,  0.5f,
-
+         0.5f,  0.5f,  0.5f,
+         0.5f, -0.5f,  0.5f,
+         0.5f, -0.5f, -0.5f,
+         
         -0.5f, -0.5f, -0.5f,
          0.5f, -0.5f, -0.5f,
          0.5f, -0.5f,  0.5f,
@@ -270,12 +270,12 @@ int main(int argc, char** argv){
         -0.5f, -0.5f,  0.5f,
         -0.5f, -0.5f, -0.5f,
 
-        -0.5f,  0.5f, -0.5f,
+         0.5f,  0.5f,  0.5f,
          0.5f,  0.5f, -0.5f,
-         0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
         -0.5f,  0.5f, -0.5f,
+        -0.5f,  0.5f, -0.5f,
+        -0.5f,  0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f
     };
     unsigned int inds[] = { //for how to form a square face from 2 triangles
         0, 1, 2, // first triangle
