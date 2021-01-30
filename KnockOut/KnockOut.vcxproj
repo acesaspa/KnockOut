@@ -19,15 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\include\physx\snippetvehicle4w\SnippetVehicle4W.cpp" />
-    <ClCompile Include="..\include\physx\snippetvehicle4w\SnippetVehicle4WRender.cpp" />
-    <ClCompile Include="..\include\physx\snippetvehiclecommon\SnippetVehicle4WCreate.cpp" />
-    <ClCompile Include="..\include\physx\snippetvehiclecommon\SnippetVehicleCreate.cpp" />
-    <ClCompile Include="..\include\physx\snippetvehiclecommon\SnippetVehicleFilterShader.cpp" />
-    <ClCompile Include="..\include\physx\snippetvehiclecommon\SnippetVehicleNoDriveCreate.cpp" />
-    <ClCompile Include="..\include\physx\snippetvehiclecommon\SnippetVehicleSceneQuery.cpp" />
-    <ClCompile Include="..\include\physx\snippetvehiclecommon\SnippetVehicleTankCreate.cpp" />
-    <ClCompile Include="..\include\physx\snippetvehiclecommon\SnippetVehicleTireFriction.cpp" />
     <ClCompile Include="Dependencies\imgui\imgui.cpp" />
     <ClCompile Include="Dependencies\imgui\imgui_demo.cpp" />
     <ClCompile Include="Dependencies\imgui\imgui_draw.cpp" />
@@ -36,14 +27,9 @@
     <ClCompile Include="Dependencies\imgui\imgui_tables.cpp" />
     <ClCompile Include="Dependencies\imgui\imgui_widgets.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Shader.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\physx\snippetvehiclecommon\SnippetVehicleConcurrency.h" />
-    <ClInclude Include="..\include\physx\snippetvehiclecommon\SnippetVehicleCreate.h" />
-    <ClInclude Include="..\include\physx\snippetvehiclecommon\SnippetVehicleFilterShader.h" />
-    <ClInclude Include="..\include\physx\snippetvehiclecommon\SnippetVehicleSceneQuery.h" />
-    <ClInclude Include="..\include\physx\snippetvehiclecommon\SnippetVehicleTireFriction.h" />
-    <ClInclude Include="..\include\physx\snippetvehiclecommon\SnippetVehicleWheelQueryResult.h" />
     <ClInclude Include="Dependencies\imgui\imconfig.h" />
     <ClInclude Include="Dependencies\imgui\imgui.h" />
     <ClInclude Include="Dependencies\imgui\imgui_impl_glfw.h" />

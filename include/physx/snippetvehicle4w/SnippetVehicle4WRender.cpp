@@ -182,8 +182,10 @@ void exitCallback(void)
 
 void renderLoop()
 {
+	
 	sCamera = new Snippets::Camera(PxVec3(10.0f, 10.0f, 10.0f), PxVec3(-0.6f,-0.2f,-0.7f));
 
+	
 	Snippets::setupDefaultWindow("KnockOut");
 	Snippets::setupDefaultRenderState();
 
@@ -198,6 +200,7 @@ void renderLoop()
 
 	initPhysics();
 	glutMainLoop();
+	
 }
 
 //#endif

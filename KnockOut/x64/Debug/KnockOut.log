@@ -1,2 +1,11 @@
 ﻿  main.cpp
-  KnockOut.vcxproj -> C:\Users\Eddy\Documents\GitHub\KnockOut\x64\Debug\KnockOut.exe
+D:\585\KnockOut\KnockOut\Shader.cpp(57,40): warning C4101: 'e': unreferenced local variable
+D:\585\KnockOut\KnockOut\main.cpp(363,28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\585\KnockOut\KnockOut\main.cpp(434,23): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\585\KnockOut\KnockOut\main.cpp(443,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\585\KnockOut\KnockOut\main.cpp(444,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\585\KnockOut\KnockOut\main.cpp(448,19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\585\KnockOut\KnockOut\main.cpp(449,19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\585\KnockOut\KnockOut\main.cpp(450,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\585\KnockOut\KnockOut\main.cpp(451,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+  KnockOut.vcxproj -> D:\585\KnockOut\x64\Debug\KnockOut.exe
