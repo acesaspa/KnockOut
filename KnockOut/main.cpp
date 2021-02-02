@@ -68,7 +68,7 @@ float yaw = -90.0f;
 float pitch = 0.0f;
 float lastX = 400, lastY = 300;
 bool firstMouse = true;
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 30.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 glm::vec3 direction;
@@ -461,13 +461,14 @@ void stepPhysics()
 	PxRaycastQueryResult* raycastResults = gVehicleSceneQueryData->getRaycastQueryResultBuffer(0);
 	const PxU32 raycastResultsSize = gVehicleSceneQueryData->getQueryResultBufferSize();
 	PxVehicleSuspensionRaycasts(gBatchQuery, 1, vehicles, raycastResultsSize, raycastResults);
+	
+	
 
 	//Vehicle update.
 	const PxVec3 grav = gScene->getGravity();
 	PxWheelQueryResult wheelQueryResults[PX_MAX_NB_WHEELS];
 	PxVehicleWheelQueryResult vehicleQueryResults[1] = { {wheelQueryResults, gVehicle4W->mWheelsSimData.getNbWheels()} };
 	PxVehicleUpdates(timestep, grav, *gFrictionPairs, 1, vehicles, vehicleQueryResults);
-
 	//Work out if the vehicle is in the air.
 	gIsVehicleInAir = gVehicle4W->getRigidDynamicActor()->isSleeping() ? false : PxVehicleIsInAir(vehicleQueryResults[0]);
 
@@ -543,7 +544,7 @@ int main(int argc, char** argv){
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     //old stuff
-    /*
+    
     //MARK: SCENE RENDER PREP
     glEnable(GL_DEPTH_TEST); //to make sure the fragment shader takes into account that some geometry has to be drawn in front of another
     float vertices[] = { //vertices of our cube
@@ -595,6 +596,7 @@ int main(int argc, char** argv){
         3, 4, 5  // second triangle
     };
     glm::vec3 cubePosition = glm::vec3(0.0f, 0.0f, 0.0f);
+	
     unsigned int VBO, VAO, EBO;
     glGenVertexArrays(1, &VAO); //Vertex Array Object holds the VBO and the EBO (i.e. all the data and extra info GPU will need)
                                 //also holds the attribute configuration (Eg. telling the GPU we care about position & textures)
@@ -615,6 +617,7 @@ int main(int argc, char** argv){
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float))); //texture coord attribute
     glEnableVertexAttribArray(1);
 
+	/*
     //MARK: INIT PHYSX OBJECTS
     gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f); //create some material
     PxRigidStatic* groundPlane = PxCreatePlane(*gPhysics, PxPlane(0, 1, 0, 0), *gMaterial); //create a physics plane
@@ -702,7 +705,7 @@ int main(int argc, char** argv){
     gScene->addActor(*boxBody); //and add it to the scene
     triMesh->release(); //clean up
 
-
+	*/
 
     //MARK: TEXTURE PREP
     unsigned int texture1, texture2;
@@ -741,7 +744,7 @@ int main(int argc, char** argv){
     ourShader.setInt("texture1", 0);
     ourShader.setInt("texture2", 1);
 
-    */
+    
 
     
     initPhysics();
@@ -751,7 +754,7 @@ int main(int argc, char** argv){
     ourShader.setMat4("projection", projection); //pass the projection matrix to the fragment shader
 
 
-
+	
 
     //MARK: RENDER LOOP ---------------------------------------------------------------------------------------------------------------
     while (!glfwWindowShouldClose(window)){
@@ -766,17 +769,21 @@ int main(int argc, char** argv){
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
+		PxVehicleWheels* vehicles[1] = { gVehicle4W };
+		PxTransform pos = vehicles[0]->getRigidDynamicActor()->getGlobalPose();
+		//std::cout << pos.p[0] << " " << pos.p[1] << " " << pos.p[2] << "\n";
+		glm::vec3 cubePos = glm::vec3(pos.p[0], pos.p[1], pos.p[2]);
 
         //MARK: Render Scene
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f); //background color
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        /*
+        
         glActiveTexture(GL_TEXTURE0); //bind textures on corresponding texture units
         glBindTexture(GL_TEXTURE_2D, texture1);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
-        */
+        
 
         ourShader.use(); //activate our shader program (containing our vertex_shader.vs & fragment_shader.fs)
 
@@ -784,14 +791,16 @@ int main(int argc, char** argv){
         view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp); //apply a special built in matrix specifically made for camera views call the "Look At" matrix
         ourShader.setMat4("view", view); //set the camera view matrix in our fragment shader
 
-        /*
+		
+
+        
         glBindVertexArray(VAO); //tell OpenGL to render whatever we have in our Vertex Array Object
         glm::mat4 model = glm::mat4(1.0f); //identity matrix
-        model = glm::translate(model, cubePosition); //model matrix converts the local coordinates (cubePosition) to the global world coordinates
+        model = glm::translate(model, cubePos); //model matrix converts the local coordinates (cubePosition) to the global world coordinates
         model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.3f, 0.5f)); //rotate
         ourShader.setMat4("model", model); //set the model matrix (which when applied converts the local position to global world coordinates...)
         glDrawArrays(GL_TRIANGLES, 0, 36); //draw the triangle data, starting at 0 with 36 vertex data points
-        */
+        
 
         //MARK: Render ImgUI
         {
