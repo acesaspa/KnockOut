@@ -58,6 +58,7 @@ PxVehicleDrivableSurfaceToTireFrictionPairs* gFrictionPairs = NULL;
 
 PxRigidStatic* gGroundPlane = NULL;
 PxVehicleDrive4W* gVehicle4W = NULL;
+PxRigidDynamic* gBox = NULL;
 
 bool					gIsVehicleInAir = true;
 
@@ -69,7 +70,7 @@ float pitch = 0.0f;
 float lastX = 400, lastY = 300;
 bool firstMouse = true;
 unsigned int CUBE_VBO, GROUND_VBO, CUBE_VAO, GROUND_VAO, CUBE_EBO, GROUND_EBO;
-unsigned int cube_texture1, cube_texture2, ground_texture;
+unsigned int vehicle_texture, cube_texture2, ground_texture;
 glm::vec3 cameraPos = glm::vec3(0.0f, 5.0f, 30.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -370,6 +371,21 @@ void initPhysics()
 	gVehicle4W->getRigidDynamicActor()->setGlobalPose(startTransform);
 	gScene->addActor(*gVehicle4W->getRigidDynamicActor());
 
+
+
+	//Create a box for the vehicle to collide with
+	//TODO: make it not fall through the plane---------------------------------------------------------------------------------------
+	PxShape* shape = gPhysics->createShape(PxBoxGeometry(0.5f, 0.5f, 0.5f), *gMaterial);
+	PxTransform localTm(PxVec3(0, 20.0f, 20.0f));
+	gBox = gPhysics->createRigidDynamic(localTm);
+	gBox->attachShape(*shape);
+	//PxRigidBodyExt::updateMassAndInertia(*body, 10.0f);
+	gScene->addActor(*gBox);
+	//TODO: make it not fall through the plane---------------------------------------------------------------------------------------
+
+	
+	
+	
 	//Set the vehicle to rest in first gear.
 	//Set the vehicle to use auto-gears.
 	gVehicle4W->setToRestState();
@@ -587,8 +603,8 @@ void prepCubeRendering(Shader* ourShader) {
 	glEnableVertexAttribArray(1);
 
 	//TEXTURES
-	glGenTextures(1, &cube_texture1); //TEXTURE 1
-	glBindTexture(GL_TEXTURE_2D, cube_texture1);
+	glGenTextures(1, &vehicle_texture); //TEXTURE 1
+	glBindTexture(GL_TEXTURE_2D, vehicle_texture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); //set the texture wrapping parameters (= how to behave when the texture not big enough to cover the whole area)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); //set texture filtering parameters (= how to decide which texel (texture pixel) to show on the current
@@ -603,21 +619,6 @@ void prepCubeRendering(Shader* ourShader) {
 	}
 	else std::cout << "Failed to load texture" << std::endl;
 	stbi_image_free(data); //free image mem
-
-	glGenTextures(1, &cube_texture2); //TEXTURE 2
-	glBindTexture(GL_TEXTURE_2D, cube_texture2);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	data = stbi_load("face_texture.png", &width, &height, &nrChannels, 0);
-	if (data) {
-		//note that the face_texture.png has transparency and thus an alpha channel, so make sure to tell OpenGL the data type is of GL_RGBA
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else std::cout << "Failed to load texture" << std::endl;
-	stbi_image_free(data);
 }
 
 
@@ -663,23 +664,23 @@ void prepGroundRendering(Shader* ourShader) {
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float))); //texture coord attribute
 	glEnableVertexAttribArray(1);
 
-	////TEXTURE
-	//glGenTextures(1, &ground_texture);
-	//glBindTexture(GL_TEXTURE_2D, ground_texture);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); //set the texture wrapping parameters (= how to behave when the texture not big enough to cover the whole area)
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); //set texture filtering parameters (= how to decide which texel (texture pixel) to show on the current
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); //screen pixel, i.e. do we just take what's directly underneath?, or add up the neighboring colors?, etc.)
-	//int width, height, nrChannels; //load image, create texture and generate mipmaps
-	//stbi_set_flip_vertically_on_load(true); //tell stb_image.h to flip loaded texture's on the y-axis
-	//unsigned char* data = stbi_load("asphalt.jpg", &width, &height, &nrChannels, 0);
-	//if (data)
-	//{
-	//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-	//	glGenerateMipmap(GL_TEXTURE_2D);
-	//}
-	//else std::cout << "Failed to load texture" << std::endl;
-	//stbi_image_free(data); //free image mem
+	//TEXTURE
+	glGenTextures(1, &ground_texture);
+	glBindTexture(GL_TEXTURE_2D, ground_texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); //set the texture wrapping parameters (= how to behave when the texture not big enough to cover the whole area)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); //set texture filtering parameters (= how to decide which texel (texture pixel) to show on the current
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); //screen pixel, i.e. do we just take what's directly underneath?, or add up the neighboring colors?, etc.)
+	int width, height, nrChannels; //load image, create texture and generate mipmaps
+	stbi_set_flip_vertically_on_load(true); //tell stb_image.h to flip loaded texture's on the y-axis
+	unsigned char* data = stbi_load("asphalt.jpg", &width, &height, &nrChannels, 0);
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else std::cout << "Failed to load texture" << std::endl;
+	stbi_image_free(data); //free image mem
 }
 
 
@@ -763,6 +764,13 @@ int main(int argc, char** argv){
 
 		PxTransform pxGroundPos = gGroundPlane->getGlobalPose();
 		glm::vec3 groundPos = glm::vec3(pxGroundPos.p[0], pxGroundPos.p[1], pxGroundPos.p[2]);
+		
+		PxTransform pxBoxPos = gBox->getGlobalPose();
+		glm::vec3 boxPos = glm::vec3(pxBoxPos.p[0], pxBoxPos.p[1], pxBoxPos.p[2]);
+
+		glm::mat4 view = glm::mat4(1.0f); //transformations - first initialize the identity matrix
+		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp); //apply a special built in matrix specifically made for camera views call the "Look At" matrix
+		ourShader.setMat4("view", view); //set the camera view matrix in our fragment shader
 
 
         //MARK: Render Scene
@@ -770,35 +778,37 @@ int main(int argc, char** argv){
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         
+		//VEHICLE
         glActiveTexture(GL_TEXTURE0); //bind textures on corresponding texture units
-        glBindTexture(GL_TEXTURE_2D, cube_texture1);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, cube_texture2);
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, ground_texture);
-        
-
-        ourShader.use(); //activate our shader program (containing our vertex_shader.vs & fragment_shader.fs)
-
-        glm::mat4 view = glm::mat4(1.0f); //transformations - first initialize the identity matrix
-        view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp); //apply a special built in matrix specifically made for camera views call the "Look At" matrix
-        ourShader.setMat4("view", view); //set the camera view matrix in our fragment shader
-
-        
+        glBindTexture(GL_TEXTURE_2D, vehicle_texture);        
         glBindVertexArray(CUBE_VAO); //tell OpenGL to render whatever we have in our Vertex Array Object
         glm::mat4 model = glm::mat4(1.0f); //identity matrix
         model = glm::translate(model, cubePos); //model matrix converts the local coordinates (cubePosition) to the global world coordinates
-        model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.3f, 0.5f)); //rotate
+        //model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.3f, 0.5f)); //rotate
 		model = glm::scale(model, glm::vec3(pxBounds.getDimensions().x, pxBounds.getDimensions().y, pxBounds.getDimensions().z));
         ourShader.setMat4("model", model); //set the model matrix (which when applied converts the local position to global world coordinates...)
         glDrawArrays(GL_TRIANGLES, 0, 36); //draw the triangle data, starting at 0 with 36 vertex data points
 
+
+		//GROUND
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, ground_texture);
 		glBindVertexArray(GROUND_VAO);
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, groundPos);
 		//model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.3f, 0.5f));
 		ourShader.setMat4("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+
+		//BOX
+		glActiveTexture(GL_TEXTURE0); //bind textures on corresponding texture units
+		glBindTexture(GL_TEXTURE_2D, vehicle_texture);
+		glBindVertexArray(CUBE_VAO); //tell OpenGL to render whatever we have in our Vertex Array Object
+		model = glm::mat4(1.0f); //identity matrix
+		model = glm::translate(model, boxPos); //model matrix converts the local coordinates (cubePosition) to the global world coordinates
+		ourShader.setMat4("model", model); //set the model matrix (which when applied converts the local position to global world coordinates...)
+		glDrawArrays(GL_TRIANGLES, 0, 36); //draw the triangle data, starting at 0 with 36 vertex data points
         
 
         //MARK: Render ImgUI
@@ -836,7 +846,7 @@ int main(int argc, char** argv){
 void processInput(GLFWwindow* window){
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) glfwSetWindowShouldClose(window, true);
 
-    float cameraSpeed = 2.5 * deltaTime;
+    float cameraSpeed = 10 * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) cameraPos += cameraSpeed * cameraFront;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) cameraPos -= cameraSpeed * cameraFront;
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
