@@ -1,4 +1,3 @@
-
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "..\KnockOut\Dependencies\imgui\imgui.h"
@@ -31,6 +30,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #include "Shader.cpp"
+
+#include <AL/al.h>
 
 using namespace physx;
 using namespace snippetvehicle;
