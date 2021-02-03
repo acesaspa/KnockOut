@@ -68,7 +68,9 @@ float yaw = -90.0f;
 float pitch = 0.0f;
 float lastX = 400, lastY = 300;
 bool firstMouse = true;
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 30.0f);
+unsigned int CUBE_VBO, GROUND_VBO, CUBE_VAO, GROUND_VAO, CUBE_EBO, GROUND_EBO;
+unsigned int cube_texture1, cube_texture2, ground_texture;
+glm::vec3 cameraPos = glm::vec3(0.0f, 5.0f, 30.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 glm::vec3 direction;
@@ -510,6 +512,184 @@ void keyPress(unsigned char key, const PxTransform& camera)
 }
 
 
+
+
+
+
+void prepCubeRendering(Shader* ourShader) {
+	glEnable(GL_DEPTH_TEST); //to make sure the fragment shader takes into account that some geometry has to be drawn in front of another
+	float vertices[] = { //vertices of our cube
+	   //positions          //texture coords
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+	};
+	unsigned int indices[] = { //for how to form a square face from 2 triangles
+		0, 1, 2, // first triangle
+		3, 4, 5  // second triangle
+	};
+
+	glGenVertexArrays(1, &CUBE_VAO); //Vertex Array Object holds the VBO and the EBO (i.e. all the data and extra info GPU will need)
+								//also holds the attribute configuration (Eg. telling the GPU we care about position & textures)
+	glGenBuffers(1, &CUBE_VBO); //Vertex Buffer Object contains the vertex data we send to the GPU/vertex shader (vertex_shader.vs)
+	glGenBuffers(1, &CUBE_EBO); //Element Buffer Object tells the GPU how we want to draw our stuff, Eg. for a cube 1 vertex
+						   //is listed 4 times in the vertex array, EBO (using the index array) will tell the GPU
+						   //to draw each vertex only once
+
+	glBindVertexArray(CUBE_VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, CUBE_VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, CUBE_EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0); //position attribute
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float))); //texture coord attribute
+	glEnableVertexAttribArray(1);
+
+	//TEXTURES
+	glGenTextures(1, &cube_texture1); //TEXTURE 1
+	glBindTexture(GL_TEXTURE_2D, cube_texture1);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); //set the texture wrapping parameters (= how to behave when the texture not big enough to cover the whole area)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); //set texture filtering parameters (= how to decide which texel (texture pixel) to show on the current
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); //screen pixel, i.e. do we just take what's directly underneath?, or add up the neighboring colors?, etc.)
+	int width, height, nrChannels; //load image, create texture and generate mipmaps
+	stbi_set_flip_vertically_on_load(true); //tell stb_image.h to flip loaded texture's on the y-axis
+	unsigned char* data = stbi_load("container_texture.jpg", &width, &height, &nrChannels, 0);
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else std::cout << "Failed to load texture" << std::endl;
+	stbi_image_free(data); //free image mem
+
+	glGenTextures(1, &cube_texture2); //TEXTURE 2
+	glBindTexture(GL_TEXTURE_2D, cube_texture2);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	data = stbi_load("face_texture.png", &width, &height, &nrChannels, 0);
+	if (data) {
+		//note that the face_texture.png has transparency and thus an alpha channel, so make sure to tell OpenGL the data type is of GL_RGBA
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else std::cout << "Failed to load texture" << std::endl;
+	stbi_image_free(data);
+}
+
+
+
+
+
+
+
+
+void prepGroundRendering(Shader* ourShader) {
+	glEnable(GL_DEPTH_TEST); //to make sure the fragment shader takes into account that some geometry has to be drawn in front of another
+	float vertices[] = { //vertices of our plane
+	   //positions          //texture coords
+		-300.0f,  0.0f,  300.0f,  0.0f, 0.0f,
+		 300.0f,  0.0f,  300.0f,  1.0f, 0.0f,
+		 300.0f,  0.0f, -300.0f,  1.0f, 1.0f,
+
+		-300.0f,  0.0f, -300.0f,  0.0f, 1.0f,
+		-300.0f,  0.0f,  300.0f,  0.0f, 0.0f,
+		 300.0f,  0.0f, -300.0f,  1.0f, 1.0f,
+	};
+	unsigned int indices[] = { //for how to form a square face from 2 triangles
+		0, 1, 2, // first triangle
+		3, 4, 5  // second triangle
+	};
+
+	glGenVertexArrays(1, &GROUND_VAO); //Vertex Array Object holds the VBO and the EBO (i.e. all the data and extra info GPU will need)
+								//also holds the attribute configuration (Eg. telling the GPU we care about position & textures)
+	glGenBuffers(1, &GROUND_VBO); //Vertex Buffer Object contains the vertex data we send to the GPU/vertex shader (vertex_shader.vs)
+	glGenBuffers(1, &GROUND_EBO); //Element Buffer Object tells the GPU how we want to draw our stuff, Eg. for a cube 1 vertex
+						   //is listed 4 times in the vertex array, EBO (using the index array) will tell the GPU
+						   //to draw each vertex only once
+
+	glBindVertexArray(GROUND_VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, GROUND_VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GROUND_EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0); //position attribute
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float))); //texture coord attribute
+	glEnableVertexAttribArray(1);
+
+	////TEXTURE
+	//glGenTextures(1, &ground_texture);
+	//glBindTexture(GL_TEXTURE_2D, ground_texture);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); //set the texture wrapping parameters (= how to behave when the texture not big enough to cover the whole area)
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); //set texture filtering parameters (= how to decide which texel (texture pixel) to show on the current
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); //screen pixel, i.e. do we just take what's directly underneath?, or add up the neighboring colors?, etc.)
+	//int width, height, nrChannels; //load image, create texture and generate mipmaps
+	//stbi_set_flip_vertically_on_load(true); //tell stb_image.h to flip loaded texture's on the y-axis
+	//unsigned char* data = stbi_load("asphalt.jpg", &width, &height, &nrChannels, 0);
+	//if (data)
+	//{
+	//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	//	glGenerateMipmap(GL_TEXTURE_2D);
+	//}
+	//else std::cout << "Failed to load texture" << std::endl;
+	//stbi_image_free(data); //free image mem
+}
+
+
+
+
+
+
+
+
+
 //MARK: Main
 int main(int argc, char** argv){
 
@@ -527,8 +707,7 @@ int main(int argc, char** argv){
     std::cout << glGetString(GL_VERSION) << std::endl;
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetCursorPosCallback(window, mouse_callback);
-    Shader ourShader("vertex_shader.vs", "fragment_shader.fs");
-
+	Shader ourShader("vertex_shader.vs", "fragment_shader.fs");
 
 
     //MARK: INIT IMGUI
@@ -543,208 +722,15 @@ int main(int argc, char** argv){
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-    //old stuff
+
     
     //MARK: SCENE RENDER PREP
-    glEnable(GL_DEPTH_TEST); //to make sure the fragment shader takes into account that some geometry has to be drawn in front of another
-    float vertices[] = { //vertices of our cube
-       //positions          //texture coords
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+	prepCubeRendering(&ourShader);
+	prepGroundRendering(&ourShader);
+	ourShader.use(); //tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
+	ourShader.setInt("texture1", 0);
+	ourShader.setInt("texture2", 1);
 
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-    };
-    unsigned int indices[] = { //for how to form a square face from 2 triangles
-        0, 1, 2, // first triangle
-        3, 4, 5  // second triangle
-    };
-    glm::vec3 cubePosition = glm::vec3(0.0f, 0.0f, 0.0f);
-	
-    unsigned int VBO, VAO, EBO;
-    glGenVertexArrays(1, &VAO); //Vertex Array Object holds the VBO and the EBO (i.e. all the data and extra info GPU will need)
-                                //also holds the attribute configuration (Eg. telling the GPU we care about position & textures)
-    glGenBuffers(1, &VBO); //Vertex Buffer Object contains the vertex data we send to the GPU/vertex shader (vertex_shader.vs)
-    glGenBuffers(1, &EBO); //Element Buffer Object tells the GPU how we want to draw our stuff, Eg. for a cube 1 vertex
-                           //is listed 4 times in the vertex array, EBO (using the index array) will tell the GPU
-                           //to draw each vertex only once
-
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0); //position attribute
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float))); //texture coord attribute
-    glEnableVertexAttribArray(1);
-
-	/*
-    //MARK: INIT PHYSX OBJECTS
-    gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f); //create some material
-    PxRigidStatic* groundPlane = PxCreatePlane(*gPhysics, PxPlane(0, 1, 0, 0), *gMaterial); //create a physics plane
-    gScene->addActor(*groundPlane); //add it to our physics scene
-
-    PxTriangleMeshDesc meshDesc; //mesh cooking from a triangle mesh
-    float verts[] = { 
-         0.5f,  0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
-        -0.5f,  0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
-
-        -0.5f, -0.5f,  0.5f,
-         0.5f, -0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
-        -0.5f, -0.5f,  0.5f,
-
-        -0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
-        -0.5f, -0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
-
-         0.5f, -0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
-         0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-         0.5f, -0.5f,  0.5f,
-         0.5f, -0.5f, -0.5f,
-         
-        -0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f,  0.5f,
-         0.5f, -0.5f,  0.5f,
-        -0.5f, -0.5f,  0.5f,
-        -0.5f, -0.5f, -0.5f,
-
-         0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f, -0.5f,
-        -0.5f,  0.5f, -0.5f,
-        -0.5f,  0.5f, -0.5f,
-        -0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f
-    };
-    unsigned int inds[] = { //for how to form a square face from 2 triangles
-        0, 1, 2, // first triangle
-        3, 4, 5,
-        6, 7, 8,
-        9, 10, 11,
-        12, 13, 14,
-        15, 16, 17,
-        18, 19, 20,
-        21, 22, 23,
-        24, 25, 26,
-        27, 28, 29,
-        30, 31, 32,
-        33, 34, 35
-    };
-    //std::cout << sizeof(verts) << "\n";
-    //std::cout << sizeof(PxVec3) << "\n";
-
-    meshDesc.points.count = 108; 
-    meshDesc.points.stride = sizeof(PxVec3);
-    meshDesc.points.data = verts;
-
-    meshDesc.triangles.count = 108/9;
-    meshDesc.triangles.stride = 3 * sizeof(PxU32);
-    meshDesc.triangles.data = inds;
-
-    //PxCookingParams params = gCooking->getParams();
-    ////TODO: potentially do this
-    //gCooking->setParams(params);
-
-    PxTriangleMesh* triMesh = NULL;
-    PxU32 meshSize = 0;
-    triMesh = gCooking->createTriangleMesh(meshDesc, gPhysics->getPhysicsInsertionCallback()); //insert the cooked mesh directly into PxPhysics
-    PxRigidStatic* boxBody = gPhysics->createRigidStatic(PxTransform(PxVec3(0, 0, 0))); //create a rigid body for the cooked mesh
-    PxShape* boxShape = gPhysics->createShape(PxTriangleMeshGeometry(triMesh), *gMaterial); //create a shape from the cooked mesh
-    boxBody->attachShape(*boxShape); //attach the shape to the body
-    gScene->addActor(*boxBody); //and add it to the scene
-    triMesh->release(); //clean up
-
-	*/
-
-    //MARK: TEXTURE PREP
-    unsigned int texture1, texture2;
-    glGenTextures(1, &texture1); //TEXTURE 1
-    glBindTexture(GL_TEXTURE_2D, texture1);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); //set the texture wrapping parameters (= how to behave when the texture not big enough to cover the whole area)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); //set texture filtering parameters (= how to decide which texel (texture pixel) to show on the current
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); //screen pixel, i.e. do we just take what's directly underneath?, or add up the neighboring colors?, etc.)
-    int width, height, nrChannels; //load image, create texture and generate mipmaps
-    stbi_set_flip_vertically_on_load(true); //tell stb_image.h to flip loaded texture's on the y-axis
-    unsigned char* data = stbi_load("container_texture.jpg", &width, &height, &nrChannels, 0);
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }else std::cout << "Failed to load texture" << std::endl;
-    stbi_image_free(data); //free image mem
-
-    glGenTextures(1, &texture2); //TEXTURE 2
-    glBindTexture(GL_TEXTURE_2D, texture2);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    data = stbi_load("face_texture.png", &width, &height, &nrChannels, 0);
-    if (data){
-        //note that the face_texture.png has transparency and thus an alpha channel, so make sure to tell OpenGL the data type is of GL_RGBA
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else std::cout << "Failed to load texture" << std::endl;
-    stbi_image_free(data);
-
-    ourShader.use(); //tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
-    ourShader.setInt("texture1", 0);
-    ourShader.setInt("texture2", 1);
-
-    
 
     
     initPhysics();
@@ -770,9 +756,14 @@ int main(int argc, char** argv){
         ImGui::NewFrame();
 
 		PxVehicleWheels* vehicles[1] = { gVehicle4W };
+		PxBounds3 pxBounds = vehicles[0]->getRigidDynamicActor()->getWorldBounds();
 		PxTransform pos = vehicles[0]->getRigidDynamicActor()->getGlobalPose();
 		//std::cout << pos.p[0] << " " << pos.p[1] << " " << pos.p[2] << "\n";
 		glm::vec3 cubePos = glm::vec3(pos.p[0], pos.p[1], pos.p[2]);
+
+		PxTransform pxGroundPos = gGroundPlane->getGlobalPose();
+		glm::vec3 groundPos = glm::vec3(pxGroundPos.p[0], pxGroundPos.p[1], pxGroundPos.p[2]);
+
 
         //MARK: Render Scene
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f); //background color
@@ -780,9 +771,11 @@ int main(int argc, char** argv){
 
         
         glActiveTexture(GL_TEXTURE0); //bind textures on corresponding texture units
-        glBindTexture(GL_TEXTURE_2D, texture1);
+        glBindTexture(GL_TEXTURE_2D, cube_texture1);
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, texture2);
+        glBindTexture(GL_TEXTURE_2D, cube_texture2);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, ground_texture);
         
 
         ourShader.use(); //activate our shader program (containing our vertex_shader.vs & fragment_shader.fs)
@@ -791,15 +784,21 @@ int main(int argc, char** argv){
         view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp); //apply a special built in matrix specifically made for camera views call the "Look At" matrix
         ourShader.setMat4("view", view); //set the camera view matrix in our fragment shader
 
-		
-
         
-        glBindVertexArray(VAO); //tell OpenGL to render whatever we have in our Vertex Array Object
+        glBindVertexArray(CUBE_VAO); //tell OpenGL to render whatever we have in our Vertex Array Object
         glm::mat4 model = glm::mat4(1.0f); //identity matrix
         model = glm::translate(model, cubePos); //model matrix converts the local coordinates (cubePosition) to the global world coordinates
         model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.3f, 0.5f)); //rotate
+		model = glm::scale(model, glm::vec3(pxBounds.getDimensions().x, pxBounds.getDimensions().y, pxBounds.getDimensions().z));
         ourShader.setMat4("model", model); //set the model matrix (which when applied converts the local position to global world coordinates...)
         glDrawArrays(GL_TRIANGLES, 0, 36); //draw the triangle data, starting at 0 with 36 vertex data points
+
+		glBindVertexArray(GROUND_VAO);
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, groundPos);
+		//model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.3f, 0.5f));
+		ourShader.setMat4("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
         
 
         //MARK: Render ImgUI

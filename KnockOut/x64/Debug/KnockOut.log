@@ -1,14 +1,11 @@
 ﻿  main.cpp
-C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\Shader.cpp(57,40): warning C4101: 'e': unreferenced local variable
-C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(763,28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(840,23): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(849,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(850,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(854,19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(855,19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(856,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(857,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-LINK : warning LNK4098: defaultlib 'LIBCMT' conflicts with use of other libs; use /NODEFAULTLIB:library
-LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
-glew32s.lib(glew.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'glew32s.lib(glew.obj)' or at 'C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\x64\Debug\vc120.pdb'; linking object as if no debug info
-  KnockOut.vcxproj -> C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\x64\Debug\KnockOut.exe
+D:\585\KnockOut\KnockOut\Shader.cpp(57,40): warning C4101: 'e': unreferenced local variable
+D:\585\KnockOut\KnockOut\main.cpp(749,28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\585\KnockOut\KnockOut\main.cpp(839,23): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\585\KnockOut\KnockOut\main.cpp(848,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\585\KnockOut\KnockOut\main.cpp(849,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\585\KnockOut\KnockOut\main.cpp(853,19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\585\KnockOut\KnockOut\main.cpp(854,19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\585\KnockOut\KnockOut\main.cpp(855,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\585\KnockOut\KnockOut\main.cpp(856,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+  KnockOut.vcxproj -> D:\585\KnockOut\x64\Debug\KnockOut.exe
