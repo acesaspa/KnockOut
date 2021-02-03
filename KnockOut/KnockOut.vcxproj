@@ -28,6 +28,13 @@
     <ClCompile Include="Dependencies\imgui\imgui_widgets.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="SnippetVehicle4WCreate.cpp" />
+    <ClCompile Include="SnippetVehicleCreate.cpp" />
+    <ClCompile Include="SnippetVehicleFilterShader.cpp" />
+    <ClCompile Include="SnippetVehicleNoDriveCreate.cpp" />
+    <ClCompile Include="SnippetVehicleSceneQuery.cpp" />
+    <ClCompile Include="SnippetVehicleTankCreate.cpp" />
+    <ClCompile Include="SnippetVehicleTireFriction.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Dependencies\imgui\imconfig.h" />
@@ -38,6 +45,12 @@
     <ClInclude Include="Dependencies\imgui\imstb_rectpack.h" />
     <ClInclude Include="Dependencies\imgui\imstb_textedit.h" />
     <ClInclude Include="Dependencies\imgui\imstb_truetype.h" />
+    <ClInclude Include="SnippetVehicleConcurrency.h" />
+    <ClInclude Include="SnippetVehicleCreate.h" />
+    <ClInclude Include="SnippetVehicleFilterShader.h" />
+    <ClInclude Include="SnippetVehicleSceneQuery.h" />
+    <ClInclude Include="SnippetVehicleTireFriction.h" />
+    <ClInclude Include="SnippetVehicleWheelQueryResult.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
