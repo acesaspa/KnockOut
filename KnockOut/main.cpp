@@ -70,7 +70,7 @@ float yaw = -90.0f;
 float pitch = 0.0f;
 float lastX = 400, lastY = 300;
 bool firstMouse = true;
-unsigned int CUBE_VBO, GROUND_VBO, CUBE_VAO, GROUND_VAO, CUBE_EBO, GROUND_EBO;
+unsigned int CUBE_VBO, GROUND_VBO, CUBE_VAO, GROUND_VAO;
 unsigned int vehicle_texture, cube_texture2, ground_texture;
 glm::vec3 cameraPos = glm::vec3(0.0f, 5.0f, 30.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
@@ -333,7 +333,7 @@ void initPhysics()
 	PxU32 numWorkers = 1;
 	gDispatcher = PxDefaultCpuDispatcherCreate(numWorkers);
 	sceneDesc.cpuDispatcher = gDispatcher;
-	sceneDesc.filterShader = VehicleFilterShader;
+	sceneDesc.filterShader = PxDefaultSimulationFilterShader; //VehicleFilterShader for the driving to work
 
 	gScene = gPhysics->createScene(sceneDesc);
 	PxPvdSceneClient* pvdClient = gScene->getScenePvdClient();
@@ -379,9 +379,12 @@ void initPhysics()
 	PxShape* shape = gPhysics->createShape(PxBoxGeometry(0.5f, 0.5f, 0.5f), *gMaterial);
 	PxTransform localTm(PxVec3(0, 20.0f, 20.0f));
 	gBox = gPhysics->createRigidDynamic(localTm);
+	//shape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, true);
+	//shape->setFlag(PxShapeFlag::eSCENE_QUERY_SHAPE, true);
 	gBox->attachShape(*shape);
-	//PxRigidBodyExt::updateMassAndInertia(*body, 10.0f);
+	PxRigidBodyExt::updateMassAndInertia(*gBox, 10.0f);
 	gScene->addActor(*gBox);
+	shape->release();
 	//TODO: make it not fall through the plane---------------------------------------------------------------------------------------
 
 	
@@ -535,73 +538,64 @@ void keyPress(unsigned char key, const PxTransform& camera)
 
 void prepCubeRendering(Shader* ourShader) {
 	glEnable(GL_DEPTH_TEST); //to make sure the fragment shader takes into account that some geometry has to be drawn in front of another
-	float vertices[] = { //vertices of our cube
-	   //positions          //texture coords
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+	float vertices[] = {
+		// positions          // normals           // texture coords
+		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
 
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
 
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+		-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+		-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
 
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
 
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
 
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-	};
-	unsigned int indices[] = { //for how to form a square face from 2 triangles
-		0, 1, 2, // first triangle
-		3, 4, 5  // second triangle
+		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
 	};
 
-	glGenVertexArrays(1, &CUBE_VAO); //Vertex Array Object holds the VBO and the EBO (i.e. all the data and extra info GPU will need)
-								//also holds the attribute configuration (Eg. telling the GPU we care about position & textures)
-	glGenBuffers(1, &CUBE_VBO); //Vertex Buffer Object contains the vertex data we send to the GPU/vertex shader (vertex_shader.vs)
-	glGenBuffers(1, &CUBE_EBO); //Element Buffer Object tells the GPU how we want to draw our stuff, Eg. for a cube 1 vertex
-						   //is listed 4 times in the vertex array, EBO (using the index array) will tell the GPU
-						   //to draw each vertex only once
-
-	glBindVertexArray(CUBE_VAO);
+	glGenVertexArrays(1, &CUBE_VAO); 
+	glGenBuffers(1, &CUBE_VBO);
+	
 	glBindBuffer(GL_ARRAY_BUFFER, CUBE_VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, CUBE_EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0); //position attribute
+	glBindVertexArray(CUBE_VAO);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float))); //texture coord attribute
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
 
 	//TEXTURES
 	glGenTextures(1, &vehicle_texture); //TEXTURE 1
@@ -632,38 +626,28 @@ void prepCubeRendering(Shader* ourShader) {
 void prepGroundRendering(Shader* ourShader) {
 	glEnable(GL_DEPTH_TEST); //to make sure the fragment shader takes into account that some geometry has to be drawn in front of another
 	float vertices[] = { //vertices of our plane
-	   //positions          //texture coords
-		-300.0f,  0.0f,  300.0f,  0.0f, 0.0f,
-		 300.0f,  0.0f,  300.0f,  1.0f, 0.0f,
-		 300.0f,  0.0f, -300.0f,  1.0f, 1.0f,
+	     //positions              //normals           //texture coords
+		-300.0f,  0.0f,  300.0f,  0.0f, 1.0f, 0.0f,   0.0f, 0.0f,
+		 300.0f,  0.0f,  300.0f,  0.0f, 1.0f, 0.0f,   1.0f, 0.0f,
+		 300.0f,  0.0f, -300.0f,  0.0f, 1.0f, 0.0f,   1.0f, 1.0f,
 
-		-300.0f,  0.0f, -300.0f,  0.0f, 1.0f,
-		-300.0f,  0.0f,  300.0f,  0.0f, 0.0f,
-		 300.0f,  0.0f, -300.0f,  1.0f, 1.0f,
+		-300.0f,  0.0f, -300.0f,  0.0f, 1.0f, 0.0f,   0.0f, 1.0f,
+		-300.0f,  0.0f,  300.0f,  0.0f, 1.0f, 0.0f,   0.0f, 0.0f,
+		 300.0f,  0.0f, -300.0f,  0.0f, 1.0f, 0.0f,   1.0f, 1.0f,
 	};
-	unsigned int indices[] = { //for how to form a square face from 2 triangles
-		0, 1, 2, // first triangle
-		3, 4, 5  // second triangle
-	};
+	glGenVertexArrays(1, &GROUND_VAO);
+	glGenBuffers(1, &GROUND_VBO);
 
-	glGenVertexArrays(1, &GROUND_VAO); //Vertex Array Object holds the VBO and the EBO (i.e. all the data and extra info GPU will need)
-								//also holds the attribute configuration (Eg. telling the GPU we care about position & textures)
-	glGenBuffers(1, &GROUND_VBO); //Vertex Buffer Object contains the vertex data we send to the GPU/vertex shader (vertex_shader.vs)
-	glGenBuffers(1, &GROUND_EBO); //Element Buffer Object tells the GPU how we want to draw our stuff, Eg. for a cube 1 vertex
-						   //is listed 4 times in the vertex array, EBO (using the index array) will tell the GPU
-						   //to draw each vertex only once
-
-	glBindVertexArray(GROUND_VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, GROUND_VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GROUND_EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0); //position attribute
+	glBindVertexArray(GROUND_VAO);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float))); //texture coord attribute
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
 
 	//TEXTURE
 	glGenTextures(1, &ground_texture);
@@ -674,7 +658,7 @@ void prepGroundRendering(Shader* ourShader) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); //screen pixel, i.e. do we just take what's directly underneath?, or add up the neighboring colors?, etc.)
 	int width, height, nrChannels; //load image, create texture and generate mipmaps
 	stbi_set_flip_vertically_on_load(true); //tell stb_image.h to flip loaded texture's on the y-axis
-	unsigned char* data = stbi_load("asphalt.jpg", &width, &height, &nrChannels, 0);
+	unsigned char* data = stbi_load("grass.jpg", &width, &height, &nrChannels, 0);
 	if (data)
 	{
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -683,6 +667,7 @@ void prepGroundRendering(Shader* ourShader) {
 	else std::cout << "Failed to load texture" << std::endl;
 	stbi_image_free(data); //free image mem
 }
+
 
 
 
@@ -730,15 +715,15 @@ int main(int argc, char** argv){
 	prepCubeRendering(&ourShader);
 	prepGroundRendering(&ourShader);
 	ourShader.use(); //tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
-	ourShader.setInt("texture1", 0);
-	ourShader.setInt("texture2", 1);
+	ourShader.setInt("material.diffuse", 0);
+	ourShader.setInt("material.specular", 1);
 
 
     
     initPhysics();
 
     //MARK: CAMERA SETUP
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)800 / (float)800, 0.1f, 100.0f); //how to show perspective (fov, aspect ratio)
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)800 / (float)800, 0.1f, 500.0f); //how to show perspective (fov, aspect ratio)
     ourShader.setMat4("projection", projection); //pass the projection matrix to the fragment shader
 
 
@@ -775,13 +760,25 @@ int main(int argc, char** argv){
 
 
         //MARK: Render Scene
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f); //background color
+		glClearColor(0.53f, 0.81f, 0.92f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+		//DIRECTIONAL LIGHTING (sunglight)
+		ourShader.use();
+		ourShader.setVec3("light.direction", -0.2f, -1.0f, -0.3f);
+		ourShader.setVec3("viewPos", cameraPos);
+		ourShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
+		ourShader.setVec3("light.diffuse", 0.6f, 0.6f, 0.6f);
+		ourShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+		ourShader.setFloat("material.shininess", 256.0f);
 
         
 		//VEHICLE
         glActiveTexture(GL_TEXTURE0); //bind textures on corresponding texture units
-        glBindTexture(GL_TEXTURE_2D, vehicle_texture);        
+        glBindTexture(GL_TEXTURE_2D, vehicle_texture);
+		glActiveTexture(GL_TEXTURE0 + 1);
+		glBindTexture(GL_TEXTURE_2D, vehicle_texture);
         glBindVertexArray(CUBE_VAO); //tell OpenGL to render whatever we have in our Vertex Array Object
         glm::mat4 model = glm::mat4(1.0f); //identity matrix
         model = glm::translate(model, cubePos); //model matrix converts the local coordinates (cubePosition) to the global world coordinates
@@ -794,6 +791,8 @@ int main(int argc, char** argv){
 		//GROUND
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, ground_texture);
+		glActiveTexture(GL_TEXTURE0 + 1);
+		glBindTexture(GL_TEXTURE_2D, ground_texture);
 		glBindVertexArray(GROUND_VAO);
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, groundPos);
@@ -803,7 +802,9 @@ int main(int argc, char** argv){
 
 
 		//BOX
-		glActiveTexture(GL_TEXTURE0); //bind textures on corresponding texture units
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, vehicle_texture);
+		glActiveTexture(GL_TEXTURE0 + 1);
 		glBindTexture(GL_TEXTURE_2D, vehicle_texture);
 		glBindVertexArray(CUBE_VAO); //tell OpenGL to render whatever we have in our Vertex Array Object
 		model = glm::mat4(1.0f); //identity matrix
