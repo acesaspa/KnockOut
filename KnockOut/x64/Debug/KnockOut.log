@@ -1,1 +1,10 @@
-﻿
+﻿  main.cpp
+D:\585\KnockOut\KnockOut\Shader.cpp(57,40): warning C4101: 'e': unreferenced local variable
+D:\585\KnockOut\KnockOut\main.cpp(758,28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\585\KnockOut\KnockOut\main.cpp(954,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\585\KnockOut\KnockOut\main.cpp(955,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\585\KnockOut\KnockOut\main.cpp(959,19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\585\KnockOut\KnockOut\main.cpp(960,19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\585\KnockOut\KnockOut\main.cpp(961,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\585\KnockOut\KnockOut\main.cpp(962,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+  KnockOut.vcxproj -> D:\585\KnockOut\x64\Debug\KnockOut.exe

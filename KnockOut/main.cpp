@@ -66,6 +66,7 @@ float lastX = 400, lastY = 300;
 float cameraDistance = 5.0f;
 float angleAroundTarget = 0.0f;
 bool firstMouse = true;
+bool mouseVisible = false;
 unsigned int CUBE_VBO, GROUND_VBO, CUBE_VAO, GROUND_VAO;
 unsigned int vehicle_texture, cube_texture2, ground_texture;
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 15.0f);
@@ -904,7 +905,19 @@ int main(int argc, char** argv){
 
 //MARK: Input Functions
 void processInput(GLFWwindow* window){
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) glfwSetWindowShouldClose(window, true);
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+		glfwSetWindowShouldClose(window, true);
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS) {
+		if (mouseVisible) {
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			mouseVisible = false;
+		}else{
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			mouseVisible = true;
+		}
+	}
 
 	releaseAllControls();
 
