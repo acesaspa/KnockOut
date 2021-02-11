@@ -4,16 +4,16 @@
 #include <vector>
 #include <glm\ext\vector_float3.hpp>
 
-class AudioEngine
+class OpenALEngine
 {
 	public:
-		AudioEngine();
-		~AudioEngine();
+		OpenALEngine();
+		~OpenALEngine();
 		void initialize();
 		void updateListenerPosition(float x, float y, float z);
 		void updateListenerOrientatation(glm::vec3 front, glm::vec3 up);
 		void initializeBuffers();
-		SoundManager& createBoomBox(int soundFile);
+		SoundManager& createSoundPlayer(int soundFile);
 		void killSource(SoundManager* boombox);
 		void killSources();
 		void pauseAllActiveSources();

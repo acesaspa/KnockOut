@@ -3,12 +3,12 @@
 #include "OpenALEngine.h"
 #include "SoundManager.h"
 
-AudioEngine::AudioEngine() 
+OpenALEngine::OpenALEngine() 
 {
 	this->initialize();
 	this->initializeBuffers();
 }
-AudioEngine::~AudioEngine() 
+OpenALEngine::~OpenALEngine() 
 {
 	killSources();
 	for (int i = 0; i < ARR_SIZE; i++)
@@ -23,7 +23,7 @@ AudioEngine::~AudioEngine()
 	alcCloseDevice(device);
 }
 
-void AudioEngine::initialize() 
+void OpenALEngine::initialize() 
 {
 	sourcesMade = 0;
 	device = alcOpenDevice(NULL);
@@ -48,17 +48,17 @@ void AudioEngine::initialize()
 	//Add sound files here
 	soundFiles[0] = "./Sounds/bgm.wav";
 }
-void AudioEngine::updateListenerPosition(float x, float y, float z) 
+void OpenALEngine::updateListenerPosition(float x, float y, float z) 
 {
 	alListener3f(AL_POSITION, x, y, z);
 }
-void AudioEngine::updateListenerOrientatation(glm::vec3 front, glm::vec3 up) 
+void OpenALEngine::updateListenerOrientatation(glm::vec3 front, glm::vec3 up) 
 {
 	ALfloat listenerOri[] = { front.x, front.y, front.z, up.x, up.y, up.z };
 	alListenerfv(AL_ORIENTATION, listenerOri);
 }
 
-void AudioEngine::initializeBuffers() 
+void OpenALEngine::initializeBuffers() 
 {
 	for (int i = 0; i < ARR_SIZE; i++)
 	{
@@ -69,7 +69,7 @@ void AudioEngine::initializeBuffers()
 	}
 }
 
-SoundManager& AudioEngine::createBoomBox(int soundFile)
+SoundManager& OpenALEngine::createSoundPlayer(int soundFile)
 {
 	ALuint* buffer = &bufferArray[soundFile];
 	sourcesMade++;
@@ -77,9 +77,9 @@ SoundManager& AudioEngine::createBoomBox(int soundFile)
 	return *listOfSources.back();
 }
 
-void AudioEngine::killSource(SoundManager* boombox)
+void OpenALEngine::killSource(SoundManager* soundPlayer)
 {
-	int paramId = boombox->getId();
+	int paramId = soundPlayer->getId();
 	for (int i = 0; i < listOfSources.size(); i++) 
 	{
 		int id = listOfSources[i]->getId();
@@ -91,7 +91,7 @@ void AudioEngine::killSource(SoundManager* boombox)
 	}
 }
 
-void AudioEngine::pauseAllActiveSources() 
+void OpenALEngine::pauseAllActiveSources() 
 {
 	for (int i = 0; i < listOfSources.size(); i++) 
 	{
@@ -105,7 +105,7 @@ void AudioEngine::pauseAllActiveSources()
 	this->allHaveBeenPaused = true;
 }
 
-void AudioEngine::resumeAllActiveSources() 
+void OpenALEngine::resumeAllActiveSources() 
 {
 	if (this->allHaveBeenPaused == true) 
 	{
@@ -118,7 +118,7 @@ void AudioEngine::resumeAllActiveSources()
 	}
 }
 
-void AudioEngine::killSources() 
+void OpenALEngine::killSources() 
 {
 	listOfSources.clear();
 }
@@ -150,7 +150,7 @@ struct WAVE_Data
 	int subChunk2Size;  //Stores the size of the data block
 };
 
-void AudioEngine::CheckError() {
+void OpenALEngine::CheckError() {
 	int err;
 	err = alGetError();
 
@@ -170,7 +170,7 @@ void AudioEngine::CheckError() {
 	return;
 }
 
-bool AudioEngine::_strcmp(const char* base, const char* cp) {
+bool OpenALEngine::_strcmp(const char* base, const char* cp) {
 
 	for (int lx = 0; base[lx] != 0; lx++) {
 		if (cp[lx] != base[lx])
@@ -179,7 +179,7 @@ bool AudioEngine::_strcmp(const char* base, const char* cp) {
 	return true;
 }
 
-bool AudioEngine::loadWavFile(const char* filename, ALuint* buffer) 
+bool OpenALEngine::loadWavFile(const char* filename, ALuint* buffer) 
 {
 	FILE* soundFile = NULL;
 	WAVE_Format wave_format;

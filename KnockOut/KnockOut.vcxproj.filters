@@ -5,16 +5,17 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="Source Files\imgui">
       <UniqueIdentifier>{45d093f8-38be-462e-b47e-3f54347f0d58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\snippets">
+      <UniqueIdentifier>{6030ec9a-8d3b-48a2-a5bf-32d64668b993}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\sound">
+      <UniqueIdentifier>{25323882-c9df-455e-a92c-5ac8dade1bdc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\shaders">
+      <UniqueIdentifier>{ca5fd61c-2cf1-4304-89c1-07c8fa26ab71}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -42,35 +43,35 @@
     <ClCompile Include="Dependencies\imgui\imgui_widgets.cpp">
       <Filter>Source Files\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="Shader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="SnippetVehicle4WCreate.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\snippets</Filter>
     </ClCompile>
     <ClCompile Include="SnippetVehicleCreate.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\snippets</Filter>
     </ClCompile>
     <ClCompile Include="SnippetVehicleFilterShader.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\snippets</Filter>
     </ClCompile>
     <ClCompile Include="SnippetVehicleNoDriveCreate.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\snippets</Filter>
     </ClCompile>
     <ClCompile Include="SnippetVehicleSceneQuery.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\snippets</Filter>
     </ClCompile>
     <ClCompile Include="SnippetVehicleTankCreate.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\snippets</Filter>
     </ClCompile>
     <ClCompile Include="SnippetVehicleTireFriction.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\snippets</Filter>
     </ClCompile>
     <ClCompile Include="OpenALEngine.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\sound</Filter>
     </ClCompile>
     <ClCompile Include="SoundManager.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\sound</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>Source Files\shaders</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -98,29 +99,29 @@
     <ClInclude Include="Dependencies\imgui\imstb_truetype.h">
       <Filter>Source Files\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="SnippetVehicleConcurrency.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SnippetVehicleCreate.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SnippetVehicleFilterShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SnippetVehicleSceneQuery.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SnippetVehicleTireFriction.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SnippetVehicleWheelQueryResult.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="OpenALEngine.h">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files\sound</Filter>
     </ClInclude>
     <ClInclude Include="SoundManager.h">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files\sound</Filter>
+    </ClInclude>
+    <ClInclude Include="SnippetVehicleConcurrency.h">
+      <Filter>Source Files\snippets</Filter>
+    </ClInclude>
+    <ClInclude Include="SnippetVehicleCreate.h">
+      <Filter>Source Files\snippets</Filter>
+    </ClInclude>
+    <ClInclude Include="SnippetVehicleFilterShader.h">
+      <Filter>Source Files\snippets</Filter>
+    </ClInclude>
+    <ClInclude Include="SnippetVehicleSceneQuery.h">
+      <Filter>Source Files\snippets</Filter>
+    </ClInclude>
+    <ClInclude Include="SnippetVehicleTireFriction.h">
+      <Filter>Source Files\snippets</Filter>
+    </ClInclude>
+    <ClInclude Include="SnippetVehicleWheelQueryResult.h">
+      <Filter>Source Files\snippets</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

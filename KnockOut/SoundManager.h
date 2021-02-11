@@ -1,5 +1,4 @@
 #pragma once
-#define _CRT_SECURE_NO_WARNINGS
 #include <AL/al.h>
 #include <AL/alc.h>
 
@@ -14,7 +13,7 @@ class SoundManager
 		void stopSound();
 		void loopSound(bool loop);
 		void pauseSound();
-		void setVolume(float newVol);
+		void setVolume(float volume);
 		void updateSourcePosition(float x, float y, float z);
 		bool soundPlaying();
 		void cleanup();

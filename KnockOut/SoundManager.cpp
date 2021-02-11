@@ -1,6 +1,6 @@
-#include "SoundManager.h"
+//Soruces: https://gist.github.com/mudream4869/34541dfbd12a747b027e, Stephen Dios
 
-bool soundPlaying();
+#include "SoundManager.h"
 
 SoundManager::SoundManager() {};
 SoundManager::SoundManager(ALuint* buffer, int id)
@@ -46,13 +46,12 @@ void SoundManager::stopSound()
 
 void SoundManager::loopSound(bool loop) 
 {
-	bool use = loop ? AL_TRUE : AL_FALSE;
-	alSourcei(source, AL_LOOPING, use);
+	alSourcei(source, AL_LOOPING, loop ? AL_TRUE : AL_FALSE);
 }
 
-void SoundManager::setVolume(float newVol) 
+void SoundManager::setVolume(float volume)
 {
-	alSourcef(source, AL_GAIN, newVol);
+	alSourcef(source, AL_GAIN, volume);
 }
 
 void SoundManager::updateSourcePosition(float x, float y, float z) 

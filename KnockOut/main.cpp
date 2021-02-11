@@ -5,32 +5,24 @@
 #include "..\KnockOut\Dependencies\imgui\imgui_impl_glfw.h"
 #include "..\KnockOut\Dependencies\imgui\imgui_impl_opengl3.h"
 #include <iostream>
-#include "physx\PxPhysicsAPI.h"
 #include <ctype.h>
-
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include "../include/physx/PxPhysicsAPI.h"
 #include "../include/physx/snippetcommon/SnippetPrint.h"
 #include "../include/physx/snippetcommon/SnippetPVD.h"
 #include "../include/physx/snippetutils/SnippetUtils.h"
-
 #include "../include/physx/vehicle/PxVehicleUtil.h"
 #include "../include/physx/snippetvehiclecommon/SnippetVehicleSceneQuery.h"
 #include "../include/physx/snippetvehiclecommon/SnippetVehicleFilterShader.h"
 #include "../include/physx/snippetvehiclecommon/SnippetVehicleTireFriction.h"
 #include "../include/physx/snippetvehiclecommon/SnippetVehicleCreate.h"
-
 #include "../include/physx/snippetcommon/SnippetPrint.h"
 #include "../include/physx/snippetcommon/SnippetPVD.h"
 #include "../include/physx/snippetutils/SnippetUtils.h"
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-//AudioStuff
 #include "OpenALEngine.h"
 #include "SoundManager.h"
-
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #include "Shader.cpp"
@@ -38,11 +30,9 @@
 using namespace physx;
 using namespace snippetvehicle;
 
-
 //MARK: Function Prototypes
 void processInput(GLFWwindow* window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-
 
 //MARK: Var
 PxDefaultAllocator		gAllocator;
@@ -84,7 +74,6 @@ glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 glm::vec3 cameraRight = glm::vec3();
 glm::vec3 worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
 glm::vec3 direction;
-
 
 PxF32 gSteerVsForwardSpeedData[2 * 8] =
 {
@@ -506,8 +495,6 @@ void stepPhysics()
 	const PxU32 raycastResultsSize = gVehicleSceneQueryData->getQueryResultBufferSize();
 	PxVehicleSuspensionRaycasts(gBatchQuery, 1, vehicles, raycastResultsSize, raycastResults);
 	
-	
-
 	//Vehicle update.
 	const PxVec3 grav = gScene->getGravity();
 	PxWheelQueryResult wheelQueryResults[PX_MAX_NB_WHEELS];
@@ -515,8 +502,6 @@ void stepPhysics()
 	PxVehicleUpdates(timestep, grav, *gFrictionPairs, 1, vehicles, vehicleQueryResults);
 	//Work out if the vehicle is in the air.
 	gIsVehicleInAir = gVehicle4W->getRigidDynamicActor()->isSleeping() ? false : PxVehicleIsInAir(vehicleQueryResults[0]);
-
-	
 
 	//Scene update.
 	gScene->simulate(timestep);
@@ -559,10 +544,6 @@ void keyPress(unsigned char key, const PxTransform& camera)
 	PX_UNUSED(camera);
 	PX_UNUSED(key);
 }
-
-
-
-
 
 
 void prepCubeRendering(Shader* ourShader) {
@@ -646,12 +627,6 @@ void prepCubeRendering(Shader* ourShader) {
 }
 
 
-
-
-
-
-
-
 void prepGroundRendering(Shader* ourShader) {
 	glEnable(GL_DEPTH_TEST); //to make sure the fragment shader takes into account that some geometry has to be drawn in front of another
 	float vertices[] = { //vertices of our plane
@@ -721,19 +696,12 @@ glm::mat4 getGlmMatrix(PxMat44 tempMat) { //convert a 4x4 px matrix to a 4x4 glm
 	return model;
 }
 
-
-
-
-
 //MARK: Main
 int main(int argc, char** argv){
 
-	//Audio system setup
-	AudioEngine audioSystem = AudioEngine();
-
-	SoundManager bgm = audioSystem.createBoomBox(0);
-	SoundManager raceMusic;
-
+	//MARK: INIT Sounds
+	OpenALEngine wavPlayer = OpenALEngine();
+	SoundManager bgm = wavPlayer.createSoundPlayer(0);
 	bgm.setVolume(0.3f);
 	bgm.loopSound(true);
 
@@ -753,7 +721,6 @@ int main(int argc, char** argv){
     glfwSetCursorPosCallback(window, mouse_callback);
 	Shader ourShader("vertex_shader.vs", "fragment_shader.fs");
 
-
     //MARK: INIT IMGUI
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -766,8 +733,6 @@ int main(int argc, char** argv){
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-
-    
     //MARK: SCENE RENDER PREP
 	prepCubeRendering(&ourShader);
 	prepGroundRendering(&ourShader);
@@ -775,16 +740,11 @@ int main(int argc, char** argv){
 	ourShader.setInt("material.diffuse", 0);
 	ourShader.setInt("material.specular", 1);
 
-
-    
     initPhysics();
 
     //MARK: CAMERA SETUP
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)800 / (float)800, 0.1f, 500.0f); //how to show perspective (fov, aspect ratio)
     ourShader.setMat4("projection", projection); //pass the projection matrix to the fragment shader
-
-	raceMusic = audioSystem.createBoomBox(0);
-	
 
     //MARK: RENDER LOOP ---------------------------------------------------------------------------------------------------------------
     while (!glfwWindowShouldClose(window)){
@@ -808,7 +768,6 @@ int main(int argc, char** argv){
 		PxTransform pos = vehicles[0]->getRigidDynamicActor()->getGlobalPose();
 		glm::vec3 cubePos = glm::vec3(pos.p[0], pos.p[1], pos.p[2]);
 		PxMat44 pxTransMatrix = PxMat44(pos);
-
 
 		//camera, TODO: move somewhere else
 		PxQuat vehicleQuaternion = vehicles[0]->getRigidDynamicActor()->getGlobalPose().q;
@@ -834,10 +793,6 @@ int main(int argc, char** argv){
 		cameraFront = glm::normalize(cameraFront);
 		cameraRight = glm::normalize(glm::cross(cameraFront, worldUp));
 		cameraUp = glm::normalize(glm::cross(cameraRight, cameraFront));
-		//camera
-
-
-
 
 		PxTransform pxGroundPos = gGroundPlane->getGlobalPose();
 		glm::vec3 groundPos = glm::vec3(pxGroundPos.p[0], pxGroundPos.p[1], pxGroundPos.p[2]);
@@ -854,11 +809,9 @@ int main(int argc, char** argv){
 		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp); //apply a special built in matrix specifically made for camera views call the "Look At" matrix
 		//ourShader.setMat4("view", view); //set the camera view matrix in our fragment shader
 
-
         //MARK: Render Scene
 		glClearColor(0.53f, 0.81f, 0.92f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 
 		//DIRECTIONAL LIGHTING (sunglight)
 		ourShader.use();
@@ -868,7 +821,6 @@ int main(int argc, char** argv){
 		ourShader.setVec3("light.diffuse", 0.6f, 0.6f, 0.6f);
 		ourShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 		ourShader.setFloat("material.shininess", 256.0f);
-
         
 		//VEHICLE
         glActiveTexture(GL_TEXTURE0); //bind textures on corresponding texture units
@@ -886,7 +838,6 @@ int main(int argc, char** argv){
 		ourShader.setMat4("view", view); //set the camera view matrix in our fragment shader		
 		glDrawArrays(GL_TRIANGLES, 0, 36); //draw the triangle data, starting at 0 with 36 vertex data points
 
-
 		//GROUND
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, ground_texture);
@@ -899,7 +850,6 @@ int main(int argc, char** argv){
 		ourShader.setMat4("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
-		
 		//BOX
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, vehicle_texture);
@@ -927,7 +877,6 @@ int main(int argc, char** argv){
 		ourShader.setMat4("model", model); //set the model matrix (which when applied converts the local position to global world coordinates...)
 		glDrawArrays(GL_TRIANGLES, 0, 36); //draw the triangle data, starting at 0 with 36 vertex data points
 
-
         //MARK: Render ImgUI
         {
             ImGui::Begin("Debug Menu");
@@ -937,15 +886,11 @@ int main(int argc, char** argv){
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-
         //MARK: Frame End
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
     //---------------------------------------------------------------------------------------------------------------------------------
-
-
-
 
     //MARK: Clean up & Terminate
     cleanupPhysics();
@@ -955,8 +900,6 @@ int main(int argc, char** argv){
     glfwTerminate();
     return 0;
 }
-
-
 
 
 //MARK: Input Functions
@@ -1021,8 +964,3 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos){
     direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
     cameraFront = glm::normalize(direction);
 }
-
-
-
-
-
