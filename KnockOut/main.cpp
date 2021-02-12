@@ -70,6 +70,8 @@ float cameraDistance = 5.0f;
 float angleAroundTarget = 0.0f;
 bool firstMouse = true;
 bool mouseVisible = false;
+bool vehicleReversing = false;
+bool vehicleAccelerating = false;
 unsigned int CUBE_VBO, GROUND_VBO, CUBE_VAO, GROUND_VAO;
 unsigned int vehicle_texture, cube_texture2, ground_texture;
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 15.0f);
@@ -375,7 +377,7 @@ void initPhysics()
 
 	VehicleDesc vehicleDesc2 = initVehicleDesc();
 	gVehicle4W2 = createVehicle4W(vehicleDesc2, gPhysics, gCooking);
-	PxTransform startTransform2(PxVec3(15.f, (vehicleDesc2.chassisDims.y * 0.5f + vehicleDesc2.wheelRadius + 1.0f), 0), PxQuat(PxIdentity));
+	PxTransform startTransform2(PxVec3(5.f, (vehicleDesc2.chassisDims.y * 0.5f + vehicleDesc2.wheelRadius + 1.0f), 25.f), PxQuat(PxIdentity));
 	gVehicle4W2->getRigidDynamicActor()->setGlobalPose(startTransform2);
 	gScene->addActor(*gVehicle4W2->getRigidDynamicActor());
 
@@ -790,7 +792,7 @@ int main(int argc, char** argv) {
 
 	//Model scale
 	glm::vec3 modelScale = {
-		glm::vec3(1.0f, 1.0f, 1.0f) //blue car
+		glm::vec3(0.5f, 0.5f, 0.5f) //blue car
 	};
 
 	// Load meshes and textures
@@ -914,17 +916,16 @@ int main(int argc, char** argv) {
 		ourShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 		ourShader.setFloat("material.shininess", 256.0f);
 
-		glm::mat4 model1;
-		for (int i = 0; i < numModels; i++) {
-			model1 = glm::translate(glm::mat4(), modelPos) * glm::scale(glm::mat4(), modelScale);
-			ourShader.setMat4("model1", model1);
+		//glm::mat4 model1;
+		//for (int i = 0; i < numModels; i++) {
+		//	model1 = glm::translate(glm::mat4(), modelPos) * glm::scale(glm::mat4(), modelScale);
+		//	ourShader.setMat4("model1", model1);
 
-			texture.bind(0);
-			mesh[i].draw();
-			texture.unbind(0);
-		}
-		ourShader.setMat4("model1", model1);
-
+		//	texture.bind(0);
+		//	mesh[i].draw();
+		//	texture.unbind(0);
+		//}
+		//ourShader.setMat4("model1", model1);
 
 
 		//VEHICLE
@@ -937,11 +938,12 @@ int main(int argc, char** argv) {
 		model = getGlmMatrix(pxTransMatrix);
 		//model = glm::translate(model, cubePos); //model matrix converts the local coordinates (cubePosition) to the global world coordinates
 		//model = glm::rotate(model, glm::radians(0), glm::vec3(0.0f, 1.0f, 0.0f)); //rotate
-		//model = glm::scale(model, glm::vec3(pxBounds.getDimensions().x, pxBounds.getDimensions().y, pxBounds.getDimensions().z));
+		model = glm::scale(model, modelScale);
 		ourShader.setMat4("model", model); //set the model matrix (which when applied converts the local position to global world coordinates...)
 		model[3][1] = model[3][1] - 3.0f;
-		ourShader.setMat4("view", view); //set the camera view matrix in our fragment shader		
-		glDrawArrays(GL_TRIANGLES, 0, 36); //draw the triangle data, starting at 0 with 36 vertex data points
+		ourShader.setMat4("view", view); //set the camera view matrix in our fragment shader
+		mesh[0].draw();
+		//glDrawArrays(GL_TRIANGLES, 0, 36); //draw the triangle data, starting at 0 with 36 vertex data points
 
 		//VEHICLE2
 		glActiveTexture(GL_TEXTURE0); //bind textures on corresponding texture units
@@ -954,10 +956,12 @@ int main(int argc, char** argv) {
 		//model = glm::translate(model, cubePos); //model matrix converts the local coordinates (cubePosition) to the global world coordinates
 		//model = glm::rotate(model, glm::radians(0), glm::vec3(0.0f, 1.0f, 0.0f)); //rotate
 		//model = glm::scale(model, glm::vec3(pxBounds.getDimensions().x, pxBounds.getDimensions().y, pxBounds.getDimensions().z));
+		model2 = glm::scale(model2, modelScale);
 		ourShader.setMat4("model", model2); //set the model matrix (which when applied converts the local position to global world coordinates...)
 		model2[3][1] = model2[3][1] - 3.0f;
-		ourShader.setMat4("view", view); //set the camera view matrix in our fragment shader		
-		glDrawArrays(GL_TRIANGLES, 0, 36); //draw the triangle data, starting at 0 with 36 vertex data points
+		ourShader.setMat4("view", view); //set the camera view matrix in our fragment shader
+		mesh[0].draw();
+		//glDrawArrays(GL_TRIANGLES, 0, 36); //draw the triangle data, starting at 0 with 36 vertex data points
 
 
 		//GROUND
@@ -1052,9 +1056,16 @@ void processInput(GLFWwindow* window) {
 	if ((glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_UP) == GLFW_REPEAT)) {
 		//std::cout << "UP1\n";
 		gMimicKeyInputs = true;
+		gVehicle4W->mDriveDynData.forceGearChange(PxVehicleGearsData::eFIRST);
 		startAccelerateForwardsMode();
 	}
 	if ((glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_REPEAT)) {
+		//std::cout << "DOWN1\n";
+		gMimicKeyInputs = true;
+		gVehicle4W->mDriveDynData.forceGearChange(PxVehicleGearsData::eREVERSE);
+		startAccelerateReverseMode();
+	}
+	if ((glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_REPEAT)) {
 		//std::cout << "DOWN1\n";
 		gMimicKeyInputs = true;
 		startBrakeMode();
