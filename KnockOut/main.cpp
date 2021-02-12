@@ -26,6 +26,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #include "Shader.cpp"
+#include "Mesh.h"
+#include "Texture2D.h"
 
 using namespace physx;
 using namespace snippetvehicle;
@@ -780,6 +782,24 @@ int main(int argc, char** argv) {
 	glfwSetCursorPosCallback(window, mouse_callback);
 	Shader ourShader("vertex_shader.vs", "fragment_shader.fs");
 
+
+	//Model Positions
+	glm::vec3 modelPos = {
+		glm::vec3(1.0f, 1.0f, 1.0f) //blue car
+	};
+
+	//Model scale
+	glm::vec3 modelScale = {
+		glm::vec3(1.0f, 1.0f, 1.0f) //blue car
+	};
+
+	// Load meshes and textures
+	const int numModels = 1;
+	Mesh mesh[numModels];
+	Texture2D texture;
+
+
+
 	//MARK: INIT IMGUI
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -798,6 +818,12 @@ int main(int argc, char** argv) {
 	ourShader.use(); //tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
 	ourShader.setInt("material.diffuse", 0);
 	ourShader.setInt("material.specular", 1);
+
+
+
+	mesh[0].loadOBJ("blueCar.obj");
+	texture.loadTexture("blueCar_diffuse.jpg", true);
+
 
 	initPhysics();
 
@@ -887,6 +913,19 @@ int main(int argc, char** argv) {
 		ourShader.setVec3("light.diffuse", 0.6f, 0.6f, 0.6f);
 		ourShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 		ourShader.setFloat("material.shininess", 256.0f);
+
+		glm::mat4 model1;
+		for (int i = 0; i < numModels; i++) {
+			model1 = glm::translate(glm::mat4(), modelPos) * glm::scale(glm::mat4(), modelScale);
+			ourShader.setMat4("model1", model1);
+
+			texture.bind(0);
+			mesh[i].draw();
+			texture.unbind(0);
+		}
+		ourShader.setMat4("model1", model1);
+
+
 
 		//VEHICLE
 		glActiveTexture(GL_TEXTURE0); //bind textures on corresponding texture units
