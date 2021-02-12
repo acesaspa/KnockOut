@@ -1,3 +1,5 @@
+//adapted from: https://www.udemy.com/course/learn-modern-opengl-programming/
+
 #include "Mesh.h"
 #include <iostream>
 #include <sstream>
@@ -17,10 +19,10 @@ Mesh::~Mesh()
 
 bool Mesh::loadOBJ(const std::string& filename)
 {
-	std::vector<unsigned int> vertexIndices, uvIndices;
+	std::vector<unsigned int> vertexIndices, uvIndices, normalIndices;
 	std::vector<glm::vec3> tempVertices;
 	std::vector<glm::vec2> tempUVs;
-
+	std::vector<glm::vec3> tempNormals;
 
 	if (filename.find(".obj") != std::string::npos)
 	{
@@ -30,7 +32,6 @@ bool Mesh::loadOBJ(const std::string& filename)
 			std::cerr << "Cannot open " << filename << std::endl;
 			return false;
 		}
-
 		std::cout << "Loading OBJ file " << filename << " ..." << std::endl;
 
 		std::string lineBuffer;
@@ -50,11 +51,17 @@ bool Mesh::loadOBJ(const std::string& filename)
 				vt >> uv.s; vt >> uv.t;
 				tempUVs.push_back(uv);
 			}
+			else if (lineBuffer.substr(0, 2) == "vn") {
+				std::istringstream vn(lineBuffer.substr(3));
+				glm::vec3 norm;
+				vn >> norm.x; vn >> norm.y; vn >> norm.z;
+				tempNormals.push_back(norm);
+			}
 			else if (lineBuffer.substr(0, 2) == "f ")
 			{
 				int p1, p2, p3; //to store mesh index
 				int t1, t2, t3; //to store texture index
-				int n1, n2, n3;
+				int n1, n2, n3; //to store normal index
 				const char* face = lineBuffer.c_str();
 				int match = sscanf_s(face, "f %i/%i/%i %i/%i/%i %i/%i/%i",
 					&p1, &t1, &n1,
@@ -63,7 +70,10 @@ bool Mesh::loadOBJ(const std::string& filename)
 				if (match != 9)
 					std::cout << "Failed to parse OBJ file using our very simple OBJ loader" << std::endl;
 
-				// We are ignoring normals (for now)
+
+				normalIndices.push_back(n1);
+				normalIndices.push_back(n2);
+				normalIndices.push_back(n3);
 
 				vertexIndices.push_back(p1);
 				vertexIndices.push_back(p2);
@@ -74,40 +84,31 @@ bool Mesh::loadOBJ(const std::string& filename)
 				uvIndices.push_back(t3);
 			}
 		}
-
-		// Close the file
 		fin.close();
 
-
-		// For each vertex of each triangle
-		for (unsigned int i = 0; i < vertexIndices.size(); i++)
+		for (unsigned int i = 0; i < vertexIndices.size(); i++) // For each vertex of each triangle
 		{
-			// Get the attributes using the indices
-			glm::vec3 vertex = tempVertices[vertexIndices[i] - 1];
+			glm::vec3 vertex = tempVertices[vertexIndices[i] - 1]; // Get the attributes using the indices
 			glm::vec2 uv = tempUVs[uvIndices[i] - 1];
+			glm::vec3 normal = tempNormals[normalIndices[i] - 1];
 
 			Vertex meshVertex;
 			meshVertex.position = vertex;
+			meshVertex.normals = normal;
 			meshVertex.texCoords = uv;
 
 			mVertices.push_back(meshVertex);
 		}
 
-		// Create and initialize the buffers
 		initBuffers();
-
 		return (mLoaded = true);
 	}
 
-	// We shouldn't get here so return failure
 	return false;
 }
 
-//-----------------------------------------------------------------------------
-// Create and initialize the vertex buffer and vertex array object
-// Must have valid, non-empty std::vector of Vertex objects.
-//-----------------------------------------------------------------------------
-void Mesh::initBuffers()
+
+void Mesh::initBuffers() //Must have valid, non-empty std::vector of Vertex objects.
 {
 	glGenVertexArrays(1, &mVAO);
 	glGenBuffers(1, &mVBO);
@@ -116,21 +117,20 @@ void Mesh::initBuffers()
 	glBindBuffer(GL_ARRAY_BUFFER, mVBO);
 	glBufferData(GL_ARRAY_BUFFER, mVertices.size() * sizeof(Vertex), &mVertices[0], GL_STATIC_DRAW);
 
-	// Vertex Positions
-	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(0); // Vertex Positions
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)0);
 
-	// Vertex Texture Coords
-	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(1); // Vertex Normals
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(3 * sizeof(GLfloat)));
 
-	// unbind to make sure other code does not change it somewhere else
-	glBindVertexArray(0);
+	glEnableVertexAttribArray(2); // Vertex Texture Coords
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(6 * sizeof(GLfloat)));
+
+	glBindVertexArray(0); // unbind to make sure other code does not change it somewhere else
 }
 
-//-----------------------------------------------------------------------------
-// Render the mesh
-//-----------------------------------------------------------------------------
+
+
 void Mesh::draw()
 {
 	if (!mLoaded) return;

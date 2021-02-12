@@ -929,15 +929,17 @@ int main(int argc, char** argv) {
 
 
 		//VEHICLE
-		glActiveTexture(GL_TEXTURE0); //bind textures on corresponding texture units
-		glBindTexture(GL_TEXTURE_2D, vehicle_texture);
-		glActiveTexture(GL_TEXTURE0 + 1);
-		glBindTexture(GL_TEXTURE_2D, vehicle_texture);
-		glBindVertexArray(CUBE_VAO); //tell OpenGL to render whatever we have in our Vertex Array Object
+		texture.bind(0);
+		//glActiveTexture(GL_TEXTURE0); //bind textures on corresponding texture units
+		//glBindTexture(GL_TEXTURE_2D, vehicle_texture);
+		//glActiveTexture(GL_TEXTURE0 + 1);
+		//glBindTexture(GL_TEXTURE_2D, vehicle_texture);
+		//glBindVertexArray(CUBE_VAO); //tell OpenGL to render whatever we have in our Vertex Array Object
+
 		glm::mat4 model = glm::mat4(1.0f); //identity matrix
 		model = getGlmMatrix(pxTransMatrix);
 		//model = glm::translate(model, cubePos); //model matrix converts the local coordinates (cubePosition) to the global world coordinates
-		//model = glm::rotate(model, glm::radians(0), glm::vec3(0.0f, 1.0f, 0.0f)); //rotate
+		model = glm::rotate(model, glm::radians(180.f), glm::vec3(0.0f, 1.0f, 0.0f)); //rotate
 		model = glm::scale(model, modelScale);
 		ourShader.setMat4("model", model); //set the model matrix (which when applied converts the local position to global world coordinates...)
 		model[3][1] = model[3][1] - 3.0f;
@@ -946,11 +948,14 @@ int main(int argc, char** argv) {
 		//glDrawArrays(GL_TRIANGLES, 0, 36); //draw the triangle data, starting at 0 with 36 vertex data points
 
 		//VEHICLE2
-		glActiveTexture(GL_TEXTURE0); //bind textures on corresponding texture units
-		glBindTexture(GL_TEXTURE_2D, vehicle_texture);
-		glActiveTexture(GL_TEXTURE0 + 1);
-		glBindTexture(GL_TEXTURE_2D, vehicle_texture);
-		glBindVertexArray(CUBE_VAO); //tell OpenGL to render whatever we have in our Vertex Array Object
+
+		texture.bind(0);
+		//glActiveTexture(GL_TEXTURE0); //bind textures on corresponding texture units
+		//glBindTexture(GL_TEXTURE_2D, vehicle_texture);
+		//glActiveTexture(GL_TEXTURE0 + 1);
+		//glBindTexture(GL_TEXTURE_2D, vehicle_texture);
+		//glBindVertexArray(CUBE_VAO); //tell OpenGL to render whatever we have in our Vertex Array Object
+
 		glm::mat4 model2 = glm::mat4(1.0f); //identity matrix
 		model2 = getGlmMatrix(pxTransMatrix2);
 		//model = glm::translate(model, cubePos); //model matrix converts the local coordinates (cubePosition) to the global world coordinates
