@@ -51,6 +51,7 @@ PxVehicleDrivableSurfaceToTireFrictionPairs* gFrictionPairs = NULL;
 
 PxRigidStatic* gGroundPlane = NULL;
 PxVehicleDrive4W* gVehicle4W = NULL;
+PxVehicleDrive4W* gVehicle4W2 = NULL;
 PxRigidDynamic* gBox = NULL;
 PxRigidDynamic* gBox2 = NULL;
 PxRigidDynamic* gBox3 = NULL;
@@ -370,6 +371,11 @@ void initPhysics()
 	gVehicle4W->getRigidDynamicActor()->setGlobalPose(startTransform);
 	gScene->addActor(*gVehicle4W->getRigidDynamicActor());
 
+	VehicleDesc vehicleDesc2 = initVehicleDesc();
+	gVehicle4W2 = createVehicle4W(vehicleDesc2, gPhysics, gCooking);
+	PxTransform startTransform2(PxVec3(15.f, (vehicleDesc2.chassisDims.y * 0.5f + vehicleDesc2.wheelRadius + 1.0f), 0), PxQuat(PxIdentity));
+	gVehicle4W2->getRigidDynamicActor()->setGlobalPose(startTransform2);
+	gScene->addActor(*gVehicle4W2->getRigidDynamicActor());
 
 	//Create a box for the vehicle to collide with
 	PxTransform localTm(PxVec3(0, 20.0f, 0.0f));
@@ -401,7 +407,7 @@ void initPhysics()
 	shape3->setSimulationFilterData(myData3);
 	gBox3->attachShape(*shape3);
 	gScene->addActor(*gBox3);
-	
+
 	//Set the vehicle to rest in first gear.
 	//Set the vehicle to use auto-gears.
 	gVehicle4W->setToRestState();
@@ -490,19 +496,69 @@ void stepPhysics()
 		PxVehicleDrive4WSmoothAnalogRawInputsAndSetAnalogInputs(gPadSmoothingData, gSteerVsForwardSpeedTable, gVehicleInputData, timestep, gIsVehicleInAir, *gVehicle4W);
 	}
 
+	//FALL OFF
+	PxVehicleWheels* vehicles2[2] = { gVehicle4W,gVehicle4W2 };
+	PxBounds3 pxBounds = vehicles2[0]->getRigidDynamicActor()->getWorldBounds();
+	PxTransform pos = vehicles2[0]->getRigidDynamicActor()->getGlobalPose();
+	glm::vec3 cubePos = glm::vec3(pos.p[0], pos.p[1], pos.p[2]);
+
+	PxBounds3 pxBounds2 = vehicles2[1]->getRigidDynamicActor()->getWorldBounds();
+	PxTransform pos2 = vehicles2[1]->getRigidDynamicActor()->getGlobalPose();
+	glm::vec3 cubePos2 = glm::vec3(pos2.p[0], pos2.p[1], pos2.p[2]);
+
+	if (pos.p[2] >= 300 || pos.p[2] <= -300 || pos.p[0] >= 300 || pos.p[0] <= -300) {
+		PxQuat vehicleQuaternion = gVehicle4W->getRigidDynamicActor()->getGlobalPose().q;
+		gScene->removeActor(*gVehicle4W->getRigidDynamicActor());
+		VehicleDesc vehicleDesc = initVehicleDesc();
+		PxTransform startTransform(PxVec3(0, (vehicleDesc.chassisDims.y * 0.5f + vehicleDesc.wheelRadius + 1.0f), 0), PxQuat(vehicleQuaternion));
+		gVehicle4W->getRigidDynamicActor()->setGlobalPose(startTransform);
+		gScene->addActor(*gVehicle4W->getRigidDynamicActor());
+	}
+	if (pos2.p[2] >= 300 || pos2.p[2] <= -300 || pos2.p[0] >= 300 || pos2.p[0] <= -300) {
+		PxQuat vehicleQuaternion = gVehicle4W2->getRigidDynamicActor()->getGlobalPose().q;
+		gScene->removeActor(*gVehicle4W2->getRigidDynamicActor());
+		VehicleDesc vehicleDesc = initVehicleDesc();
+		PxTransform startTransform(PxVec3(15.f, (vehicleDesc.chassisDims.y * 0.5f + vehicleDesc.wheelRadius + 1.0f), 0), PxQuat(vehicleQuaternion));
+		gVehicle4W2->getRigidDynamicActor()->setGlobalPose(startTransform);
+		gScene->addActor(*gVehicle4W2->getRigidDynamicActor());
+	}
+
+
+
 	//Raycasts.
 	PxVehicleWheels* vehicles[1] = { gVehicle4W };
 	PxRaycastQueryResult* raycastResults = gVehicleSceneQueryData->getRaycastQueryResultBuffer(0);
 	const PxU32 raycastResultsSize = gVehicleSceneQueryData->getQueryResultBufferSize();
 	PxVehicleSuspensionRaycasts(gBatchQuery, 1, vehicles, raycastResultsSize, raycastResults);
-	
+
+
 	//Vehicle update.
 	const PxVec3 grav = gScene->getGravity();
 	PxWheelQueryResult wheelQueryResults[PX_MAX_NB_WHEELS];
 	PxVehicleWheelQueryResult vehicleQueryResults[1] = { {wheelQueryResults, gVehicle4W->mWheelsSimData.getNbWheels()} };
+
 	PxVehicleUpdates(timestep, grav, *gFrictionPairs, 1, vehicles, vehicleQueryResults);
 	//Work out if the vehicle is in the air.
 	gIsVehicleInAir = gVehicle4W->getRigidDynamicActor()->isSleeping() ? false : PxVehicleIsInAir(vehicleQueryResults[0]);
+
+
+	//Raycasts car 2.
+	PxVehicleWheels* vehicles3[1] = { gVehicle4W2 };
+	PxRaycastQueryResult* raycastResults2 = gVehicleSceneQueryData->getRaycastQueryResultBuffer(0);
+	const PxU32 raycastResultsSize2 = gVehicleSceneQueryData->getQueryResultBufferSize();
+	PxVehicleSuspensionRaycasts(gBatchQuery, 1, vehicles3, raycastResultsSize2, raycastResults2);
+
+
+	//Vehicle update.
+	//const PxVec3 grav = gScene->getGravity();
+	PxWheelQueryResult wheelQueryResults2[PX_MAX_NB_WHEELS];
+	PxVehicleWheelQueryResult vehicleQueryResults2[1] = { {wheelQueryResults2, gVehicle4W2->mWheelsSimData.getNbWheels()} };
+
+	PxVehicleUpdates(timestep, grav, *gFrictionPairs, 1, vehicles3, vehicleQueryResults2);
+	//Work out if the vehicle is in the air.
+	gIsVehicleInAir = gVehicle4W2->getRigidDynamicActor()->isSleeping() ? false : PxVehicleIsInAir(vehicleQueryResults2[0]);
+
+
 
 	//Scene update.
 	gScene->simulate(timestep);
@@ -517,6 +573,8 @@ void cleanupPhysics()
 
 	gVehicle4W->getRigidDynamicActor()->release();
 	gVehicle4W->free();
+	gVehicle4W2->getRigidDynamicActor()->release();
+	gVehicle4W2->free();
 	PX_RELEASE(gBox);
 	PX_RELEASE(gGroundPlane);
 	PX_RELEASE(gBatchQuery);
@@ -594,9 +652,9 @@ void prepCubeRendering(Shader* ourShader) {
 		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
 	};
 
-	glGenVertexArrays(1, &CUBE_VAO); 
+	glGenVertexArrays(1, &CUBE_VAO);
 	glGenBuffers(1, &CUBE_VBO);
-	
+
 	glBindBuffer(GL_ARRAY_BUFFER, CUBE_VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
@@ -631,7 +689,7 @@ void prepCubeRendering(Shader* ourShader) {
 void prepGroundRendering(Shader* ourShader) {
 	glEnable(GL_DEPTH_TEST); //to make sure the fragment shader takes into account that some geometry has to be drawn in front of another
 	float vertices[] = { //vertices of our plane
-	     //positions              //normals           //texture coords
+		 //positions              //normals           //texture coords
 		-300.0f,  0.0f,  300.0f,  0.0f, 1.0f, 0.0f,   0.0f, 0.0f,
 		 300.0f,  0.0f,  300.0f,  0.0f, 1.0f, 0.0f,   1.0f, 0.0f,
 		 300.0f,  0.0f, -300.0f,  0.0f, 1.0f, 0.0f,   1.0f, 1.0f,
@@ -698,7 +756,7 @@ glm::mat4 getGlmMatrix(PxMat44 tempMat) { //convert a 4x4 px matrix to a 4x4 glm
 }
 
 //MARK: Main
-int main(int argc, char** argv){
+int main(int argc, char** argv) {
 
 	//MARK: INIT Sounds
 	OpenALEngine wavPlayer = OpenALEngine();
@@ -706,69 +764,76 @@ int main(int argc, char** argv){
 	bgm.setVolume(0.3f);
 	bgm.loopSound(true);
 
-    //MARK: INIT GLFW
-    const char* glsl_version = "#version 130";
-    GLFWwindow* window;
-    if (!glfwInit()) return -1;
-    window = glfwCreateWindow(800, 800, "Knock Out", NULL, NULL);
-    if (!window) {
-        glfwTerminate();
-        return -1;
-    }
-    glfwMakeContextCurrent(window);
-    if (glewInit() != GLEW_OK) std::cout << "Error!" << std::endl;
-    std::cout << glGetString(GL_VERSION) << std::endl;
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    glfwSetCursorPosCallback(window, mouse_callback);
+	//MARK: INIT GLFW
+	const char* glsl_version = "#version 130";
+	GLFWwindow* window;
+	if (!glfwInit()) return -1;
+	window = glfwCreateWindow(800, 800, "Knock Out", NULL, NULL);
+	if (!window) {
+		glfwTerminate();
+		return -1;
+	}
+	glfwMakeContextCurrent(window);
+	if (glewInit() != GLEW_OK) std::cout << "Error!" << std::endl;
+	std::cout << glGetString(GL_VERSION) << std::endl;
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetCursorPosCallback(window, mouse_callback);
 	Shader ourShader("vertex_shader.vs", "fragment_shader.fs");
 
-    //MARK: INIT IMGUI
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-    ImGui::StyleColorsDark();
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init(glsl_version);
-    bool show_demo_window = true;
-    bool show_another_window = false;
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+	//MARK: INIT IMGUI
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+	ImGui::StyleColorsDark();
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init(glsl_version);
+	bool show_demo_window = true;
+	bool show_another_window = false;
+	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-    //MARK: SCENE RENDER PREP
+	//MARK: SCENE RENDER PREP
 	prepCubeRendering(&ourShader);
 	prepGroundRendering(&ourShader);
 	ourShader.use(); //tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
 	ourShader.setInt("material.diffuse", 0);
 	ourShader.setInt("material.specular", 1);
 
-    initPhysics();
+	initPhysics();
 
-    //MARK: CAMERA SETUP
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)800 / (float)800, 0.1f, 500.0f); //how to show perspective (fov, aspect ratio)
-    ourShader.setMat4("projection", projection); //pass the projection matrix to the fragment shader
+	//MARK: CAMERA SETUP
+	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)800 / (float)800, 0.1f, 500.0f); //how to show perspective (fov, aspect ratio)
+	ourShader.setMat4("projection", projection); //pass the projection matrix to the fragment shader
 
-    //MARK: RENDER LOOP ---------------------------------------------------------------------------------------------------------------
-    while (!glfwWindowShouldClose(window)){
-		
+	//MARK: RENDER LOOP ---------------------------------------------------------------------------------------------------------------
+	while (!glfwWindowShouldClose(window)) {
+
 		if (!bgm.soundPlaying()) {
 			bgm.playSound();
 		}
 
-        //MARK: Frame Start
-        float currentFrame = glfwGetTime();
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
-        processInput(window);
-        stepPhysics();
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
+		//MARK: Frame Start
+		float currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+		processInput(window);
+		stepPhysics();
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
 
 		PxVehicleWheels* vehicles[1] = { gVehicle4W };
 		PxBounds3 pxBounds = vehicles[0]->getRigidDynamicActor()->getWorldBounds();
 		PxTransform pos = vehicles[0]->getRigidDynamicActor()->getGlobalPose();
 		glm::vec3 cubePos = glm::vec3(pos.p[0], pos.p[1], pos.p[2]);
 		PxMat44 pxTransMatrix = PxMat44(pos);
+
+
+		PxVehicleWheels* vehicles2[1] = { gVehicle4W2 };
+		PxBounds3 pxBounds2 = vehicles2[0]->getRigidDynamicActor()->getWorldBounds();
+		PxTransform pos2 = vehicles2[0]->getRigidDynamicActor()->getGlobalPose();
+		glm::vec3 cubePos2 = glm::vec3(pos2.p[0], pos2.p[1], pos2.p[2]);
+		PxMat44 pxTransMatrix2 = PxMat44(pos2);
 
 		//camera, TODO: move somewhere else
 		PxQuat vehicleQuaternion = vehicles[0]->getRigidDynamicActor()->getGlobalPose().q;
@@ -810,9 +875,9 @@ int main(int argc, char** argv){
 		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp); //apply a special built in matrix specifically made for camera views call the "Look At" matrix
 		//ourShader.setMat4("view", view); //set the camera view matrix in our fragment shader
 
-        //MARK: Render Scene
+		//MARK: Render Scene
 		glClearColor(0.53f, 0.81f, 0.92f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//DIRECTIONAL LIGHTING (sunglight)
 		ourShader.use();
@@ -822,22 +887,39 @@ int main(int argc, char** argv){
 		ourShader.setVec3("light.diffuse", 0.6f, 0.6f, 0.6f);
 		ourShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 		ourShader.setFloat("material.shininess", 256.0f);
-        
+
 		//VEHICLE
-        glActiveTexture(GL_TEXTURE0); //bind textures on corresponding texture units
-        glBindTexture(GL_TEXTURE_2D, vehicle_texture);
+		glActiveTexture(GL_TEXTURE0); //bind textures on corresponding texture units
+		glBindTexture(GL_TEXTURE_2D, vehicle_texture);
 		glActiveTexture(GL_TEXTURE0 + 1);
 		glBindTexture(GL_TEXTURE_2D, vehicle_texture);
-        glBindVertexArray(CUBE_VAO); //tell OpenGL to render whatever we have in our Vertex Array Object
-        glm::mat4 model = glm::mat4(1.0f); //identity matrix
+		glBindVertexArray(CUBE_VAO); //tell OpenGL to render whatever we have in our Vertex Array Object
+		glm::mat4 model = glm::mat4(1.0f); //identity matrix
 		model = getGlmMatrix(pxTransMatrix);
-        //model = glm::translate(model, cubePos); //model matrix converts the local coordinates (cubePosition) to the global world coordinates
-        //model = glm::rotate(model, glm::radians(0), glm::vec3(0.0f, 1.0f, 0.0f)); //rotate
+		//model = glm::translate(model, cubePos); //model matrix converts the local coordinates (cubePosition) to the global world coordinates
+		//model = glm::rotate(model, glm::radians(0), glm::vec3(0.0f, 1.0f, 0.0f)); //rotate
 		//model = glm::scale(model, glm::vec3(pxBounds.getDimensions().x, pxBounds.getDimensions().y, pxBounds.getDimensions().z));
-        ourShader.setMat4("model", model); //set the model matrix (which when applied converts the local position to global world coordinates...)
+		ourShader.setMat4("model", model); //set the model matrix (which when applied converts the local position to global world coordinates...)
 		model[3][1] = model[3][1] - 3.0f;
 		ourShader.setMat4("view", view); //set the camera view matrix in our fragment shader		
 		glDrawArrays(GL_TRIANGLES, 0, 36); //draw the triangle data, starting at 0 with 36 vertex data points
+
+		//VEHICLE2
+		glActiveTexture(GL_TEXTURE0); //bind textures on corresponding texture units
+		glBindTexture(GL_TEXTURE_2D, vehicle_texture);
+		glActiveTexture(GL_TEXTURE0 + 1);
+		glBindTexture(GL_TEXTURE_2D, vehicle_texture);
+		glBindVertexArray(CUBE_VAO); //tell OpenGL to render whatever we have in our Vertex Array Object
+		glm::mat4 model2 = glm::mat4(1.0f); //identity matrix
+		model2 = getGlmMatrix(pxTransMatrix2);
+		//model = glm::translate(model, cubePos); //model matrix converts the local coordinates (cubePosition) to the global world coordinates
+		//model = glm::rotate(model, glm::radians(0), glm::vec3(0.0f, 1.0f, 0.0f)); //rotate
+		//model = glm::scale(model, glm::vec3(pxBounds.getDimensions().x, pxBounds.getDimensions().y, pxBounds.getDimensions().z));
+		ourShader.setMat4("model", model2); //set the model matrix (which when applied converts the local position to global world coordinates...)
+		model2[3][1] = model2[3][1] - 3.0f;
+		ourShader.setMat4("view", view); //set the camera view matrix in our fragment shader		
+		glDrawArrays(GL_TRIANGLES, 0, 36); //draw the triangle data, starting at 0 with 36 vertex data points
+
 
 		//GROUND
 		glActiveTexture(GL_TEXTURE0);
@@ -861,7 +943,7 @@ int main(int argc, char** argv){
 		model = getGlmMatrix(PxMat44(pxBoxPos));
 		ourShader.setMat4("model", model); //set the model matrix (which when applied converts the local position to global world coordinates...)
 		glDrawArrays(GL_TRIANGLES, 0, 36); //draw the triangle data, starting at 0 with 36 vertex data points
-        
+
 		glActiveTexture(GL_TEXTURE0); //bind textures on corresponding texture units
 		glBindTexture(GL_TEXTURE_2D, vehicle_texture);
 		glBindVertexArray(CUBE_VAO); //tell OpenGL to render whatever we have in our Vertex Array Object
@@ -878,33 +960,33 @@ int main(int argc, char** argv){
 		ourShader.setMat4("model", model); //set the model matrix (which when applied converts the local position to global world coordinates...)
 		glDrawArrays(GL_TRIANGLES, 0, 36); //draw the triangle data, starting at 0 with 36 vertex data points
 
-        //MARK: Render ImgUI
-        {
-            ImGui::Begin("Debug Menu");
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-            ImGui::End();
-        }
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		//MARK: Render ImgUI
+		{
+			ImGui::Begin("Debug Menu");
+			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			ImGui::End();
+		}
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        //MARK: Frame End
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
-    //---------------------------------------------------------------------------------------------------------------------------------
+		//MARK: Frame End
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
+	//---------------------------------------------------------------------------------------------------------------------------------
 
-    //MARK: Clean up & Terminate
-    cleanupPhysics();
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
-    glfwTerminate();
-    return 0;
+	//MARK: Clean up & Terminate
+	cleanupPhysics();
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+	glfwTerminate();
+	return 0;
 }
 
 
 //MARK: Input Functions
-void processInput(GLFWwindow* window){
+void processInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, true);
 	}
@@ -913,7 +995,8 @@ void processInput(GLFWwindow* window){
 		if (mouseVisible) {
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 			mouseVisible = false;
-		}else{
+		}
+		else {
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 			mouseVisible = true;
 		}
@@ -921,59 +1004,59 @@ void processInput(GLFWwindow* window){
 
 	releaseAllControls();
 
-    float cameraSpeed = 10 * deltaTime;
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) cameraPos += cameraSpeed * cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) cameraPos -= cameraSpeed * cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-	
+	float cameraSpeed = 10 * deltaTime;
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) cameraPos += cameraSpeed * cameraFront;
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) cameraPos -= cameraSpeed * cameraFront;
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+
 	if ((glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_UP) == GLFW_REPEAT)) {
-		std::cout << "UP1\n";
+		//std::cout << "UP1\n";
 		gMimicKeyInputs = true;
 		startAccelerateForwardsMode();
 	}
 	if ((glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_REPEAT)) {
-		std::cout << "DOWN1\n";
+		//std::cout << "DOWN1\n";
 		gMimicKeyInputs = true;
 		startBrakeMode();
 	}
 	if ((glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_REPEAT)) {
-		std::cout << "LEFT1\n";
+		//std::cout << "LEFT1\n";
 		gMimicKeyInputs = true;
 		startTurnHardRightMode();
 	}
 	if ((glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_REPEAT)) {
-		std::cout << "RIGHT1\n";
+		//std::cout << "RIGHT1\n";
 		gMimicKeyInputs = true;
 		startTurnHardLeftMode();
 	}
 }
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos){
-    if (firstMouse){
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+	if (firstMouse) {
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
+	}
 
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos;
-    lastX = xpos;
-    lastY = ypos;
+	float xoffset = xpos - lastX;
+	float yoffset = lastY - ypos;
+	lastX = xpos;
+	lastY = ypos;
 
-    float sensitivity = 0.1f;
-    xoffset *= sensitivity;
-    yoffset *= sensitivity;
+	float sensitivity = 0.1f;
+	xoffset *= sensitivity;
+	yoffset *= sensitivity;
 
-    yaw += xoffset;
-    pitch += yoffset;
+	yaw += xoffset;
+	pitch += yoffset;
 
-    if (pitch > 89.0f) pitch = 89.0f;
-    if (pitch < -89.0f) pitch = -89.0f;
+	if (pitch > 89.0f) pitch = 89.0f;
+	if (pitch < -89.0f) pitch = -89.0f;
 
-    glm::vec3 direction;
-    direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    direction.y = sin(glm::radians(pitch));
-    direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-    cameraFront = glm::normalize(direction);
+	glm::vec3 direction;
+	direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	direction.y = sin(glm::radians(pitch));
+	direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	cameraFront = glm::normalize(direction);
 }
