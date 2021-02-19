@@ -1,3 +1,5 @@
+//adapted from: https://www.udemy.com/course/learn-modern-opengl-programming/
+
 #include "Texture2D.h"
 #include "stb_image.h"
 #include <iostream>
@@ -14,8 +16,6 @@ Texture2D::~Texture2D()
 
 bool Texture2D::loadTexture(const string& filename, bool generateMipMaps)
 {
-
-
 	glGenTextures(1, &mTexture);
 	glBindTexture(GL_TEXTURE_2D, mTexture);
 
@@ -31,9 +31,8 @@ bool Texture2D::loadTexture(const string& filename, bool generateMipMaps)
 		std::cerr << "Error loading texture '" << filename << "'" << std::endl;
 		return false;
 	}
-	//change second param to save performance
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData);
 
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData); //change second param to save performance
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(imageData);
 	glBindTexture(GL_TEXTURE_2D, 0);

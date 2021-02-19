@@ -23,6 +23,7 @@ public:
 	~Mesh();
 
 	bool loadOBJ(const std::string& filename);
+	void loadVertexData(float vertexData[], int arraySize);
 	void draw();
 
 private:

@@ -19,7 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="SoundManager.cpp" />
     <ClCompile Include="OpenALEngine.cpp" />
     <ClCompile Include="Dependencies\imgui\imgui.cpp" />
@@ -39,9 +41,12 @@
     <ClCompile Include="SnippetVehicleTankCreate.cpp" />
     <ClCompile Include="SnippetVehicleTireFriction.cpp" />
     <ClCompile Include="Texture2D.cpp" />
+    <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="Renderer.h" />
     <ClInclude Include="SoundManager.h" />
     <ClInclude Include="OpenALEngine.h" />
     <ClInclude Include="Dependencies\imgui\imconfig.h" />
@@ -59,6 +64,7 @@
     <ClInclude Include="SnippetVehicleTireFriction.h" />
     <ClInclude Include="SnippetVehicleWheelQueryResult.h" />
     <ClInclude Include="Texture2D.h" />
+    <ClInclude Include="Utils.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

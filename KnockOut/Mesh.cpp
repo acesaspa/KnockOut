@@ -17,7 +17,7 @@ Mesh::~Mesh()
 }
 
 
-bool Mesh::loadOBJ(const std::string& filename)
+bool Mesh::loadOBJ(const std::string& filename) //load vertex, normal, and tex coord data from an obj file
 {
 	std::vector<unsigned int> vertexIndices, uvIndices, normalIndices;
 	std::vector<glm::vec3> tempVertices;
@@ -108,7 +108,38 @@ bool Mesh::loadOBJ(const std::string& filename)
 }
 
 
-void Mesh::initBuffers() //Must have valid, non-empty std::vector of Vertex objects.
+
+void Mesh::loadVertexData(float vertexData[], int arraySize) { //stride size 8 - vertex x, y, z; normal x, y, z; tex coord x, y;
+	for (unsigned int i = 0; i < arraySize; i = i + 8) // For each vertex of each triangle
+	{
+		glm::vec3 vertex, normal;
+		glm::vec2 tex;
+
+		vertex.x = vertexData[i];
+		vertex.y = vertexData[i+1];
+		vertex.z = vertexData[i+2];
+
+		normal.x = vertexData[i+3];
+		normal.y = vertexData[i+4];
+		normal.z = vertexData[i+5];
+
+		tex.x = vertexData[i+6];
+		tex.y = vertexData[i+7];
+
+		Vertex meshVertex;
+		meshVertex.position = vertex;
+		meshVertex.normals = normal;
+		meshVertex.texCoords = tex;
+
+		mVertices.push_back(meshVertex);
+	}
+
+	initBuffers();
+	mLoaded = true;
+}
+
+
+void Mesh::initBuffers() //must have valid, non-empty std::vector of Vertex objects
 {
 	glGenVertexArrays(1, &mVAO);
 	glGenBuffers(1, &mVBO);
