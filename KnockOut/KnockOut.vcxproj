@@ -39,6 +39,7 @@
     <ClCompile Include="SnippetVehicleTankCreate.cpp" />
     <ClCompile Include="SnippetVehicleTireFriction.cpp" />
     <ClCompile Include="Texture2D.cpp" />
+    <ClCompile Include="VehiclePhysx.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Mesh.h" />
@@ -59,6 +60,7 @@
     <ClInclude Include="SnippetVehicleTireFriction.h" />
     <ClInclude Include="SnippetVehicleWheelQueryResult.h" />
     <ClInclude Include="Texture2D.h" />
+    <ClInclude Include="VehiclePhysx.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
