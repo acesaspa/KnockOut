@@ -7,11 +7,11 @@ using std::string;
 
 class Texture2D
 {
-public: 
+public:
 	Texture2D();
 	virtual ~Texture2D();
 
-	bool loadTexture(const string& filename, bool generateMipMaps = true);
+	bool loadTexture(const string& filename, bool generateMipMaps = true, bool flipVertically = false);
 	void bind(GLuint texUnit = 0);
 	void unbind(GLuint texUnit = 0);
 

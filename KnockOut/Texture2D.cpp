@@ -1,10 +1,8 @@
-//adapted from: https://www.udemy.com/course/learn-modern-opengl-programming/
-
 #include "Texture2D.h"
 #include "stb_image.h"
 #include <iostream>
 
-Texture2D::Texture2D() 
+Texture2D::Texture2D()
 	: mTexture(0)
 {
 }
@@ -14,7 +12,7 @@ Texture2D::~Texture2D()
 
 }
 
-bool Texture2D::loadTexture(const string& filename, bool generateMipMaps)
+bool Texture2D::loadTexture(const string& filename, bool generateMipMaps, bool flipVertically)
 {
 	glGenTextures(1, &mTexture);
 	glBindTexture(GL_TEXTURE_2D, mTexture);
@@ -25,14 +23,16 @@ bool Texture2D::loadTexture(const string& filename, bool generateMipMaps)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	int width, height, components;
+	stbi_set_flip_vertically_on_load(flipVertically);
 	unsigned char* imageData = stbi_load(filename.c_str(), &width, &height, &components, STBI_rgb_alpha);
 	if (imageData == NULL)
 	{
 		std::cerr << "Error loading texture '" << filename << "'" << std::endl;
 		return false;
 	}
+	//change second param to save performance
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData); //change second param to save performance
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(imageData);
 	glBindTexture(GL_TEXTURE_2D, 0);

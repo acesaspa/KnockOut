@@ -16,8 +16,7 @@ Mesh::~Mesh()
 	glDeleteBuffers(1, &mVBO);
 }
 
-
-bool Mesh::loadOBJ(const std::string& filename) //load vertex, normal, and tex coord data from an obj file
+bool Mesh::loadOBJ(const std::string& filename)
 {
 	std::vector<unsigned int> vertexIndices, uvIndices, normalIndices;
 	std::vector<glm::vec3> tempVertices;
@@ -108,38 +107,7 @@ bool Mesh::loadOBJ(const std::string& filename) //load vertex, normal, and tex c
 }
 
 
-
-void Mesh::loadVertexData(float vertexData[], int arraySize) { //stride size 8 - vertex x, y, z; normal x, y, z; tex coord x, y;
-	for (unsigned int i = 0; i < arraySize; i = i + 8) // For each vertex of each triangle
-	{
-		glm::vec3 vertex, normal;
-		glm::vec2 tex;
-
-		vertex.x = vertexData[i];
-		vertex.y = vertexData[i+1];
-		vertex.z = vertexData[i+2];
-
-		normal.x = vertexData[i+3];
-		normal.y = vertexData[i+4];
-		normal.z = vertexData[i+5];
-
-		tex.x = vertexData[i+6];
-		tex.y = vertexData[i+7];
-
-		Vertex meshVertex;
-		meshVertex.position = vertex;
-		meshVertex.normals = normal;
-		meshVertex.texCoords = tex;
-
-		mVertices.push_back(meshVertex);
-	}
-
-	initBuffers();
-	mLoaded = true;
-}
-
-
-void Mesh::initBuffers() //must have valid, non-empty std::vector of Vertex objects
+void Mesh::initBuffers() //Must have valid, non-empty std::vector of Vertex objects.
 {
 	glGenVertexArrays(1, &mVAO);
 	glGenBuffers(1, &mVBO);
@@ -160,8 +128,6 @@ void Mesh::initBuffers() //must have valid, non-empty std::vector of Vertex obje
 	glBindVertexArray(0); // unbind to make sure other code does not change it somewhere else
 }
 
-
-
 void Mesh::draw()
 {
 	if (!mLoaded) return;
@@ -169,5 +135,67 @@ void Mesh::draw()
 	glBindVertexArray(mVAO);
 	glDrawArrays(GL_TRIANGLES, 0, mVertices.size());
 	glBindVertexArray(0);
+}
+
+
+
+
+
+void Mesh::loadVertexData(float vertexData[], int arraySize) { //stride size 8 - vertex x, y, z; normal x, y, z; tex coord x, y;
+	for (unsigned int i = 0; i < arraySize; i = i + 8) // For each vertex of each triangle
+	{
+		glm::vec3 vertex, normal;
+		glm::vec2 tex;
+
+		vertex.x = vertexData[i];
+		vertex.y = vertexData[i + 1];
+		vertex.z = vertexData[i + 2];
+
+		normal.x = vertexData[i + 3];
+		normal.y = vertexData[i + 4];
+		normal.z = vertexData[i + 5];
+
+		tex.x = vertexData[i + 6];
+		tex.y = vertexData[i + 7];
+
+		Vertex meshVertex;
+		meshVertex.position = vertex;
+		meshVertex.normals = normal;
+		meshVertex.texCoords = tex;
+
+
+		//std::cout <<
+		//	meshVertex.position.x << ", " <<
+		//	meshVertex.position.y << ", " <<
+		//	meshVertex.position.z << ", " <<
+
+		//	meshVertex.normals.x << ", " <<
+		//	meshVertex.normals.y << ", " <<
+		//	meshVertex.normals.z << ", " <<
+
+		//	meshVertex.texCoords.x << ", " <<
+		//	meshVertex.texCoords.y <<
+		//	std::endl;
+
+		mVertices.push_back(meshVertex);
+	}
+
+	//for (int i = 0; i < mVertices.size(); i++) {
+	//	std::cout <<
+	//		mVertices[i].position.x << ", " <<
+	//		mVertices[i].position.y << ", " <<
+	//		mVertices[i].position.z << ", " <<
+
+	//		mVertices[i].normals.x << ", " <<
+	//		mVertices[i].normals.y << ", " <<
+	//		mVertices[i].normals.z << ", " <<
+
+	//		mVertices[i].texCoords.x << ", " <<
+	//		mVertices[i].texCoords.y <<
+	//	std::endl;
+	//}
+
+	initBuffers();
+	mLoaded = true;
 }
 

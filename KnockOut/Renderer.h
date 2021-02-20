@@ -15,18 +15,15 @@
 class Renderer {
 public:
 	void setUpRendering(glm::vec3 cameraPos, Shader ourShader);
-	void renderGameFrame(physx::PxVehicleDrive4W* pxPlayer,
-		std::vector<physx::PxVehicleDrive4W*> pxOpponents,
-		//std::vector<physx::PxRigidDynamic*> pxObjects,
-		physx::PxRigidDynamic* box,
-		physx::PxRigidStatic* pxLevel,
+	void renderGameFrame(physx::PxMat44 pxPlayerTrans,
+		std::vector<physx::PxMat44> pxOpponentsTrans,
+		glm::vec3 pxLevelPos,
+		std::vector<physx::PxTransform> pxObjectsTrans,
 		Shader ourShader,
-		glm::mat4 view);
+		glm::mat4 view,
+		glm::vec3 cameraPos);
 
 private:
-	glm::vec3 getRigidDynamicPos(physx::PxRigidDynamic* pxRigid);
-	glm::vec3 getRigidStaticPos(physx::PxRigidStatic* pxRigid);
-
 	std::vector<Mesh> powerUpMeshes;
 	std::vector<Mesh> objectMeshes;
 	std::vector<Mesh> aiOpponentMeshes;
@@ -37,9 +34,13 @@ private:
 
 	Mesh playerMesh;
 	Mesh levelMesh;
+	Mesh cubeMesh;
 
+	Texture2D cubeTexture;
 	Texture2D playerTexture;
 	Texture2D levelTexture;
+
+	glm::vec3 playerScale;
 };
 
 #endif

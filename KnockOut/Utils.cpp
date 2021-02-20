@@ -1,8 +1,6 @@
 #include "Utils.h"
 
 
-
-
 //MARK: Variables & Data
 
 float Utils::cubeVertexData[] = {
@@ -68,20 +66,6 @@ int Utils::planeArrayLen = 48;
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //MARK: Functions
 
 glm::mat4 Utils::getGlmMatFromPxMat(physx::PxMat44 pxMat) //converts a PhysX 4x4 matrix to a GLM 4x4 matrix
@@ -109,6 +93,16 @@ glm::mat4 Utils::getGlmMatFromPxMat(physx::PxMat44 pxMat) //converts a PhysX 4x4
 	glmMat[3].w = pxMat.column3[3];
 
 	return glmMat;
+}
+
+glm::vec3 Utils::getRigidDynamicPos(physx::PxRigidDynamic* pxRigid) {
+	physx::PxTransform transMat = pxRigid->getGlobalPose();
+	return glm::vec3(transMat.p[0], transMat.p[1], transMat.p[2]);
+}
+
+glm::vec3 Utils::getRigidStaticPos(physx::PxRigidStatic* pxRigid) {
+	physx::PxTransform transMat = pxRigid->getGlobalPose();
+	return glm::vec3(transMat.p[0], transMat.p[1], transMat.p[2]);
 }
 
 

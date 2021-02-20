@@ -11,6 +11,8 @@ public:
 	static float cubeVertexData[];
 	static float planeVertexData[];
 	static glm::mat4 getGlmMatFromPxMat(physx::PxMat44 pxMat);
+	static glm::vec3 getRigidStaticPos(physx::PxRigidStatic* pxRigid);
+	static glm::vec3 getRigidDynamicPos(physx::PxRigidDynamic* pxRigid);
 };
 
 #endif

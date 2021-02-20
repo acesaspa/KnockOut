@@ -18,7 +18,6 @@ struct Vertex
 class Mesh
 {
 public:
-
 	Mesh();
 	~Mesh();
 
@@ -27,9 +26,7 @@ public:
 	void draw();
 
 private:
-
 	void initBuffers();
-
 	bool mLoaded;
 	std::vector<Vertex> mVertices;
 	GLuint mVBO, mVAO;
