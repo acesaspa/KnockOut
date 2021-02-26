@@ -52,14 +52,6 @@ Renderer mainRenderer;
 Camera mainCamera;
 VehiclePhysx Physics = VehiclePhysx();
 
-
-
-
-
-
-
-
-
 //MARK: Main
 int main(int argc, char** argv) {
 
@@ -100,8 +92,6 @@ int main(int argc, char** argv) {
 
 	Physics.initPhysics();
 
-
-
 	//MARK: RENDER LOOP ---------------------------------------------------------------------------------------------------------------
 	while (!glfwWindowShouldClose(window)) {
 
@@ -140,6 +130,12 @@ int main(int argc, char** argv) {
 		//MARK: Render Imgui
 		{
 			ImGui::Begin("Debug Menu");
+
+			ImGui::Text("Vehicle Position");
+			ImGui::Text("x: %.1f    y: %.1f    z: %.1f", Physics.getVehiclePos().x, Physics.getVehiclePos().y, Physics.getVehiclePos().z);
+			ImGui::Text("-----------------------------------------------");
+
+			ImGui::Text("");
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 			ImGui::End();
 		}
@@ -149,6 +145,10 @@ int main(int argc, char** argv) {
 		//MARK: Frame End
 		glfwSwapBuffers(window);
 		glfwPollEvents();
+
+		std::cout << Physics.getVehiclePos().x << std::endl;
+		std::cout << Physics.getVehiclePos().y << std::endl;
+		std::cout << Physics.getVehiclePos().z << std::endl;
 	}
 	//---------------------------------------------------------------------------------------------------------------------------------
 
@@ -160,13 +160,6 @@ int main(int argc, char** argv) {
 	glfwTerminate();
 	return 0;
 }
-
-
-
-
-
-
-
 
 //MARK: Input Functions
 
