@@ -24,7 +24,6 @@ public:
 		glm::vec3 cameraPos);
 
 private:
-	std::vector<Mesh> powerUpMeshes;
 	std::vector<Mesh> objectMeshes;
 	std::vector<Mesh> aiOpponentMeshes;
 
@@ -35,12 +34,14 @@ private:
 	Mesh playerMesh;
 	Mesh levelMesh;
 	Mesh cubeMesh;
+	Mesh powerUpMesh;
 
-	Texture2D cubeTexture;
 	Texture2D playerTexture;
 	Texture2D levelTexture;
+	Texture2D cubeTexture;
+	Texture2D JmpPowerUpTexture;
 
-	glm::vec3 playerScale;
+	glm::vec3 modelScalel;
 };
 
 #endif

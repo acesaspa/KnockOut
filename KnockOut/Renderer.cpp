@@ -5,9 +5,6 @@
 
 glm::vec3 modelScale = glm::vec3(0.5f, 0.5f, 0.5f);
 
-
-
-
 void Renderer::setUpRendering(glm::vec3 cameraPos, Shader ourShader) { //call once before entering the game loop
 	glEnable(GL_DEPTH_TEST); //to make sure the fragment shader takes into account that some geometry has to be drawn in front of another
 	ourShader.use(); //tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
@@ -15,6 +12,9 @@ void Renderer::setUpRendering(glm::vec3 cameraPos, Shader ourShader) { //call on
 	ourShader.setInt("material.specular", 1);
 
 	//MARK: Object Setup
+	powerUpMesh.loadOBJ("Powerup.obj");
+	JmpPowerUpTexture.loadTexture("jumpUV.png", true);
+
 	playerMesh.loadOBJ("blueCar.obj");
 	playerTexture.loadTexture("greenCar.png", true, true);
 
@@ -31,7 +31,6 @@ void Renderer::setUpRendering(glm::vec3 cameraPos, Shader ourShader) { //call on
 	ourShader.setMat4("projection", projection); //pass the projection matrix to the fragment shader
 }
 
-
 void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans,
 	std::vector<physx::PxMat44> pxOpponentsTrans,
 	glm::vec3 pxLevelPos,
@@ -39,7 +38,6 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans,
 	Shader ourShader,
 	glm::mat4 view,
 	glm::vec3 cameraPos){ //render a single frame of the game
-
 
 	//SHADER
 	ourShader.use();
@@ -51,10 +49,7 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans,
 	ourShader.setFloat("material.shininess", 256.0f);
 	ourShader.setMat4("view", view); //set the camera view matrix in our fragment shader
 
-
 	//TODO: what are different texture units for?
-
-
 
 	//PLAYER (drawing a vehicle)
 	playerTexture.bind(0);
@@ -64,7 +59,6 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans,
 	model = glm::scale(model, modelScale);
 	ourShader.setMat4("model", model); //set the model matrix (which when applied converts the local position to global world coordinates...)	
 	playerMesh.draw();
-
 
 	//OPPONENTS
 	for (int i = 0; i < pxOpponentsTrans.size(); i++) {
@@ -83,7 +77,6 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans,
 	ourShader.setMat4("model", model);
 	levelMesh.draw();
 
-
 	//OBJECTS (draw a dynamic object)
 	for (int i = 0; i < pxObjectsTrans.size(); i++) { //TODO: boxes are either under the plane or not loaded at all
 		objectTextures[0].bind(0);
@@ -92,4 +85,11 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans,
 		ourShader.setMat4("model", model);
 		objectMeshes[0].draw();
 	}
+
+	//POWERUPS
+	JmpPowerUpTexture.bind(0);
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, 1.0f, 10.0f));
+	ourShader.setMat4("model", model);
+	powerUpMesh.draw();
 }
