@@ -145,10 +145,6 @@ int main(int argc, char** argv) {
 		//MARK: Frame End
 		glfwSwapBuffers(window);
 		glfwPollEvents();
-
-		std::cout << Physics.getVehiclePos().x << std::endl;
-		std::cout << Physics.getVehiclePos().y << std::endl;
-		std::cout << Physics.getVehiclePos().z << std::endl;
 	}
 	//---------------------------------------------------------------------------------------------------------------------------------
 

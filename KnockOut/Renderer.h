@@ -34,12 +34,17 @@ private:
 	Mesh playerMesh;
 	Mesh levelMesh;
 	Mesh cubeMesh;
-	Mesh powerUpMesh;
+
+	Mesh jmpPowerUpMesh;
+	Mesh atkPowerUpMesh;
+	Mesh defPowerUpMesh;
 
 	Texture2D playerTexture;
 	Texture2D levelTexture;
 	Texture2D cubeTexture;
 	Texture2D JmpPowerUpTexture;
+	Texture2D AtkPowerUpTexture;
+	Texture2D DefPowerUpTexture;
 
 	glm::vec3 modelScalel;
 };
