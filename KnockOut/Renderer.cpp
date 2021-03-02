@@ -72,8 +72,14 @@ void Renderer::setUpRendering(glm::vec3 cameraPos, Shader ourShader) { //call on
 	ourShader.setInt("material.specular", 1);
 
 	//MARK: Object Setup
-	powerUpMesh.loadOBJ("Powerup.obj");
+	jmpPowerUpMesh.loadOBJ("Powerup.obj");
 	JmpPowerUpTexture.loadTexture("jumpUV.png", true);
+
+	atkPowerUpMesh.loadOBJ("Powerup.obj");
+	AtkPowerUpTexture.loadTexture("attackUV.png", true);
+
+	defPowerUpMesh.loadOBJ("Powerup.obj");
+	DefPowerUpTexture.loadTexture("shieldUV.png", true);
 
 	playerMesh.loadOBJ("blueCar.obj");
 	playerTexture.loadTexture("greenCar.png", true, true);
@@ -171,5 +177,17 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans,
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, 1.0f, 10.0f));
 	ourShader.setMat4("model", model);
-	powerUpMesh.draw();
+	jmpPowerUpMesh.draw();
+
+	AtkPowerUpTexture.bind(0);
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(4.0f, 1.0f, 10.0f));
+	ourShader.setMat4("model", model);
+	atkPowerUpMesh.draw();
+
+	DefPowerUpTexture.bind(0);
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(-5.0f, 1.0f, 10.0f));
+	ourShader.setMat4("model", model);
+	defPowerUpMesh.draw();
 }
