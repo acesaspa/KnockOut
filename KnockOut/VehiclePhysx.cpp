@@ -142,8 +142,8 @@ VehicleDesc VehiclePhysx::initVehicleDesc()
 	//Set up the chassis mass, dimensions, moment of inertia, and center of mass offset.
 	//The moment of inertia is just the moment of inertia of a cuboid but modified for easier steering.
 	//Center of mass offset is 0.65m above the base of the chassis and 0.25m towards the front.
-	const PxF32 chassisMass = 1500.0f;
-	const PxVec3 chassisDims(2.5f, 2.0f, 5.0f);
+	const PxF32 chassisMass = 1000.0f;
+	const PxVec3 chassisDims(2.5f, 1.0f, 5.0f);
 	const PxVec3 chassisMOI
 	((chassisDims.y * chassisDims.y + chassisDims.z * chassisDims.z) * chassisMass / 12.0f,
 		(chassisDims.x * chassisDims.x + chassisDims.z * chassisDims.z) * 0.8f * chassisMass / 12.0f,
@@ -153,8 +153,8 @@ VehicleDesc VehiclePhysx::initVehicleDesc()
 	//Set up the wheel mass, radius, width, moment of inertia, and number of wheels.
 	//Moment of inertia is just the moment of inertia of a cylinder.
 	const PxF32 wheelMass = 20.0f;
-	const PxF32 wheelRadius = 0.5f;
-	const PxF32 wheelWidth = 0.4f;
+	const PxF32 wheelRadius = 0.3f;
+	const PxF32 wheelWidth = 0.3f;
 	const PxF32 wheelMOI = 0.5f * wheelMass * wheelRadius * wheelRadius;
 	const PxU32 nbWheels = 6;
 
