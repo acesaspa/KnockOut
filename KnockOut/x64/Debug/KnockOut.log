@@ -1,10 +1,8 @@
-﻿  Renderer.cpp
-D:\585\KnockOut\KnockOut\Shader.cpp(57,40): warning C4101: 'e': unreferenced local variable
-D:\585\KnockOut\KnockOut\Utils.h(16,2): warning C4091: 'static ': ignored on left of 'Utils' when no variable is declared
-D:\585\KnockOut\KnockOut\Renderer.cpp(26,41): warning C4267: '=': conversion from 'size_t' to 'physx::PxU32', possible loss of data
-D:\585\KnockOut\KnockOut\Renderer.cpp(30,47): warning C4267: '=': conversion from 'size_t' to 'physx::PxU32', possible loss of data
-  VehiclePhysx.cpp
-  Generating Code...
-D:\585\KnockOut\KnockOut\VehiclePhysx.cpp(592): warning C4715: 'VehiclePhysx::getVehicleTrans': not all control paths return a value
-D:\585\KnockOut\KnockOut\VehiclePhysx.cpp(645): warning C4715: 'VehiclePhysx::getBoxTrans': not all control paths return a value
+﻿  Camera.cpp
+D:\585\KnockOut\KnockOut\Camera.cpp(65,11): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\585\KnockOut\KnockOut\Camera.cpp(66,11): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\585\KnockOut\KnockOut\Camera.cpp(70,16): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\585\KnockOut\KnockOut\Camera.cpp(71,16): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\585\KnockOut\KnockOut\Camera.cpp(72,10): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\585\KnockOut\KnockOut\Camera.cpp(73,10): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
   KnockOut.vcxproj -> D:\585\KnockOut\x64\Debug\KnockOut.exe

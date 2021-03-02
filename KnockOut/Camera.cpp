@@ -1,9 +1,9 @@
 #include "Camera.h"
 
 float yaw = 90.0f;
-float pitch = 0.0f;
+float pitch = -15.0f;
 float lastX = 400, lastY = 300;
-float cameraDistance = 5.0f;
+float cameraDistance = 8.0f;
 float angleAroundTarget = 0.0f;
 bool firstMouse = true;
 bool mouseVisible = false;
@@ -77,7 +77,8 @@ void Camera::mouseCallback(GLFWwindow* window, double xpos, double ypos) {
 	yoffset *= sensitivity;
 
 	yaw += xoffset;
-	pitch += yoffset;
+	//pitch += yoffset;
+	//disabling camera pitch movement triggered by mouse
 
 	if (pitch > 89.0f) pitch = 89.0f;
 	if (pitch < -89.0f) pitch = -89.0f;

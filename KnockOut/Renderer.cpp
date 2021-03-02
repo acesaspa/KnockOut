@@ -128,6 +128,7 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans,
 	playerTexture.bind(0);
 	glm::mat4 model = glm::mat4(1.0f); //identity matrix
 	model = Utils::getGlmMatFromPxMat(pxPlayerTrans);
+	model = glm::translate(model, glm::vec3(0.f, -2.f, 0.f));
 	model = glm::rotate(model, glm::radians(180.f), glm::vec3(0.0f, 1.0f, 0.0f)); //fix model orientation
 	model = glm::scale(model, modelScale);
 	ourShader.setMat4("model", model); //set the model matrix (which when applied converts the local position to global world coordinates...)	
@@ -137,6 +138,7 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans,
 	for (int i = 0; i < pxOpponentsTrans.size(); i++) {
 		playerTexture.bind(0);
 		model = Utils::getGlmMatFromPxMat(pxOpponentsTrans[i]);
+		model = glm::translate(model, glm::vec3(0.f, -2.f, 0.f));
 		model = glm::scale(model, modelScale);
 		model[3][1] = model[3][1];
 		ourShader.setMat4("model", model);
