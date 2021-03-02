@@ -6,6 +6,7 @@
 
 #include "GL/glew.h"	
 #include "glm/glm.hpp"
+#include "../include/physx/PxPhysicsAPI.h"
 
 
 struct Vertex
@@ -24,11 +25,15 @@ public:
 	bool loadOBJ(const std::string& filename);
 	void loadVertexData(float vertexData[], int arraySize);
 	void draw();
+	std::vector<physx::PxU32> getVertexIndices();
+	std::vector<physx::PxVec3> getActualVertices();
 
 private:
 	void initBuffers();
 	bool mLoaded;
 	std::vector<Vertex> mVertices;
+	std::vector<glm::vec3> actualVertices;
 	GLuint mVBO, mVAO;
+	std::vector<unsigned int> vertexIndices, uvIndices, normalIndices;
 };
 #endif 

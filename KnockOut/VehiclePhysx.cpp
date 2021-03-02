@@ -336,7 +336,7 @@ void VehiclePhysx::initPhysics()
 	//Create a plane to drive on.
 	PxFilterData groundPlaneSimFilterData(COLLISION_FLAG_GROUND, COLLISION_FLAG_GROUND_AGAINST, 0, 0);
 	gGroundPlane = createDrivablePlane(groundPlaneSimFilterData, gMaterial, gPhysics);
-	gScene->addActor(*gGroundPlane);
+	//gScene->addActor(*gGroundPlane); //TODO: remove, or whatever...
 
 	//Create a vehicle that will drive on the plane.
 	VehicleDesc vehicleDesc = initVehicleDesc();
@@ -642,6 +642,18 @@ PxTransform VehiclePhysx::getBoxTrans(int index) {
 	if (index == 3) {
 		return gBox3->getGlobalPose();
 	}
+}
+
+PxPhysics* VehiclePhysx::getPhysx() {
+	return gPhysics;
+}
+
+PxScene* VehiclePhysx::getScene() {
+	return gScene;
+}
+
+PxCooking* VehiclePhysx::getCooking() {
+	return gCooking;
 }
 
 void VehiclePhysx::setGMimicKeyInputs(bool input) {

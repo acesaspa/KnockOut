@@ -18,8 +18,6 @@ Mesh::~Mesh()
 
 bool Mesh::loadOBJ(const std::string& filename)
 {
-	std::vector<unsigned int> vertexIndices, uvIndices, normalIndices;
-	std::vector<glm::vec3> tempVertices;
 	std::vector<glm::vec2> tempUVs;
 	std::vector<glm::vec3> tempNormals;
 
@@ -41,7 +39,7 @@ bool Mesh::loadOBJ(const std::string& filename)
 				std::istringstream v(lineBuffer.substr(2));
 				glm::vec3 vertex;
 				v >> vertex.x; v >> vertex.y; v >> vertex.z;
-				tempVertices.push_back(vertex);
+				actualVertices.push_back(vertex);
 			}
 			else if (lineBuffer.substr(0, 2) == "vt")
 			{
@@ -87,7 +85,7 @@ bool Mesh::loadOBJ(const std::string& filename)
 
 		for (unsigned int i = 0; i < vertexIndices.size(); i++) // For each vertex of each triangle
 		{
-			glm::vec3 vertex = tempVertices[vertexIndices[i] - 1]; // Get the attributes using the indices
+			glm::vec3 vertex = actualVertices[vertexIndices[i] - 1]; // Get the attributes using the indices
 			glm::vec2 uv = tempUVs[uvIndices[i] - 1];
 			glm::vec3 normal = tempNormals[normalIndices[i] - 1];
 
@@ -141,6 +139,7 @@ void Mesh::draw()
 
 
 
+
 void Mesh::loadVertexData(float vertexData[], int arraySize) { //stride size 8 - vertex x, y, z; normal x, y, z; tex coord x, y;
 	for (unsigned int i = 0; i < arraySize; i = i + 8) // For each vertex of each triangle
 	{
@@ -163,39 +162,34 @@ void Mesh::loadVertexData(float vertexData[], int arraySize) { //stride size 8 -
 		meshVertex.normals = normal;
 		meshVertex.texCoords = tex;
 
-
-		//std::cout <<
-		//	meshVertex.position.x << ", " <<
-		//	meshVertex.position.y << ", " <<
-		//	meshVertex.position.z << ", " <<
-
-		//	meshVertex.normals.x << ", " <<
-		//	meshVertex.normals.y << ", " <<
-		//	meshVertex.normals.z << ", " <<
-
-		//	meshVertex.texCoords.x << ", " <<
-		//	meshVertex.texCoords.y <<
-		//	std::endl;
-
 		mVertices.push_back(meshVertex);
 	}
-
-	//for (int i = 0; i < mVertices.size(); i++) {
-	//	std::cout <<
-	//		mVertices[i].position.x << ", " <<
-	//		mVertices[i].position.y << ", " <<
-	//		mVertices[i].position.z << ", " <<
-
-	//		mVertices[i].normals.x << ", " <<
-	//		mVertices[i].normals.y << ", " <<
-	//		mVertices[i].normals.z << ", " <<
-
-	//		mVertices[i].texCoords.x << ", " <<
-	//		mVertices[i].texCoords.y <<
-	//	std::endl;
-	//}
 
 	initBuffers();
 	mLoaded = true;
 }
+
+std::vector<physx::PxVec3> Mesh::getActualVertices() {
+	std::vector<physx::PxVec3> adjustedVertices;
+	adjustedVertices.push_back(physx::PxVec3(0.0, 0.0, 0.0)); //fix index offset
+	for (int i = 0; i < actualVertices.size(); i++) {
+		physx::PxVec3 newVertex;
+		newVertex.x = actualVertices[i].x;
+		newVertex.y = actualVertices[i].y;
+		newVertex.z = actualVertices[i].z;
+		adjustedVertices.push_back(newVertex);
+	}
+	return adjustedVertices;
+}
+
+std::vector<physx::PxU32> Mesh::getVertexIndices() {
+	std::vector<physx::PxU32> indices;
+	for (int i = 0; i < vertexIndices.size(); i++) {
+		indices.push_back(vertexIndices[i]);
+	}
+	return indices;
+}
+
+
+
 

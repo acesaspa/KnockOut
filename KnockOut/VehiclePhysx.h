@@ -29,8 +29,12 @@ public:
 	glm::vec3 getGroundPos();
 	glm::vec3 getBoxPos(int index);
 	PxTransform getBoxTrans(int index);
+	PxPhysics* getPhysx();
+	PxScene* getScene();
+	PxCooking* getCooking();
 	void setGMimicKeyInputs(bool input);
 	void forceGearChange(int input);
+
 
 private:
 

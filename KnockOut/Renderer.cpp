@@ -5,6 +5,66 @@
 
 glm::vec3 modelScale = glm::vec3(0.5f, 0.5f, 0.5f);
 
+
+void Renderer::cookMeshes(physx::PxPhysics* gPhysics, physx::PxCooking* gCooking, physx::PxScene* gScene) { //call once physx ready, this will cook all necessary meshes
+	cookMesh(gPhysics, gCooking, gScene, &citySurfaceMesh);
+	cookMesh(gPhysics, gCooking, gScene, &grassSurfaceMesh);
+	cookMesh(gPhysics, gCooking, gScene, &desertSurfaceMesh);
+}
+
+
+
+
+
+void Renderer::cookMesh(physx::PxPhysics* gPhysics, physx::PxCooking* gCooking, physx::PxScene* gScene, Mesh* meshToCook) { //cook a tri mesh and add it to the physics scene
+	physx::PxMaterial* gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f); //create some material
+	physx::PxTriangleMeshDesc meshDesc; //mesh cooking from a triangle mesh
+
+	std::vector<physx::PxVec3> vertices = meshToCook->getActualVertices();
+	std::vector<physx::PxU32> indices = meshToCook->getVertexIndices();
+
+	meshDesc.points.count = vertices.size(); //total number of vertices
+	meshDesc.points.stride = sizeof(physx::PxVec3);
+	meshDesc.points.data = reinterpret_cast<const void*>(vertices.data());
+
+	meshDesc.triangles.count = indices.size() / 3; //total number of triangles (each index = 1 vertex, so divide by 3 to get the num of triangles)
+	meshDesc.triangles.stride = 3 * sizeof(physx::PxU32);
+	meshDesc.triangles.data = reinterpret_cast<const void*>(indices.data());
+
+	//PxCookingParams params = gCooking->getParams();
+	////TODO: potentially do this
+	//gCooking->setParams(params);
+
+	//physx::PxFilterData myData = physx::PxFilterData();
+	//myData.word0 = 14;
+	//myData.word1 = 2;
+
+	physx::PxFilterData groundPlaneSimFilterData(snippetvehicle::COLLISION_FLAG_GROUND, snippetvehicle::COLLISION_FLAG_GROUND_AGAINST, 0, 0);
+
+	physx::PxTriangleMesh* triMesh = NULL;
+	physx::PxU32 meshSize = 0;
+	triMesh = gCooking->createTriangleMesh(meshDesc, gPhysics->getPhysicsInsertionCallback()); //insert the cooked mesh directly into PxPhysics
+	physx::PxRigidStatic* meshBody = gPhysics->createRigidStatic(physx::PxTransform(physx::PxVec3(0, 0, 0))); //create a rigid body for the cooked mesh
+	physx::PxShape* meshShape = gPhysics->createShape(physx::PxTriangleMeshGeometry(triMesh), *gMaterial); //create a shape from the cooked mesh
+	
+	physx::PxFilterData qryFilterData;
+	snippetvehicle::setupDrivableSurface(qryFilterData);
+	meshShape->setQueryFilterData(qryFilterData);
+	meshShape->setSimulationFilterData(groundPlaneSimFilterData);
+	
+	meshShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, true);
+	meshBody->attachShape(*meshShape); //attach the shape to the body
+	gScene->addActor(*meshBody); //and add it to the scene
+	triMesh->release(); //clean up
+}
+
+
+
+
+
+
+
+
 void Renderer::setUpRendering(glm::vec3 cameraPos, Shader ourShader) { //call once before entering the game loop
 	glEnable(GL_DEPTH_TEST); //to make sure the fragment shader takes into account that some geometry has to be drawn in front of another
 	ourShader.use(); //tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
@@ -18,13 +78,20 @@ void Renderer::setUpRendering(glm::vec3 cameraPos, Shader ourShader) { //call on
 	playerMesh.loadOBJ("blueCar.obj");
 	playerTexture.loadTexture("greenCar.png", true, true);
 
-	levelMesh.loadVertexData(Utils::planeVertexData, Utils::planeArrayLen);
-	levelTexture.loadTexture("grass.jpg", true);
+	citySurfaceMesh.loadOBJ("cityLevel.obj");
+	cityTexture.loadTexture("asphalt.jpg", true);
+
+	grassSurfaceMesh.loadOBJ("grassLevel.obj");
+	grassTexture.loadTexture("grass.jpg", true);
+
+	desertSurfaceMesh.loadOBJ("sandLevel.obj");
+	desertTexture.loadTexture("desert_texture.jpg", true);
 
 	cubeMesh.loadVertexData(Utils::cubeVertexData, Utils::cubeArrayLen);
 	objectMeshes.push_back(cubeMesh);
 	cubeTexture.loadTexture("container_texture.jpg", true);
 	objectTextures.push_back(cubeTexture);
+
 
 	//MARK: Camera Setup
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)800 / (float)800, 0.1f, 500.0f); //how to show perspective (fov, aspect ratio)
@@ -71,11 +138,24 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans,
 	}
 
 	//GROUND (drawing a static object)
-	levelTexture.bind(0);
+	cityTexture.bind(0);
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, pxLevelPos);
+	model = glm::translate(model, glm::vec3(0.f, 0.f, 0.f));
 	ourShader.setMat4("model", model);
-	levelMesh.draw();
+	citySurfaceMesh.draw();
+
+	grassTexture.bind(0);
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.f, 0.f, 0.f));
+	ourShader.setMat4("model", model);
+	grassSurfaceMesh.draw();
+
+	desertTexture.bind(0);
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.f, 0.f, 0.f));
+	ourShader.setMat4("model", model);
+	desertSurfaceMesh.draw();
+
 
 	//OBJECTS (draw a dynamic object)
 	for (int i = 0; i < pxObjectsTrans.size(); i++) { //TODO: boxes are either under the plane or not loaded at all

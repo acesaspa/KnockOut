@@ -52,6 +52,19 @@ Renderer mainRenderer;
 Camera mainCamera;
 VehiclePhysx Physics = VehiclePhysx();
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 //MARK: Main
 int main(int argc, char** argv) {
 
@@ -76,7 +89,7 @@ int main(int argc, char** argv) {
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	Shader ourShader("vertex_shader.vs", "fragment_shader.fs");
-	mainRenderer.setUpRendering(mainCamera.getCameraPos(), ourShader);
+	mainRenderer.setUpRendering(mainCamera.getCameraPos(), ourShader/*, Physics.getPhysx(), Physics.getCooking(), Physics.getScene()*/);
 
 	//MARK: Init Imgui
 	IMGUI_CHECKVERSION();
@@ -91,6 +104,8 @@ int main(int argc, char** argv) {
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 	Physics.initPhysics();
+	mainRenderer.cookMeshes(Physics.getPhysx(), Physics.getCooking(), Physics.getScene());
+
 
 	//MARK: RENDER LOOP ---------------------------------------------------------------------------------------------------------------
 	while (!glfwWindowShouldClose(window)) {
@@ -146,9 +161,10 @@ int main(int argc, char** argv) {
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 
-		std::cout << Physics.getVehiclePos().x << std::endl;
-		std::cout << Physics.getVehiclePos().y << std::endl;
-		std::cout << Physics.getVehiclePos().z << std::endl;
+		//std::cout << Physics.getVehiclePos().x << std::endl;
+		//std::cout << Physics.getVehiclePos().y << std::endl;
+		//std::cout << Physics.getVehiclePos().z << std::endl;
+
 	}
 	//---------------------------------------------------------------------------------------------------------------------------------
 
