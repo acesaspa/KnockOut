@@ -2,18 +2,15 @@
 #include <iostream>
 #include <ctype.h>
 #include "Utils.h"
+#include <map>
 
 glm::vec3 modelScale = glm::vec3(0.5f, 0.6f, 0.5f);
-
 
 void Renderer::cookMeshes(physx::PxPhysics* gPhysics, physx::PxCooking* gCooking, physx::PxScene* gScene) { //call once physx ready, this will cook all necessary meshes
 	cookMesh(gPhysics, gCooking, gScene, &citySurfaceMesh);
 	cookMesh(gPhysics, gCooking, gScene, &grassSurfaceMesh);
 	cookMesh(gPhysics, gCooking, gScene, &desertSurfaceMesh);
 }
-
-
-
 
 
 void Renderer::cookMesh(physx::PxPhysics* gPhysics, physx::PxCooking* gCooking, physx::PxScene* gScene, Mesh* meshToCook) { //cook a tri mesh and add it to the physics scene
@@ -60,11 +57,6 @@ void Renderer::cookMesh(physx::PxPhysics* gPhysics, physx::PxCooking* gCooking, 
 
 
 
-
-
-
-
-
 void Renderer::setUpRendering(glm::vec3 cameraPos, Shader ourShader) { //call once before entering the game loop
 	glEnable(GL_DEPTH_TEST); //to make sure the fragment shader takes into account that some geometry has to be drawn in front of another
 	ourShader.use(); //tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
@@ -72,6 +64,12 @@ void Renderer::setUpRendering(glm::vec3 cameraPos, Shader ourShader) { //call on
 	ourShader.setInt("material.specular", 1);
 
 	//MARK: Object Setup
+	GameOverMesh.loadOBJ("Powerup.obj");
+	GameOverTexture.loadTexture("gameOverUV.png", true);
+
+	YouWinMesh.loadOBJ("Powerup.obj");
+	YouWinTexture.loadTexture("youWinUV.png", true);
+
 	jmpPowerUpMesh.loadOBJ("Powerup.obj");
 	JmpPowerUpTexture.loadTexture("jumpUV.png", true);
 
@@ -84,13 +82,13 @@ void Renderer::setUpRendering(glm::vec3 cameraPos, Shader ourShader) { //call on
 	playerMesh.loadOBJ("blueCar.obj");
 	playerTexture.loadTexture("greenCar.png", true, true);
 
-	citySurfaceMesh.loadOBJ("cityLevel.obj");
+	citySurfaceMesh.loadOBJ("cityLevelNoHoles.obj");
 	cityTexture.loadTexture("asphalt.jpg", true);
 
-	grassSurfaceMesh.loadOBJ("grassLevel.obj");
+	grassSurfaceMesh.loadOBJ("grassLevelNoHoles.obj");
 	grassTexture.loadTexture("grass.jpg", true);
 
-	desertSurfaceMesh.loadOBJ("sandLevel.obj");
+	desertSurfaceMesh.loadOBJ("sandLevelNoHoles.obj");
 	desertTexture.loadTexture("desert_texture.jpg", true);
 
 	cubeMesh.loadVertexData(Utils::cubeVertexData, Utils::cubeArrayLen);
@@ -110,7 +108,11 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans,
 	std::vector<physx::PxTransform> pxObjectsTrans,
 	Shader ourShader,
 	glm::mat4 view,
-	glm::vec3 cameraPos){ //render a single frame of the game
+	glm::vec3 cameraPos,
+	int status,
+	bool jump,
+	bool attack,
+	bool defense){ //render a single frame of the game
 
 	//SHADER
 	ourShader.use();
@@ -121,6 +123,7 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans,
 	ourShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 	ourShader.setFloat("material.shininess", 256.0f);
 	ourShader.setMat4("view", view); //set the camera view matrix in our fragment shader
+	ourShader.setVec3("textColor", 0.f,0.f,0.f);
 
 	//TODO: what are different texture units for?
 
@@ -174,22 +177,46 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans,
 		objectMeshes[0].draw();
 	}
 
+	//Game Over
+	GameOverTexture.bind(0);
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(-30.0f, 1.0f, 10.0f));
+	ourShader.setMat4("model", model);
+	if (status == 1) {
+		GameOverMesh.draw();
+	}
+
+	//You Win
+	YouWinTexture.bind(0);
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(-30.0f, 1.0f, 10.0f));
+	ourShader.setMat4("model", model);
+	if (status == 2) {
+		YouWinMesh.draw();
+	}
+
 	//POWERUPS
 	JmpPowerUpTexture.bind(0);
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 1.0f, 10.0f));
+	model = glm::translate(model, glm::vec3(20.0f, 1.0f, 10.0f));
 	ourShader.setMat4("model", model);
-	jmpPowerUpMesh.draw();
+	if (jump) {
+		jmpPowerUpMesh.draw();
+	}
 
 	AtkPowerUpTexture.bind(0);
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(4.0f, 1.0f, 10.0f));
+	model = glm::translate(model, glm::vec3(20.0f, 1.0f, 10.0f));
 	ourShader.setMat4("model", model);
-	atkPowerUpMesh.draw();
+	if (attack) {
+		atkPowerUpMesh.draw();
+	}
 
 	DefPowerUpTexture.bind(0);
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(-5.0f, 1.0f, 10.0f));
+	model = glm::translate(model, glm::vec3(20.0f, 1.0f, 10.0f));
 	ourShader.setMat4("model", model);
-	defPowerUpMesh.draw();
+	if (defense) {
+		defPowerUpMesh.draw();
+	}
 }

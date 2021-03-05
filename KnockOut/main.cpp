@@ -33,6 +33,10 @@
 #include "Utils.h"
 #include "Camera.h"
 
+#include <stdlib.h>
+#include <chrono>
+#include <ctime> 
+
 using namespace physx;
 using namespace snippetvehicle;
 
@@ -48,22 +52,51 @@ bool vehicleAccelerating = false;
 unsigned int CUBE_VBO, GROUND_VBO, CUBE_VAO, GROUND_VAO;
 unsigned int vehicle_texture, cube_texture2, ground_texture;
 
+bool reset = false;
+bool jump = false;
+bool attack = false;
+bool defense = false;
+
+auto start = std::chrono::system_clock::now();
+
 Renderer mainRenderer;
 Camera mainCamera;
 VehiclePhysx Physics = VehiclePhysx();
 
+void addPowerUp() {
+
+	// Some computation here
+	auto end = std::chrono::system_clock::now();
+
+	std::chrono::duration<double> elapsed_seconds = end - start;
+
+	//std::cout << elapsed_seconds.count() << "\n";
 
 
+	if (elapsed_seconds.count()>=10) { //current time - last time = elapsed point
+		int powerChoice = rand() % 3 + 1;
 
+		switch (powerChoice) {
+		case(1):
+			if (!attack && !defense) {
+				jump = true;
+			}
+			break;
+		case(2):
+			if (!jump && !defense) {
+				attack = true;
+			}
+			break;
+		case(3):
+			if (!jump && !attack) {
+				defense = true;
+			}
+			break;
+		}
 
+	}
 
-
-
-
-
-
-
-
+}
 
 //MARK: Main
 int main(int argc, char** argv) {
@@ -71,8 +104,9 @@ int main(int argc, char** argv) {
 	//MARK: Init Sounds
 	OpenALEngine wavPlayer = OpenALEngine();
 	SoundManager bgm = wavPlayer.createSoundPlayer(0);
-	bgm.setVolume(0.3f);
+	bgm.setVolume(0.0f);
 	bgm.loopSound(true);
+
 
 	//MARK: Init Glfw
 	const char* glsl_version = "#version 130";
@@ -88,6 +122,7 @@ int main(int argc, char** argv) {
 	std::cout << glGetString(GL_VERSION) << std::endl;
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetCursorPosCallback(window, mouse_callback);
+
 	Shader ourShader("vertex_shader.vs", "fragment_shader.fs");
 	mainRenderer.setUpRendering(mainCamera.getCameraPos(), ourShader/*, Physics.getPhysx(), Physics.getCooking(), Physics.getScene()*/);
 
@@ -109,6 +144,37 @@ int main(int argc, char** argv) {
 
 	//MARK: RENDER LOOP ---------------------------------------------------------------------------------------------------------------
 	while (!glfwWindowShouldClose(window)) {
+
+		addPowerUp();
+
+		//MARK: GAME OVER CHECK
+		Physics.checkGameOver();
+		if (Physics.getGameStatus() != 0) {
+
+			if (!reset) {
+				reset = true;
+				Physics.reset();
+			}
+		}
+		if (glm::length(Physics.getVehiclePos()-glm::vec3(-30.0f, 1.0f, 10.0f)) < 2.f && reset) {
+			glfwSetWindowShouldClose(window, GLFW_TRUE);
+		}
+		if (glm::length(Physics.getVehiclePos() - glm::vec3(20.0f, 1.0f, 10.0f)) < 2.f && jump) {
+			std::cout << "jump\n";
+			start = std::chrono::system_clock::now();
+			jump = false;
+		}
+		if (glm::length(Physics.getVehiclePos() - glm::vec3(20.0f, 1.0f, 10.0f)) < 2.f && attack) {
+			std::cout << "attack\n";
+			start = std::chrono::system_clock::now();
+			attack = false;
+		}
+		if (glm::length(Physics.getVehiclePos() - glm::vec3(20.0f, 1.0f, 10.0f)) < 2.f && defense) {
+			std::cout << "defense\n";
+			start = std::chrono::system_clock::now();
+			defense = false;
+		}
+
 
 		if (!bgm.soundPlaying()) {bgm.playSound();}
 
@@ -139,7 +205,7 @@ int main(int argc, char** argv) {
 		pxOpponents.push_back(Physics.getVehicleTrans(2));
 
 		//---------------------------------------------------------------
-		mainRenderer.renderGameFrame(Physics.getVehicleTrans(1), pxOpponents, Physics.getGroundPos(), pxObjects, ourShader, view, mainCamera.getCameraPos());
+		mainRenderer.renderGameFrame(Physics.getVehicleTrans(1), pxOpponents, Physics.getGroundPos(), pxObjects, ourShader, view, mainCamera.getCameraPos(),Physics.getGameStatus(),jump,attack,defense);
 		//---------------------------------------------------------------
 
 		//MARK: Render Imgui
@@ -156,6 +222,8 @@ int main(int argc, char** argv) {
 		}
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+
 
 		//MARK: Frame End
 		glfwSwapBuffers(window);
@@ -236,3 +304,4 @@ void keyPress(unsigned char key, const PxTransform& camera)
 	PX_UNUSED(camera);
 	PX_UNUSED(key);
 }
+

@@ -23,6 +23,7 @@
 #include "Texture2D.h"
 #include "Shader.cpp"
 
+#include <map>
 
 class Renderer {
 public:
@@ -33,7 +34,11 @@ public:
 		std::vector<physx::PxTransform> pxObjectsTrans,
 		Shader ourShader,
 		glm::mat4 view,
-		glm::vec3 cameraPos);
+		glm::vec3 cameraPos,
+		int status,
+		bool jump,
+		bool attack,
+		bool defense);
 	void cookMeshes(physx::PxPhysics* gPhysics, physx::PxCooking* gCooking, physx::PxScene* gScene);
 
 private:
@@ -56,6 +61,11 @@ private:
 
 	Mesh cubeMesh;
 	Mesh playerMesh;
+
+	Mesh GameOverMesh;
+	Texture2D GameOverTexture;
+	Mesh YouWinMesh;
+	Texture2D YouWinTexture;
 
 	Mesh jmpPowerUpMesh;
 	Mesh atkPowerUpMesh;

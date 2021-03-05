@@ -34,6 +34,9 @@ public:
 	PxCooking* getCooking();
 	void setGMimicKeyInputs(bool input);
 	void forceGearChange(int input);
+	int getGameStatus();
+	void checkGameOver();
+	void reset();
 
 
 private:
