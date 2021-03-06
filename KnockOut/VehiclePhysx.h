@@ -37,6 +37,9 @@ public:
 	void setGMimicKeyInputs(bool input);
 	void forceGearChange(int input);
 	void cookGroundMeshes(std::vector<Mesh*> groundMeshes);
+	int getGameStatus();
+	void checkGameOver();
+	void reset();
 
 	PxVehicleDrive4WRawInputData* getVehDat();
 	glm::vec3 getOpponentPos();

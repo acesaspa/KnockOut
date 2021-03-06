@@ -46,11 +46,13 @@ PxVehicleDrivableSurfaceToTireFrictionPairs* gFrictionPairs = NULL;
 PxRigidStatic* gGroundPlane = NULL;
 PxVehicleDrive4W* gVehicle4W = NULL;
 PxVehicleDrive4W* gVehicle4W2 = NULL;
+int GameStatus = 0;
 PxRigidDynamic* gBox = NULL;
 PxRigidDynamic* gBox2 = NULL;
 PxRigidDynamic* gBox3 = NULL;
 
 bool					gIsVehicleInAir = true;
+
 
 PxF32 gSteerVsForwardSpeedData[2 * 8] =
 {
@@ -354,6 +356,7 @@ void VehiclePhysx::initPhysics(std::vector<Mesh*> groundMeshes)
 	gVehicle4W2->getRigidDynamicActor()->setGlobalPose(startTransform2);
 	gScene->addActor(*gVehicle4W2->getRigidDynamicActor());
 
+
 	//Create a box for the vehicle to collide with
 	PxTransform localTm(PxVec3(0, 20.0f, 0.0f));
 	gBox = gPhysics->createRigidDynamic(localTm);
@@ -489,6 +492,9 @@ void VehiclePhysx::stepPhysics()
 	PxTransform pos2 = vehicles2[1]->getRigidDynamicActor()->getGlobalPose();
 	glm::vec3 cubePos2 = glm::vec3(pos2.p[0], pos2.p[1], pos2.p[2]);
 
+
+
+	/*
 	if (pos.p[2] >= 300 || pos.p[2] <= -300 || pos.p[0] >= 300 || pos.p[0] <= -300) {
 		PxQuat vehicleQuaternion = gVehicle4W->getRigidDynamicActor()->getGlobalPose().q;
 		gScene->removeActor(*gVehicle4W->getRigidDynamicActor());
@@ -505,7 +511,7 @@ void VehiclePhysx::stepPhysics()
 		gVehicle4W2->getRigidDynamicActor()->setGlobalPose(startTransform);
 		gScene->addActor(*gVehicle4W2->getRigidDynamicActor());
 	}
-
+	*/
 
 
 	//Raycasts.
@@ -755,4 +761,42 @@ void VehiclePhysx::cookGroundMesh(Mesh* meshToCook) {
 	meshBody->attachShape(*meshShape); //attach the shape to the body
 	gScene->addActor(*meshBody); //and add it to the scene
 	triMesh->release(); //clean up
+int VehiclePhysx::getGameStatus() {
+	return GameStatus;
+}
+
+void VehiclePhysx::checkGameOver() {
+	PxVehicleWheels* vehicles2[2] = { gVehicle4W,gVehicle4W2 };
+	PxBounds3 pxBounds = vehicles2[0]->getRigidDynamicActor()->getWorldBounds();
+	PxTransform pos = vehicles2[0]->getRigidDynamicActor()->getGlobalPose();
+	glm::vec3 cubePos = glm::vec3(pos.p[0], pos.p[1], pos.p[2]);
+
+	PxBounds3 pxBounds2 = vehicles2[1]->getRigidDynamicActor()->getWorldBounds();
+	PxTransform pos2 = vehicles2[1]->getRigidDynamicActor()->getGlobalPose();
+	glm::vec3 cubePos2 = glm::vec3(pos2.p[0], pos2.p[1], pos2.p[2]);
+
+	if (cubePos.y < 0) {
+		GameStatus = 1;
+	}
+
+	if (cubePos2.y < 0 && cubePos.y > 0) {
+		GameStatus = 2;
+	}
+}
+
+void VehiclePhysx::reset() {
+
+	gScene->removeActor(*gVehicle4W->getRigidDynamicActor());
+	VehicleDesc vehicleDesc = initVehicleDesc();
+	PxTransform startTransform(PxVec3(0, (vehicleDesc.chassisDims.y * 0.5f + vehicleDesc.wheelRadius + 1.0f), 0), PxQuat(PxIdentity));
+	gVehicle4W->getRigidDynamicActor()->setGlobalPose(startTransform);
+	gVehicle4W->getRigidDynamicActor()->setLinearVelocity(PxVec3(0, 0, 0));
+	gScene->addActor(*gVehicle4W->getRigidDynamicActor());
+	
+	gScene->removeActor(*gVehicle4W2->getRigidDynamicActor());
+	VehicleDesc vehicleDesc2 = initVehicleDesc();
+	PxTransform startTransform2(PxVec3(15.f, (vehicleDesc2.chassisDims.y * 0.5f + vehicleDesc2.wheelRadius + 100000.0f), 0), PxQuat(PxIdentity));
+	gVehicle4W2->getRigidDynamicActor()->setGlobalPose(startTransform2);
+	gVehicle4W2->getRigidDynamicActor()->setLinearVelocity(PxVec3(0, 0, 0));
+	gScene->addActor(*gVehicle4W2->getRigidDynamicActor());
 }

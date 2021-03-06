@@ -11,6 +11,7 @@
 #include "Texture2D.h"
 #include "Shader.cpp"
 
+#include <map>
 
 class Renderer {
 public:
@@ -21,8 +22,12 @@ public:
 		std::vector<physx::PxTransform> pxObjectsTrans,
 		Shader ourShader,
 		glm::mat4 view,
-		glm::vec3 cameraPos);
-	std::vector<Mesh*> getGroundMeshes();
+		glm::vec3 cameraPos,
+		int status,
+		bool jump,
+		bool attack,
+		bool defense);
+	void cookMeshes(physx::PxPhysics* gPhysics, physx::PxCooking* gCooking, physx::PxScene* gScene);
 
 private:
 	void renderObject(Shader ourShader, Mesh* meshToRender, Texture2D* textureToApply, glm::vec3 translation = glm::vec3(0.f, 0.f, 0.f), glm::vec3 rotationAxis = glm::vec3(0.f, 0.f, 0.f),
@@ -46,6 +51,11 @@ private:
 
 	Mesh cubeMesh;
 	Mesh playerMesh;
+
+	Mesh GameOverMesh;
+	Texture2D GameOverTexture;
+	Mesh YouWinMesh;
+	Texture2D YouWinTexture;
 
 	Mesh jmpPowerUpMesh;
 	Mesh atkPowerUpMesh;
