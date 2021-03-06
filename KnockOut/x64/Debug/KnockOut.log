@@ -1,5 +1,16 @@
-﻿  main.cpp
+﻿  Shader.cpp
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\Shader.cpp(57,40): warning C4101: 'e': unreferenced local variable
+  VehiclePhysx.cpp
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\VehiclePhysx.cpp(227,41): warning C4305: 'argument': truncation from 'float' to 'const bool'
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\VehiclePhysx.cpp(241,41): warning C4305: 'argument': truncation from 'float' to 'const bool'
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\VehiclePhysx.cpp(746,41): warning C4267: '=': conversion from 'size_t' to 'physx::PxU32', possible loss of data
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\VehiclePhysx.cpp(750,47): warning C4267: '=': conversion from 'size_t' to 'physx::PxU32', possible loss of data
+  main.cpp
 C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\Shader.cpp(57,40): warning C4101: 'e': unreferenced local variable
 C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\Utils.h(16,2): warning C4091: 'static ': ignored on left of 'Utils' when no variable is declared
 C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(194,22): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  Generating Code...
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\VehiclePhysx.cpp(613): warning C4715: 'VehiclePhysx::getVehicleTrans': not all control paths return a value
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\VehiclePhysx.cpp(639): warning C4715: 'VehiclePhysx::getVehiclePos': not all control paths return a value
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\VehiclePhysx.cpp(675): warning C4715: 'VehiclePhysx::getBoxTrans': not all control paths return a value
   KnockOut.vcxproj -> C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\x64\Debug\KnockOut.exe

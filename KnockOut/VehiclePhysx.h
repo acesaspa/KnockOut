@@ -27,7 +27,7 @@ public:
 	VehicleDesc initVehicleDesc();
 	PxMat44 getVehicleTrans(int index);
 	float getAngleAroundY();
-	glm::vec3 getVehiclePos();
+	glm::vec3 getVehiclePos(int index);
 	glm::vec3 getGroundPos();
 	glm::vec3 getBoxPos(int index);
 	PxTransform getBoxTrans(int index);
@@ -40,8 +40,9 @@ public:
 	int getGameStatus();
 	void checkGameOver();
 	void reset();
-	void applyForce(PxVec3 force);
+	void applyForce(PxVec3 force, int index);
 	PxVec3 getRotation();
+	void stopVehicle(int index);
 
 	PxVehicleDrive4WRawInputData* getVehDat();
 	glm::vec3 getOpponentPos();

@@ -61,7 +61,7 @@ bool reset = false;
 bool jump = false;
 bool attack = false;
 bool defense = false;
-int powerup = 2;
+int powerup = 3;
 
 auto start = std::chrono::system_clock::now();
 
@@ -165,22 +165,22 @@ int main(int argc, char** argv) {
 				Physics.reset();
 			}
 		}
-		if (glm::length(Physics.getVehiclePos()-glm::vec3(-30.0f, 1.0f, 10.0f)) < 2.f && reset) {
+		if (glm::length(Physics.getVehiclePos(1)-glm::vec3(-30.0f, 1.0f, 10.0f)) < 2.f && reset) {
 			glfwSetWindowShouldClose(window, GLFW_TRUE);
 		}
-		if (glm::length(Physics.getVehiclePos() - glm::vec3(20.0f, 1.0f, 10.0f)) < 2.f && jump) {
+		if (glm::length(Physics.getVehiclePos(1) - glm::vec3(20.0f, 1.0f, 10.0f)) < 2.f && jump) {
 			std::cout << "jump\n";
 			start = std::chrono::system_clock::now();
 			jump = false;
 			powerup = 1;
 		}
-		if (glm::length(Physics.getVehiclePos() - glm::vec3(20.0f, 1.0f, 10.0f)) < 2.f && attack) {
+		if (glm::length(Physics.getVehiclePos(1) - glm::vec3(20.0f, 1.0f, 10.0f)) < 2.f && attack) {
 			std::cout << "attack\n";
 			start = std::chrono::system_clock::now();
 			attack = false;
 			powerup = 2;
 		}
-		if (glm::length(Physics.getVehiclePos() - glm::vec3(20.0f, 1.0f, 10.0f)) < 2.f && defense) {
+		if (glm::length(Physics.getVehiclePos(1) - glm::vec3(20.0f, 1.0f, 10.0f)) < 2.f && defense) {
 			std::cout << "defense\n";
 			start = std::chrono::system_clock::now();
 			defense = false;
@@ -200,7 +200,7 @@ int main(int argc, char** argv) {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		mainCamera.updateCamera(Physics.getAngleAroundY(), Physics.getVehiclePos());
+		mainCamera.updateCamera(Physics.getAngleAroundY(), Physics.getVehiclePos(1));
 		glm::mat4 view = mainCamera.getViewMatrix();
 		//apply a special built in matrix specifically made for camera views called the "Look At" matrix
 
@@ -227,7 +227,7 @@ int main(int argc, char** argv) {
 			ImGui::Begin("Debug Menu");
 
 			ImGui::Text("Vehicle Position");
-			ImGui::Text("x: %.1f    y: %.1f    z: %.1f", Physics.getVehiclePos().x, Physics.getVehiclePos().y, Physics.getVehiclePos().z);
+			ImGui::Text("x: %.1f    y: %.1f    z: %.1f", Physics.getVehiclePos(1).x, Physics.getVehiclePos(1).y, Physics.getVehiclePos(1).z);
 			ImGui::Text("-----------------------------------------------");
 
 			ImGui::Text("");
@@ -310,7 +310,7 @@ void processInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
 		if (powerup == 1) {
 			std::cout << "UP FORCE\n";
-			Physics.applyForce(PxVec3(0.f, 700000.f, 0.f));
+			Physics.applyForce(PxVec3(0.f, 700000.f, 0.f), 1);
 			powerup = 0;
 		}
 		if (powerup == 2) {
@@ -320,7 +320,22 @@ void processInput(GLFWwindow* window) {
 			PxVec3 pre = (Physics.getRotation() + PxVec3(0.f, 0.05f, 0.f));
 			glm::vec4 rot = glm::vec4(pre.x, pre.y, pre.z, 0.f);
 			glm::vec4 rotated = rotation * rot;
-			Physics.applyForce(1000000.f*PxVec3(rotated.x,rotated.y,rotated.z));
+			Physics.applyForce(1000000.f*PxVec3(rotated.x,rotated.y,rotated.z), 1);
+			powerup = 0;
+		}
+		if (powerup == 3) {
+			std::cout << "SHIELD FORCE\n";
+
+			glm::vec3 vehiclePos = Physics.getVehiclePos(1);
+			glm::vec3 enemyPos = Physics.getVehiclePos(2);
+
+			glm::vec3 direction = enemyPos - vehiclePos;
+
+			if (glm::length(direction) < 10) {
+
+				Physics.stopVehicle(2);
+			}
+
 			powerup = 0;
 		}
 	}
