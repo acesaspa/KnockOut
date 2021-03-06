@@ -19,7 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AIBehavior.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="SoundManager.cpp" />
     <ClCompile Include="OpenALEngine.cpp" />
     <ClCompile Include="Dependencies\imgui\imgui.cpp" />
@@ -39,9 +42,14 @@
     <ClCompile Include="SnippetVehicleTankCreate.cpp" />
     <ClCompile Include="SnippetVehicleTireFriction.cpp" />
     <ClCompile Include="Texture2D.cpp" />
+    <ClCompile Include="Utils.cpp" />
+    <ClCompile Include="VehiclePhysx.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AIBehavior.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="Renderer.h" />
     <ClInclude Include="SoundManager.h" />
     <ClInclude Include="OpenALEngine.h" />
     <ClInclude Include="Dependencies\imgui\imconfig.h" />
@@ -59,6 +67,8 @@
     <ClInclude Include="SnippetVehicleTireFriction.h" />
     <ClInclude Include="SnippetVehicleWheelQueryResult.h" />
     <ClInclude Include="Texture2D.h" />
+    <ClInclude Include="Utils.h" />
+    <ClInclude Include="VehiclePhysx.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -169,7 +179,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>OpenAL32.lib;glew32s.lib;glfw3.lib;PhysXExtensions_static_64.lib;PhysX_64.lib;PhysXPvdSDK_static_64.lib;PhysXVehicle_static_64.lib;PhysXCharacterKinematic_static_64.lib;PhysXCooking_64.lib;PhysXCommon_64.lib;SnippetUtils_static_64.lib;SnippetRender_static_64.lib;PhysXTask_static_64.lib;PhysXFoundation_64.lib;$(SolutionDir)include\physx\snippets\Graphics\lib\win64\glut\glut32.lib;opengl32.lib;glu32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)KnockOut\Dependencies\freetype-2.10.4\objs\x64\Debug\freetype.lib;OpenAL32.lib;glew32s.lib;glfw3.lib;PhysXExtensions_static_64.lib;PhysX_64.lib;PhysXPvdSDK_static_64.lib;PhysXVehicle_static_64.lib;PhysXCharacterKinematic_static_64.lib;PhysXCooking_64.lib;PhysXCommon_64.lib;SnippetUtils_static_64.lib;SnippetRender_static_64.lib;PhysXTask_static_64.lib;PhysXFoundation_64.lib;$(SolutionDir)include\physx\snippets\Graphics\lib\win64\glut\glut32.lib;opengl32.lib;glu32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)KnockOut\Dependencies\GLEW\lib\Release\x64;$(SolutionDir)KnockOut\Dependencies\GLFW\lib-vc2019;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -189,7 +199,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)KnockOut\Dependencies\GLEW\lib\Release\x64;$(SolutionDir)KnockOut\Dependencies\GLFW\lib-vc2019;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glew32s.lib;glfw3.lib;PhysXExtensions_static_64.lib;PhysX_64.lib;PhysXPvdSDK_static_64.lib;PhysXVehicle_static_64.lib;PhysXCharacterKinematic_static_64.lib;PhysXCooking_64.lib;PhysXCommon_64.lib;SnippetUtils_static_64.lib;SnippetRender_static_64.lib;PhysXTask_static_64.lib;PhysXFoundation_64.lib;$(SolutionDir)include\physx\snippets\Graphics\lib\win64\glut\glut32.lib;opengl32.lib;glu32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)KnockOut\Dependencies\freetype-2.10.4\objs\x64\Release\freetype.lib;glew32s.lib;glfw3.lib;PhysXExtensions_static_64.lib;PhysX_64.lib;PhysXPvdSDK_static_64.lib;PhysXVehicle_static_64.lib;PhysXCharacterKinematic_static_64.lib;PhysXCooking_64.lib;PhysXCommon_64.lib;SnippetUtils_static_64.lib;SnippetRender_static_64.lib;PhysXTask_static_64.lib;PhysXFoundation_64.lib;$(SolutionDir)include\physx\snippets\Graphics\lib\win64\glut\glut32.lib;opengl32.lib;glu32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -79,6 +79,21 @@
     <ClCompile Include="Texture2D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VehiclePhysx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AIBehavior.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Dependencies\imgui\imconfig.h">
@@ -133,6 +148,21 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Texture2D.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VehiclePhysx.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AIBehavior.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

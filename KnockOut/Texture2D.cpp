@@ -2,7 +2,7 @@
 #include "stb_image.h"
 #include <iostream>
 
-Texture2D::Texture2D() 
+Texture2D::Texture2D()
 	: mTexture(0)
 {
 }
@@ -12,10 +12,8 @@ Texture2D::~Texture2D()
 
 }
 
-bool Texture2D::loadTexture(const string& filename, bool generateMipMaps)
+bool Texture2D::loadTexture(const string& filename, bool generateMipMaps, bool flipVertically)
 {
-
-
 	glGenTextures(1, &mTexture);
 	glBindTexture(GL_TEXTURE_2D, mTexture);
 
@@ -25,6 +23,7 @@ bool Texture2D::loadTexture(const string& filename, bool generateMipMaps)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	int width, height, components;
+	stbi_set_flip_vertically_on_load(flipVertically);
 	unsigned char* imageData = stbi_load(filename.c_str(), &width, &height, &components, STBI_rgb_alpha);
 	if (imageData == NULL)
 	{

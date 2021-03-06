@@ -22,6 +22,8 @@ uniform vec3 viewPos;
 uniform Material material;
 uniform Light light;
 
+uniform vec3 textColor;
+uniform sampler2D text;
 
 void main()
 {
