@@ -32,6 +32,8 @@
 #include "VehiclePhysx.h"
 #include "Utils.h"
 #include "Camera.h"
+#include "AIBehavior.h"
+
 
 using namespace physx;
 using namespace snippetvehicle;
@@ -51,6 +53,8 @@ unsigned int vehicle_texture, cube_texture2, ground_texture;
 Renderer mainRenderer;
 Camera mainCamera;
 VehiclePhysx Physics = VehiclePhysx();
+
+AIBehavior beh;
 
 
 
@@ -78,7 +82,7 @@ int main(int argc, char** argv) {
 	const char* glsl_version = "#version 130";
 	GLFWwindow* window;
 	if (!glfwInit()) return -1;
-	window = glfwCreateWindow(800, 800, "Knock Out", NULL, NULL);
+	window = glfwCreateWindow(1200, 800, "Knock Out", NULL, NULL);
 	if (!window) {
 		glfwTerminate();
 		return -1;
@@ -89,7 +93,6 @@ int main(int argc, char** argv) {
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	Shader ourShader("vertex_shader.vs", "fragment_shader.fs");
-	mainRenderer.setUpRendering(mainCamera.getCameraPos(), ourShader/*, Physics.getPhysx(), Physics.getCooking(), Physics.getScene()*/);
 
 	//MARK: Init Imgui
 	IMGUI_CHECKVERSION();
@@ -103,8 +106,8 @@ int main(int argc, char** argv) {
 	bool show_another_window = false;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-	Physics.initPhysics();
-	mainRenderer.cookMeshes(Physics.getPhysx(), Physics.getCooking(), Physics.getScene());
+	mainRenderer.setUpRendering(mainCamera.getCameraPos(), ourShader);
+	Physics.initPhysics(mainRenderer.getGroundMeshes());	
 
 
 	//MARK: RENDER LOOP ---------------------------------------------------------------------------------------------------------------
@@ -137,6 +140,8 @@ int main(int argc, char** argv) {
 		pxObjects.push_back(Physics.getBoxTrans(3));
 		std::vector<PxMat44> pxOpponents;
 		pxOpponents.push_back(Physics.getVehicleTrans(2));
+
+		beh.frameUpdate(Physics.getVehDat(), Physics.getOpponentPos(), Physics.getOpponentForVec());
 
 		//---------------------------------------------------------------
 		mainRenderer.renderGameFrame(Physics.getVehicleTrans(1), pxOpponents, Physics.getGroundPos(), pxObjects, ourShader, view, mainCamera.getCameraPos());

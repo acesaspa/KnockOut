@@ -7,18 +7,6 @@
 #include <glm/glm.hpp>
 #include <../include/physx/PxPhysicsAPI.h>
 
-#include "../include/physx/snippetcommon/SnippetPrint.h"
-#include "../include/physx/snippetcommon/SnippetPVD.h"
-#include "../include/physx/snippetutils/SnippetUtils.h"
-#include "../include/physx/vehicle/PxVehicleUtil.h"
-#include "../include/physx/snippetvehiclecommon/SnippetVehicleSceneQuery.h"
-#include "../include/physx/snippetvehiclecommon/SnippetVehicleFilterShader.h"
-#include "../include/physx/snippetvehiclecommon/SnippetVehicleTireFriction.h"
-#include "../include/physx/snippetvehiclecommon/SnippetVehicleCreate.h"
-#include "../include/physx/snippetcommon/SnippetPrint.h"
-#include "../include/physx/snippetcommon/SnippetPVD.h"
-#include "../include/physx/snippetutils/SnippetUtils.h"
-
 #include "Mesh.h"
 #include "Texture2D.h"
 #include "Shader.cpp"
@@ -34,10 +22,12 @@ public:
 		Shader ourShader,
 		glm::mat4 view,
 		glm::vec3 cameraPos);
-	void cookMeshes(physx::PxPhysics* gPhysics, physx::PxCooking* gCooking, physx::PxScene* gScene);
+	std::vector<Mesh*> getGroundMeshes();
 
 private:
-	void cookMesh(physx::PxPhysics* gPhysics, physx::PxCooking* gCooking, physx::PxScene* gScene, Mesh* meshToCook);
+	void renderObject(Shader ourShader, Mesh* meshToRender, Texture2D* textureToApply, glm::vec3 translation = glm::vec3(0.f, 0.f, 0.f), glm::vec3 rotationAxis = glm::vec3(0.f, 0.f, 0.f),
+		float rotationAmountDeg = 0.f, glm::vec3 scale = glm::vec3(0.f, 0.f, 0.f), physx::PxMat44 pxTransMat = physx::PxIdentity);
+	void applyShaderValues(Shader ourShader, glm::vec3 cameraPos, glm::mat4 view);
 
 	std::vector<Mesh> objectMeshes;
 	std::vector<Mesh> aiOpponentMeshes;
@@ -66,8 +56,6 @@ private:
 	Texture2D JmpPowerUpTexture;
 	Texture2D AtkPowerUpTexture;
 	Texture2D DefPowerUpTexture;
-
-	glm::vec3 modelScalel;
 };
 
 #endif

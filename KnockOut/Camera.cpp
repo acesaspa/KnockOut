@@ -77,7 +77,7 @@ void Camera::mouseCallback(GLFWwindow* window, double xpos, double ypos) {
 	yoffset *= sensitivity;
 
 	yaw += xoffset;
-	pitch += yoffset;
+	//pitch += yoffset;
 	//disabling camera pitch movement triggered by mouse
 
 	if (pitch > 89.0f) pitch = 89.0f;

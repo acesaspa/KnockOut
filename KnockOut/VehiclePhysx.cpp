@@ -5,6 +5,7 @@
 #include "..\KnockOut\Dependencies\imgui\imgui_impl_glfw.h"
 #include "..\KnockOut\Dependencies\imgui\imgui_impl_opengl3.h"
 #include <iostream>
+#include <vector>
 #include <ctype.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -101,6 +102,7 @@ PxVehiclePadSmoothingData gPadSmoothingData =
 };
 
 PxVehicleDrive4WRawInputData gVehicleInputData;
+PxVehicleDrive4WRawInputData gVehicleInputData2;
 
 enum DriveMode
 {
@@ -153,7 +155,7 @@ VehicleDesc VehiclePhysx::initVehicleDesc()
 	//Set up the wheel mass, radius, width, moment of inertia, and number of wheels.
 	//Moment of inertia is just the moment of inertia of a cylinder.
 	const PxF32 wheelMass = 20.0f;
-	const PxF32 wheelRadius = 0.3f;
+	const PxF32 wheelRadius = 1.0f;
 	const PxF32 wheelWidth = 0.3f;
 	const PxF32 wheelMOI = 0.5f * wheelMass * wheelRadius * wheelRadius;
 	const PxU32 nbWheels = 6;
@@ -186,7 +188,7 @@ void VehiclePhysx::startAccelerateForwardsMode()
 	}
 	else
 	{
-		gVehicleInputData.setAnalogAccel(1.0f);
+		gVehicleInputData.setAnalogAccel(100.0f);
 	}
 }
 
@@ -292,7 +294,7 @@ void VehiclePhysx::releaseAllControls()
 	}
 }
 
-void VehiclePhysx::initPhysics()
+void VehiclePhysx::initPhysics(std::vector<Mesh*> groundMeshes)
 {
 	gFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, gAllocator, gErrorCallback);
 	gPvd = PxCreatePvd(*gFoundation);
@@ -333,10 +335,11 @@ void VehiclePhysx::initPhysics()
 	//Create the friction table for each combination of tire and surface type.
 	gFrictionPairs = createFrictionPairs(gMaterial);
 
-	//Create a plane to drive on.
+	//Create/cook level surface.
 	PxFilterData groundPlaneSimFilterData(COLLISION_FLAG_GROUND, COLLISION_FLAG_GROUND_AGAINST, 0, 0);
 	gGroundPlane = createDrivablePlane(groundPlaneSimFilterData, gMaterial, gPhysics);
 	//gScene->addActor(*gGroundPlane); //TODO: remove, or whatever...
+	cookGroundMeshes(groundMeshes);
 
 	//Create a vehicle that will drive on the plane.
 	VehicleDesc vehicleDesc = initVehicleDesc();
@@ -347,7 +350,7 @@ void VehiclePhysx::initPhysics()
 
 	VehicleDesc vehicleDesc2 = initVehicleDesc();
 	gVehicle4W2 = createVehicle4W(vehicleDesc2, gPhysics, gCooking);
-	PxTransform startTransform2(PxVec3(5.f, (vehicleDesc2.chassisDims.y * 0.5f + vehicleDesc2.wheelRadius + 1.0f), 25.f), PxQuat(PxIdentity));
+	PxTransform startTransform2(PxVec3(5.f, (vehicleDesc2.chassisDims.y * 0.5f + vehicleDesc2.wheelRadius + 1.0f), 0.f), PxQuat(PxIdentity));
 	gVehicle4W2->getRigidDynamicActor()->setGlobalPose(startTransform2);
 	gScene->addActor(*gVehicle4W2->getRigidDynamicActor());
 
@@ -387,6 +390,10 @@ void VehiclePhysx::initPhysics()
 	gVehicle4W->setToRestState();
 	gVehicle4W->mDriveDynData.forceGearChange(PxVehicleGearsData::eFIRST);
 	gVehicle4W->mDriveDynData.setUseAutoGears(true);
+
+	gVehicle4W2->setToRestState();
+	gVehicle4W2->mDriveDynData.forceGearChange(PxVehicleGearsData::eFIRST);
+	gVehicle4W2->mDriveDynData.setUseAutoGears(true);
 
 	gVehicleModeTimer = 0.0f;
 	gVehicleOrderProgress = 0;
@@ -469,6 +476,8 @@ void VehiclePhysx::stepPhysics()
 	{
 		PxVehicleDrive4WSmoothAnalogRawInputsAndSetAnalogInputs(gPadSmoothingData, gSteerVsForwardSpeedTable, gVehicleInputData, timestep, gIsVehicleInAir, *gVehicle4W);
 	}
+
+	PxVehicleDrive4WSmoothAnalogRawInputsAndSetAnalogInputs(gPadSmoothingData, gSteerVsForwardSpeedTable, gVehicleInputData2, timestep, gIsVehicleInAir, *gVehicle4W2);
 
 	//FALL OFF
 	PxVehicleWheels* vehicles2[2] = { gVehicle4W,gVehicle4W2 };
@@ -662,4 +671,88 @@ void VehiclePhysx::setGMimicKeyInputs(bool input) {
 
 void VehiclePhysx::forceGearChange(int input) {
 	gVehicle4W->mDriveDynData.forceGearChange(input);
+}
+
+
+
+
+
+
+
+//MARK: AI
+PxVehicleDrive4WRawInputData* VehiclePhysx::getVehDat() {
+	return &gVehicleInputData2;
+}
+
+glm::vec3 VehiclePhysx::getOpponentPos() {
+	PxVehicleWheels* vehicles[1] = { gVehicle4W2 };
+	PxBounds3 pxBounds = vehicles[0]->getRigidDynamicActor()->getWorldBounds();
+	PxTransform pos = vehicles[0]->getRigidDynamicActor()->getGlobalPose();
+	glm::vec3 cubePos = glm::vec3(pos.p[0], pos.p[1], pos.p[2]);
+	return cubePos;
+}
+
+glm::vec3 VehiclePhysx::getOpponentForVec() {
+	PxVehicleWheels* vehicles[1] = { gVehicle4W2 };
+	PxQuat vehicleQuaternion = vehicles[0]->getRigidDynamicActor()->getGlobalPose().q;
+	PxVec3 vDir = vehicleQuaternion.getBasisVector2();
+	return glm::vec3(vDir.x, vDir.y, vDir.z);
+}
+
+
+
+
+
+
+
+
+
+
+//MARK: Cooooking
+void VehiclePhysx::cookGroundMeshes(std::vector<Mesh*> groundMeshes) {
+	for (int i = 0; i < groundMeshes.size(); i++) {
+		cookGroundMesh(groundMeshes[i]);
+	}
+}
+
+void VehiclePhysx::cookGroundMesh(Mesh* meshToCook) {
+	PxMaterial* gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f); //create some material
+	PxTriangleMeshDesc meshDesc; //mesh cooking from a triangle mesh
+
+	std::vector<PxVec3> vertices = meshToCook->getActualVertices();
+	std::vector<PxU32> indices = meshToCook->getVertexIndices();
+
+	meshDesc.points.count = vertices.size(); //total number of vertices
+	meshDesc.points.stride = sizeof(PxVec3);
+	meshDesc.points.data = reinterpret_cast<const void*>(vertices.data());
+
+	meshDesc.triangles.count = indices.size() / 3; //total number of triangles (each index = 1 vertex, so divide by 3 to get the num of triangles)
+	meshDesc.triangles.stride = 3 * sizeof(PxU32);
+	meshDesc.triangles.data = reinterpret_cast<const void*>(indices.data());
+
+	//PxCookingParams params = gCooking->getParams();
+	////TODO: potentially do this
+	//gCooking->setParams(params);
+
+	//PxFilterData myData = PxFilterData();
+	//myData.word0 = 14;
+	//myData.word1 = 2;
+
+	PxFilterData groundPlaneSimFilterData(COLLISION_FLAG_GROUND, COLLISION_FLAG_GROUND_AGAINST, 0, 0);
+
+	PxTriangleMesh* triMesh = NULL;
+	PxU32 meshSize = 0;
+	triMesh = gCooking->createTriangleMesh(meshDesc, gPhysics->getPhysicsInsertionCallback()); //insert the cooked mesh directly into PxPhysics
+	PxRigidStatic* meshBody = gPhysics->createRigidStatic(PxTransform(PxVec3(0, 0, 0))); //create a rigid body for the cooked mesh
+	PxShape* meshShape = gPhysics->createShape(PxTriangleMeshGeometry(triMesh), *gMaterial); //create a shape from the cooked mesh
+
+	PxFilterData qryFilterData;
+	setupDrivableSurface(qryFilterData);
+	meshShape->setQueryFilterData(qryFilterData);
+	meshShape->setSimulationFilterData(groundPlaneSimFilterData);
+
+	meshShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, true);
+	meshBody->attachShape(*meshShape); //attach the shape to the body
+	gScene->addActor(*meshBody); //and add it to the scene
+	triMesh->release(); //clean up
 }

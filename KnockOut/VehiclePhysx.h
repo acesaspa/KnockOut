@@ -3,6 +3,8 @@
 
 #include "GL/glew.h"
 #include <string>
+#include "Mesh.h"
+
 using std::string;
 using namespace physx;
 using namespace snippetvehicle;
@@ -13,7 +15,7 @@ public:
 	void stepPhysics();
 	void cleanupPhysics();
 	void incrementDrivingMode(const PxF32 timestep);
-	void initPhysics();
+	void initPhysics(std::vector<Mesh*> groundMeshes);
 	void releaseAllControls();
 	void startHandbrakeTurnRightMode();
 	void startHandbrakeTurnLeftMode();
@@ -34,9 +36,14 @@ public:
 	PxCooking* getCooking();
 	void setGMimicKeyInputs(bool input);
 	void forceGearChange(int input);
+	void cookGroundMeshes(std::vector<Mesh*> groundMeshes);
 
+	PxVehicleDrive4WRawInputData* getVehDat();
+	glm::vec3 getOpponentPos();
+	glm::vec3 getOpponentForVec();
 
 private:
+	void cookGroundMesh(Mesh* meshToCook);
 
 };
 
