@@ -224,12 +224,12 @@ void VehiclePhysx::startTurnHardLeftMode()
 {
 	if (gMimicKeyInputs)
 	{
-		gVehicleInputData.setDigitalAccel(true);
+		gVehicleInputData.setDigitalAccel(0.1f);
 		gVehicleInputData.setDigitalSteerLeft(true);
 	}
 	else
 	{
-		gVehicleInputData.setAnalogAccel(true);
+		gVehicleInputData.setAnalogAccel(0.1f);
 		gVehicleInputData.setAnalogSteer(-1.0f);
 	}
 }
@@ -238,12 +238,12 @@ void VehiclePhysx::startTurnHardRightMode()
 {
 	if (gMimicKeyInputs)
 	{
-		gVehicleInputData.setDigitalAccel(true);
+		gVehicleInputData.setDigitalAccel(0.1f);
 		gVehicleInputData.setDigitalSteerRight(true);
 	}
 	else
 	{
-		gVehicleInputData.setAnalogAccel(1.0f);
+		gVehicleInputData.setAnalogAccel(0.1f);
 		gVehicleInputData.setAnalogSteer(1.0f);
 	}
 }
@@ -463,8 +463,14 @@ void VehiclePhysx::incrementDrivingMode(const PxF32 timestep)
 	}
 }
 
+PxVec3 VehiclePhysx::getRotation() {
+	return gVehicle4W->getRigidDynamicActor()->getGlobalPose().q.getBasisVector0();
+	//return gVehicle4W->getRigidDynamicActor()->getGlobalPose().q.getAngle();
+}
+
 void VehiclePhysx::stepPhysics()
 {
+
 	const PxF32 timestep = 1.0f / 60.0f;
 
 	//Cycle through the driving modes to demonstrate how to accelerate/reverse/brake/turn etc.
@@ -801,4 +807,8 @@ void VehiclePhysx::reset() {
 	gVehicle4W2->getRigidDynamicActor()->setGlobalPose(startTransform2);
 	gVehicle4W2->getRigidDynamicActor()->setLinearVelocity(PxVec3(0, 0, 0));
 	gScene->addActor(*gVehicle4W2->getRigidDynamicActor());
+}
+
+void VehiclePhysx::applyForce(PxVec3 force) {
+	gVehicle4W->getRigidDynamicActor()->addForce(force);
 }

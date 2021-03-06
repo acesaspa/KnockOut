@@ -40,6 +40,8 @@ public:
 	int getGameStatus();
 	void checkGameOver();
 	void reset();
+	void applyForce(PxVec3 force);
+	PxVec3 getRotation();
 
 	PxVehicleDrive4WRawInputData* getVehDat();
 	glm::vec3 getOpponentPos();

@@ -39,6 +39,9 @@
 #include <chrono>
 #include <ctime> 
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 using namespace physx;
 using namespace snippetvehicle;
 
@@ -58,6 +61,7 @@ bool reset = false;
 bool jump = false;
 bool attack = false;
 bool defense = false;
+int powerup = 2;
 
 auto start = std::chrono::system_clock::now();
 
@@ -148,6 +152,8 @@ int main(int argc, char** argv) {
 	//MARK: RENDER LOOP ---------------------------------------------------------------------------------------------------------------
 	while (!glfwWindowShouldClose(window)) {
 
+		//std::cout << Physics.getRotation() << "\n";
+
 		addPowerUp();
 
 		//MARK: GAME OVER CHECK
@@ -166,16 +172,19 @@ int main(int argc, char** argv) {
 			std::cout << "jump\n";
 			start = std::chrono::system_clock::now();
 			jump = false;
+			powerup = 1;
 		}
 		if (glm::length(Physics.getVehiclePos() - glm::vec3(20.0f, 1.0f, 10.0f)) < 2.f && attack) {
 			std::cout << "attack\n";
 			start = std::chrono::system_clock::now();
 			attack = false;
+			powerup = 2;
 		}
 		if (glm::length(Physics.getVehiclePos() - glm::vec3(20.0f, 1.0f, 10.0f)) < 2.f && defense) {
 			std::cout << "defense\n";
 			start = std::chrono::system_clock::now();
 			defense = false;
+			powerup = 3;
 		}
 
 
@@ -297,6 +306,23 @@ void processInput(GLFWwindow* window) {
 		//std::cout << "RIGHT1\n";
 		Physics.setGMimicKeyInputs(true);
 		Physics.startTurnHardLeftMode();
+	}
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+		if (powerup == 1) {
+			std::cout << "UP FORCE\n";
+			Physics.applyForce(PxVec3(0.f, 700000.f, 0.f));
+			powerup = 0;
+		}
+		if (powerup == 2) {
+			std::cout << "FRONT FORCE\n";
+
+			glm::mat4 rotation = glm::rotate(glm::mat4{ 1.f }, float(-M_PI/2.f), glm::vec3(0,1,0));
+			PxVec3 pre = (Physics.getRotation() + PxVec3(0.f, 0.05f, 0.f));
+			glm::vec4 rot = glm::vec4(pre.x, pre.y, pre.z, 0.f);
+			glm::vec4 rotated = rotation * rot;
+			Physics.applyForce(1000000.f*PxVec3(rotated.x,rotated.y,rotated.z));
+			powerup = 0;
+		}
 	}
 }
 
