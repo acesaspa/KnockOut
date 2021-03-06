@@ -761,6 +761,8 @@ void VehiclePhysx::cookGroundMesh(Mesh* meshToCook) {
 	meshBody->attachShape(*meshShape); //attach the shape to the body
 	gScene->addActor(*meshBody); //and add it to the scene
 	triMesh->release(); //clean up
+}
+
 int VehiclePhysx::getGameStatus() {
 	return GameStatus;
 }

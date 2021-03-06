@@ -27,7 +27,7 @@ public:
 		bool jump,
 		bool attack,
 		bool defense);
-	void cookMeshes(physx::PxPhysics* gPhysics, physx::PxCooking* gCooking, physx::PxScene* gScene);
+	std::vector<Mesh*> getGroundMeshes();
 
 private:
 	void renderObject(Shader ourShader, Mesh* meshToRender, Texture2D* textureToApply, glm::vec3 translation = glm::vec3(0.f, 0.f, 0.f), glm::vec3 rotationAxis = glm::vec3(0.f, 0.f, 0.f),

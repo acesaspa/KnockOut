@@ -39,13 +39,13 @@ void Renderer::setUpRendering(glm::vec3 cameraPos, Shader ourShader) { //call on
 	playerMesh.loadOBJ("blueCar.obj");
 	playerTexture.loadTexture("greenCar.png", true, true);
 
-	citySurfaceMesh.loadOBJ("cityLevelNoHoles.obj");
+	citySurfaceMesh.loadOBJ("cityLevel.obj");
 	cityTexture.loadTexture("asphalt.jpg", true);
 
-	grassSurfaceMesh.loadOBJ("grassLevelNoHoles.obj");
+	grassSurfaceMesh.loadOBJ("grassLevel.obj");
 	grassTexture.loadTexture("grass.jpg", true);
 
-	desertSurfaceMesh.loadOBJ("sandLevelNoHoles.obj");
+	desertSurfaceMesh.loadOBJ("sandLevel.obj");
 	desertTexture.loadTexture("desert_texture.jpg", true);
 
 	cubeMesh.loadVertexData(Utils::cubeVertexData, Utils::cubeArrayLen);
@@ -91,9 +91,16 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans, //TODO: what are di
 		renderObject(ourShader, &objectMeshes[0], &objectTextures[0], worldOrigin, defaultRotation, defaultRotAmountDeg, defaultScale, pxObjectsTrans[i]);
 
 	//POWERUPS
-	renderObject(ourShader, &jmpPowerUpMesh, &JmpPowerUpTexture, glm::vec3(5.f, 0.5f, -13.f), defaultRotation, defaultRotAmountDeg, powerUpScale);
-	renderObject(ourShader, &atkPowerUpMesh, &AtkPowerUpTexture, glm::vec3(-3.f, 0.5f, 5.f), defaultRotation, defaultRotAmountDeg, powerUpScale);
-	renderObject(ourShader, &defPowerUpMesh, &DefPowerUpTexture, glm::vec3(8.f, 0.5f, 7.f), defaultRotation, defaultRotAmountDeg, powerUpScale);
+	if(jump) renderObject(ourShader, &jmpPowerUpMesh, &JmpPowerUpTexture, glm::vec3(20.0f, 1.0f, 10.0f), defaultRotation, defaultRotAmountDeg, powerUpScale);
+	if(attack) renderObject(ourShader, &atkPowerUpMesh, &AtkPowerUpTexture, glm::vec3(20.0f, 1.0f, 10.0f), defaultRotation, defaultRotAmountDeg, powerUpScale);
+	if(defense) renderObject(ourShader, &defPowerUpMesh, &DefPowerUpTexture, glm::vec3(20.0f, 1.0f, 10.0f), defaultRotation, defaultRotAmountDeg, powerUpScale);
+
+
+	//Game Over
+	if(status == 1) renderObject(ourShader, &GameOverMesh, &GameOverTexture, glm::vec3(-30.0f, 1.0f, 10.0f), defaultRotation, defaultRotAmountDeg, powerUpScale);
+
+	//You Win
+	if(status == 2) renderObject(ourShader, &YouWinMesh, &YouWinTexture, glm::vec3(-30.0f, 1.0f, 10.0f), defaultRotation, defaultRotAmountDeg, powerUpScale);
 }
 
 
@@ -112,7 +119,8 @@ void Renderer::applyShaderValues(Shader ourShader, glm::vec3 cameraPos, glm::mat
 	ourShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 	ourShader.setFloat("material.shininess", 256.0f);
 	ourShader.setMat4("view", view); //set the camera view matrix in our fragment shader
-	ourShader.setVec3("textColor", 0.f,0.f,0.f);
+	ourShader.setVec3("textColor", 0.f, 0.f, 0.f);
+}
 
 void Renderer::renderObject(Shader ourShader, Mesh* meshToRender, Texture2D* textureToApply, glm::vec3 translation, glm::vec3 rotationAxis,
 	float rotationAmountDeg, glm::vec3 scale, physx::PxMat44 pxTransMat) { //render a single object for a single frame, passing in a px transformation matrix automatically overrides all other transformations
@@ -133,46 +141,4 @@ std::vector<Mesh*> Renderer::getGroundMeshes() { //returns pointers to all groun
 	meshes.push_back(&grassSurfaceMesh);
 	meshes.push_back(&desertSurfaceMesh);
 	return meshes;
-	//Game Over
-	GameOverTexture.bind(0);
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(-30.0f, 1.0f, 10.0f));
-	ourShader.setMat4("model", model);
-	if (status == 1) {
-		GameOverMesh.draw();
-	}
-
-	//You Win
-	YouWinTexture.bind(0);
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(-30.0f, 1.0f, 10.0f));
-	ourShader.setMat4("model", model);
-	if (status == 2) {
-		YouWinMesh.draw();
-	}
-
-	//POWERUPS
-	JmpPowerUpTexture.bind(0);
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(20.0f, 1.0f, 10.0f));
-	ourShader.setMat4("model", model);
-	if (jump) {
-		jmpPowerUpMesh.draw();
-	}
-
-	AtkPowerUpTexture.bind(0);
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(20.0f, 1.0f, 10.0f));
-	ourShader.setMat4("model", model);
-	if (attack) {
-		atkPowerUpMesh.draw();
-	}
-
-	DefPowerUpTexture.bind(0);
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(20.0f, 1.0f, 10.0f));
-	ourShader.setMat4("model", model);
-	if (defense) {
-		defPowerUpMesh.draw();
-	}
 }
