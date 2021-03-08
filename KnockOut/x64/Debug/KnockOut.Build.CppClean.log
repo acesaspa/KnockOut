@@ -1,29 +1,3 @@
-c:\users\noah bensler\documents\cpsc585\knockout\knockout\x64\debug\vc142.pdb
-c:\users\noah bensler\documents\cpsc585\knockout\knockout\x64\debug\vc142.idb
-c:\users\noah bensler\documents\cpsc585\knockout\knockout\x64\debug\snippetvehicletankcreate.obj
-c:\users\noah bensler\documents\cpsc585\knockout\knockout\x64\debug\snippetvehiclescenequery.obj
-c:\users\noah bensler\documents\cpsc585\knockout\knockout\x64\debug\snippetvehiclenodrivecreate.obj
-c:\users\noah bensler\documents\cpsc585\knockout\knockout\x64\debug\snippetvehiclefiltershader.obj
-c:\users\noah bensler\documents\cpsc585\knockout\knockout\x64\debug\snippetvehiclecreate.obj
-c:\users\noah bensler\documents\cpsc585\knockout\knockout\x64\debug\snippetvehicle4wcreate.obj
-c:\users\noah bensler\documents\cpsc585\knockout\knockout\x64\debug\shader.obj
-c:\users\noah bensler\documents\cpsc585\knockout\knockout\x64\debug\main.obj
-c:\users\noah bensler\documents\cpsc585\knockout\knockout\x64\debug\imgui_widgets.obj
-c:\users\noah bensler\documents\cpsc585\knockout\knockout\x64\debug\imgui_tables.obj
-c:\users\noah bensler\documents\cpsc585\knockout\knockout\x64\debug\imgui_impl_opengl3.obj
-c:\users\noah bensler\documents\cpsc585\knockout\knockout\x64\debug\imgui_impl_glfw.obj
-c:\users\noah bensler\documents\cpsc585\knockout\knockout\x64\debug\imgui_draw.obj
-c:\users\noah bensler\documents\cpsc585\knockout\knockout\x64\debug\imgui_demo.obj
-c:\users\noah bensler\documents\cpsc585\knockout\knockout\x64\debug\imgui.obj
-c:\users\noah bensler\documents\cpsc585\knockout\knockout\x64\debug\openalengine.obj
-c:\users\noah bensler\documents\cpsc585\knockout\knockout\x64\debug\soundmanager.obj
-c:\users\noah bensler\documents\cpsc585\knockout\knockout\x64\debug\renderer.obj
-c:\users\noah bensler\documents\cpsc585\knockout\knockout\x64\debug\mesh.obj
-c:\users\noah bensler\documents\cpsc585\knockout\knockout\x64\debug\camera.obj
-c:\users\noah bensler\documents\cpsc585\knockout\knockout\x64\debug\vehiclephysx.obj
-c:\users\noah bensler\documents\cpsc585\knockout\knockout\x64\debug\utils.obj
-c:\users\noah bensler\documents\cpsc585\knockout\knockout\x64\debug\texture2d.obj
-c:\users\noah bensler\documents\cpsc585\knockout\knockout\x64\debug\snippetvehicletirefriction.obj
 d:\585\knockout\knockout\x64\debug\vc142.pdb
 d:\585\knockout\knockout\x64\debug\vc142.idb
 d:\585\knockout\knockout\x64\debug\snippetvehiclescenequery.obj
@@ -45,21 +19,14 @@ d:\585\knockout\knockout\x64\debug\renderer.obj
 d:\585\knockout\knockout\x64\debug\mesh.obj
 d:\585\knockout\knockout\x64\debug\camera.obj
 d:\585\knockout\knockout\x64\debug\aibehavior.obj
+d:\585\knockout\knockout\x64\debug\vehiclephysx.obj
 d:\585\knockout\knockout\x64\debug\utils.obj
 d:\585\knockout\knockout\x64\debug\texture2d.obj
 d:\585\knockout\knockout\x64\debug\snippetvehicletirefriction.obj
 d:\585\knockout\knockout\x64\debug\snippetvehicletankcreate.obj
 d:\585\knockout\knockout\x64\debug\main.obj
-c:\users\noah bensler\documents\cpsc585\knockout\x64\debug\knockout.exe
-c:\users\noah bensler\documents\cpsc585\knockout\x64\debug\knockout.ilk
-c:\users\noah bensler\documents\cpsc585\knockout\x64\debug\knockout.pdb
-d:\585\knockout\knockout\x64\debug\vehiclephysx.obj
 d:\585\knockout\x64\debug\knockout.pdb
 d:\585\knockout\x64\debug\knockout.exe
 d:\585\knockout\x64\debug\knockout.ilk
 d:\585\knockout\knockout\x64\debug\knockout.tlog\cl.command.1.tlog
-d:\585\knockout\knockout\x64\debug\knockout.tlog\cl.read.1.tlog
 d:\585\knockout\knockout\x64\debug\knockout.tlog\cl.write.1.tlog
-d:\585\knockout\knockout\x64\debug\knockout.tlog\link.command.1.tlog
-d:\585\knockout\knockout\x64\debug\knockout.tlog\link.read.1.tlog
-d:\585\knockout\knockout\x64\debug\knockout.tlog\link.write.1.tlog
