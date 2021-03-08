@@ -156,7 +156,7 @@ VehicleDesc VehiclePhysx::initVehicleDesc()
 
 	//Set up the wheel mass, radius, width, moment of inertia, and number of wheels.
 	//Moment of inertia is just the moment of inertia of a cylinder.
-	const PxF32 wheelMass = 20.0f;
+	const PxF32 wheelMass = 1.0f;
 	const PxF32 wheelRadius = 1.0f;
 	const PxF32 wheelWidth = 0.3f;
 	const PxF32 wheelMOI = 0.5f * wheelMass * wheelRadius * wheelRadius;
@@ -352,7 +352,7 @@ void VehiclePhysx::initPhysics(std::vector<Mesh*> groundMeshes)
 
 	VehicleDesc vehicleDesc2 = initVehicleDesc();
 	gVehicle4W2 = createVehicle4W(vehicleDesc2, gPhysics, gCooking);
-	PxTransform startTransform2(PxVec3(20.f, (vehicleDesc2.chassisDims.y * 0.5f + vehicleDesc2.wheelRadius + 1.0f), 0.f), PxQuat(PxIdentity));
+	PxTransform startTransform2(PxVec3(0.f, (vehicleDesc2.chassisDims.y * 0.5f + vehicleDesc2.wheelRadius + 1.0f), -15.f), PxQuat(PxIdentity));
 	gVehicle4W2->getRigidDynamicActor()->setGlobalPose(startTransform2);
 	gScene->addActor(*gVehicle4W2->getRigidDynamicActor());
 
