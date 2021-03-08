@@ -89,7 +89,7 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans, //TODO: what are di
 	//GROUND
 	renderObject(ourShader, &citySurfaceMesh, &cityTexture, worldOrigin, defaultRotation, defaultRotAmountDeg, levelScale);
 	renderObject(ourShader, &grassSurfaceMesh, &grassTexture, worldOrigin, defaultRotation, defaultRotAmountDeg, levelScale);
-	renderObject(ourShader, &desertSurfaceMesh, &desertTexture, worldOrigin, defaultRotation, defaultRotAmountDeg, levelScale);
+	if (status == 0) { renderObject(ourShader, &desertSurfaceMesh, &desertTexture, worldOrigin, defaultRotation, defaultRotAmountDeg, levelScale); }
 
 	//OBJECTS
 	for (int i = 0; i < pxObjectsTrans.size(); i++)
@@ -144,10 +144,18 @@ void Renderer::renderObject(Shader ourShader, Mesh* meshToRender, Texture2D* tex
 	meshToRender->draw();
 }
 
-std::vector<Mesh*> Renderer::getGroundMeshes() { //returns pointers to all ground meshes, cannot be called before setup
-	std::vector<Mesh*> meshes;
-	meshes.push_back(&citySurfaceMesh);
-	meshes.push_back(&grassSurfaceMesh);
-	meshes.push_back(&desertSurfaceMesh);
-	return meshes;
+std::vector<Mesh*> Renderer::getGroundMeshes(int index) { //returns pointers to all ground meshes, cannot be called before setup
+	if (index == 1) {
+		std::vector<Mesh*> meshes;
+		meshes.push_back(&citySurfaceMesh);
+		meshes.push_back(&grassSurfaceMesh);
+		meshes.push_back(&desertSurfaceMesh);
+		return meshes;
+	}
+	if (index == 2) {
+		std::vector<Mesh*> meshes;
+		meshes.push_back(&citySurfaceMesh);
+		meshes.push_back(&grassSurfaceMesh);
+		return meshes;
+	}
 }

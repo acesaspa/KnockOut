@@ -50,6 +50,7 @@ int GameStatus = 0;
 PxRigidDynamic* gBox = NULL;
 PxRigidDynamic* gBox2 = NULL;
 PxRigidDynamic* gBox3 = NULL;
+PxRigidStatic* meshBody = NULL;
 
 bool					gIsVehicleInAir = true;
 
@@ -294,6 +295,11 @@ void VehiclePhysx::releaseAllControls()
 		gVehicleInputData.setAnalogBrake(0.0f);
 		gVehicleInputData.setAnalogHandbrake(0.0f);
 	}
+}
+
+void VehiclePhysx::removeGround(std::vector<Mesh*> groundMeshes) {
+	gScene->removeActor(*meshBody);
+	cookGroundMeshes(groundMeshes);
 }
 
 void VehiclePhysx::initPhysics(std::vector<Mesh*> groundMeshes)
@@ -771,7 +777,7 @@ void VehiclePhysx::cookGroundMesh(Mesh* meshToCook) {
 	PxTriangleMesh* triMesh = NULL;
 	PxU32 meshSize = 0;
 	triMesh = gCooking->createTriangleMesh(meshDesc, gPhysics->getPhysicsInsertionCallback()); //insert the cooked mesh directly into PxPhysics
-	PxRigidStatic* meshBody = gPhysics->createRigidStatic(PxTransform(PxVec3(0, 0, 0))); //create a rigid body for the cooked mesh
+	meshBody = gPhysics->createRigidStatic(PxTransform(PxVec3(0, 0, 0))); //create a rigid body for the cooked mesh
 	PxShape* meshShape = gPhysics->createShape(PxTriangleMeshGeometry(triMesh), *gMaterial); //create a shape from the cooked mesh
 
 	PxFilterData qryFilterData;
