@@ -68,7 +68,6 @@ auto start = std::chrono::system_clock::now();
 Renderer mainRenderer;
 Camera mainCamera;
 VehiclePhysx Physics = VehiclePhysx();
-bool gameDone = false;
 
 AIBehavior beh;
 
@@ -102,9 +101,7 @@ void addPowerUp() {
 			}
 			break;
 		}
-
 	}
-
 }
 
 //MARK: Main
