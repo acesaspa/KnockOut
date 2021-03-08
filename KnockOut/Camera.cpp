@@ -1,9 +1,9 @@
 #include "Camera.h"
 
 float yaw = 90.0f;
-float pitch = -15.0f;
+float pitch = -10.0f;
 float lastX = 400, lastY = 300;
-float cameraDistance = 30.0f;
+float cameraDistance = 10.0f;
 float angleAroundTarget = 0.0f;
 bool firstMouse = true;
 bool mouseVisible = false;

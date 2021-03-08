@@ -68,6 +68,7 @@ auto start = std::chrono::system_clock::now();
 Renderer mainRenderer;
 Camera mainCamera;
 VehiclePhysx Physics = VehiclePhysx();
+bool gameDone = false;
 
 AIBehavior beh;
 
@@ -132,6 +133,8 @@ int main(int argc, char** argv) {
 	glfwSetCursorPosCallback(window, mouse_callback);
 
 	Shader ourShader("vertex_shader.vs", "fragment_shader.fs");
+	Shader textShader("text.vs", "text.fs");
+	Shader skyboxShader("skybox.vs", "skybox.fs");
 
 	//MARK: Init Imgui
 	IMGUI_CHECKVERSION();
@@ -145,14 +148,15 @@ int main(int argc, char** argv) {
 	bool show_another_window = false;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-	mainRenderer.setUpRendering(mainCamera.getCameraPos(), ourShader);
+	//TODO
+	mainRenderer.setUpRendering(mainCamera.getCameraPos(), ourShader, textShader);
+	mainRenderer.prepText(textShader);
+	mainRenderer.prepSkybox(skyboxShader);
 	Physics.initPhysics(mainRenderer.getGroundMeshes(1));	
 
 
 	//MARK: RENDER LOOP ---------------------------------------------------------------------------------------------------------------
 	while (!glfwWindowShouldClose(window)) {
-
-		//std::cout << Physics.getRotation() << "\n";
 
 		addPowerUp();
 
@@ -203,13 +207,11 @@ int main(int argc, char** argv) {
 
 		mainCamera.updateCamera(Physics.getAngleAroundY(), Physics.getVehiclePos(1));
 		glm::mat4 view = mainCamera.getViewMatrix();
-		//apply a special built in matrix specifically made for camera views called the "Look At" matrix
 
 
 		//MARK: Render Scene
 		glClearColor(0.53f, 0.81f, 0.92f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 		std::vector<PxTransform> pxObjects; //ideally this "arrayization" should be done in PhysX
 		pxObjects.push_back(Physics.getBoxTrans(1));
 		pxObjects.push_back(Physics.getBoxTrans(2));
@@ -217,18 +219,30 @@ int main(int argc, char** argv) {
 		std::vector<PxMat44> pxOpponents;
 		pxOpponents.push_back(Physics.getVehicleTrans(2));
 
-		//TODO: game over screen
-
+		//TODO: skybox
+		
 		//TODO: shadows
-		//TODO: load objects
+		//TODO: objects
+		//TODO: another car
+		//TODO: different behavior for the car
+		//TODO: green segment logic
+		//TODO: power-up indicator
+
 
 		beh.frameUpdate(Physics.getVehDat(), Physics.getOpponentPos(), Physics.getOpponentForVec(), Physics.getVehiclePos(1), Physics.getPlayerForVec(),
 			Physics.getOpponent4W());
 
-		//---------------------------------------------------------------
-		mainRenderer.renderGameFrame(Physics.getVehicleTrans(1), pxOpponents, Physics.getGroundPos(), pxObjects, ourShader, view, mainCamera.getCameraPos(),Physics.getGameStatus(),jump,attack,defense,
-		beh.intersectionX, beh.intersectionY);
-		//---------------------------------------------------------------
+		
+		if (Physics.getGameStatus() == 1) {
+			mainRenderer.renderText(textShader, "GAME OVER", 300.f, 400.0f, 2.0f, glm::vec3(190 / 255.f, 0.f, 0.f));
+		}
+		else if (Physics.getGameStatus() == 2) {
+			mainRenderer.renderText(textShader, "YOU WIN", 390.f, 400.0f, 2.0f, glm::vec3(57 / 255.f, 1.f, 20 / 255.f));
+		}
+		else {
+			mainRenderer.renderGameFrame(Physics.getVehicleTrans(1), pxOpponents, Physics.getGroundPos(), pxObjects, ourShader, textShader, skyboxShader, view, mainCamera.getCameraPos(), Physics.getGameStatus(), jump, attack, defense);
+		}
+
 
 		//MARK: Render Imgui
 		{
@@ -265,6 +279,7 @@ int main(int argc, char** argv) {
 //MARK: Input Functions
 
 void processInput(GLFWwindow* window) {
+
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, true);
 	}
@@ -289,13 +304,11 @@ void processInput(GLFWwindow* window) {
 	//if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) mainCamera.getCameraPos() += glm::normalize(glm::cross(mainCamera.getCameraFront(), mainCamera.getCameraUp())) * cameraSpeed;
 
 	if ((glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_UP) == GLFW_REPEAT)) {
-		//std::cout << "UP1\n";
 		Physics.setGMimicKeyInputs(true);
 		Physics.forceGearChange(PxVehicleGearsData::eFIRST);
 		Physics.startAccelerateForwardsMode();
 	}
 	if ((glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_REPEAT)) {
-		//std::cout << "DOWN1\n";
 		Physics.setGMimicKeyInputs(true);
 		Physics.forceGearChange(PxVehicleGearsData::eREVERSE);
 		Physics.startAccelerateReverseMode();

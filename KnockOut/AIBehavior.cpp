@@ -43,10 +43,8 @@ void AIBehavior::turnTowardsPlayer(glm::vec3 opponentPos, glm::vec3 opponentForV
 
 	float curDistance = calculateDistance(playerPos.z, opponentPos.z, playerPos.x, opponentPos.x);
 
-	//TODO: baseline of AI backing off to build up speed, works pretty well except that it can be exploited
 	if (calculateDistance(playerPos.z, opponentPos.z, playerPos.x, opponentPos.x) < 15.f
-		&& opponentVehicle4W->computeForwardSpeed() < 7.5f && curDistance > prevFrameDistance) { //opponent too slow & too close & player not explointing this
-		//std::cout << "BACKING OFF" << std::endl;
+		&& opponentVehicle4W->computeForwardSpeed() < 7.5f && curDistance > prevFrameDistance) { //opponent too slow & too close & player not exploiting this
 		opponentVehicle4W->mDriveDynData.forceGearChange(physx::PxVehicleGearsData::eREVERSE);
 		carInputData->setAnalogAccel(1.f);
 		carInputData->setAnalogSteer(0.f);
