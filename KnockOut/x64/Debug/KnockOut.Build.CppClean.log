@@ -6,6 +6,7 @@ d:\585\knockout\knockout\x64\debug\snippetvehiclefiltershader.obj
 d:\585\knockout\knockout\x64\debug\snippetvehiclecreate.obj
 d:\585\knockout\knockout\x64\debug\snippetvehicle4wcreate.obj
 d:\585\knockout\knockout\x64\debug\shader.obj
+d:\585\knockout\knockout\x64\debug\main.obj
 d:\585\knockout\knockout\x64\debug\imgui_widgets.obj
 d:\585\knockout\knockout\x64\debug\imgui_tables.obj
 d:\585\knockout\knockout\x64\debug\imgui_impl_opengl3.obj
@@ -24,9 +25,12 @@ d:\585\knockout\knockout\x64\debug\utils.obj
 d:\585\knockout\knockout\x64\debug\texture2d.obj
 d:\585\knockout\knockout\x64\debug\snippetvehicletirefriction.obj
 d:\585\knockout\knockout\x64\debug\snippetvehicletankcreate.obj
-d:\585\knockout\knockout\x64\debug\main.obj
-d:\585\knockout\x64\debug\knockout.pdb
 d:\585\knockout\x64\debug\knockout.exe
 d:\585\knockout\x64\debug\knockout.ilk
+d:\585\knockout\x64\debug\knockout.pdb
 d:\585\knockout\knockout\x64\debug\knockout.tlog\cl.command.1.tlog
+d:\585\knockout\knockout\x64\debug\knockout.tlog\cl.read.1.tlog
 d:\585\knockout\knockout\x64\debug\knockout.tlog\cl.write.1.tlog
+d:\585\knockout\knockout\x64\debug\knockout.tlog\link.command.1.tlog
+d:\585\knockout\knockout\x64\debug\knockout.tlog\link.read.1.tlog
+d:\585\knockout\knockout\x64\debug\knockout.tlog\link.write.1.tlog

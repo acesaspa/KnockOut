@@ -1,8 +1,89 @@
-﻿  Camera.cpp
+﻿  AIBehavior.cpp
+  Camera.cpp
 D:\585\KnockOut\KnockOut\Camera.cpp(65,11): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 D:\585\KnockOut\KnockOut\Camera.cpp(66,11): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 D:\585\KnockOut\KnockOut\Camera.cpp(70,16): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
 D:\585\KnockOut\KnockOut\Camera.cpp(71,16): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
 D:\585\KnockOut\KnockOut\Camera.cpp(72,10): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 D:\585\KnockOut\KnockOut\Camera.cpp(73,10): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+  Mesh.cpp
+D:\585\KnockOut\KnockOut\Mesh.cpp(134,48): warning C4267: 'argument': conversion from 'size_t' to 'GLsizei', possible loss of data
+D:\585\KnockOut\KnockOut\Mesh.cpp(144,29): warning C4018: '<': signed/unsigned mismatch
+  Renderer.cpp
+D:\585\KnockOut\KnockOut\Shader.cpp(57,40): warning C4101: 'e': unreferenced local variable
+D:\585\KnockOut\KnockOut\Utils.h(16,2): warning C4091: 'static ': ignored on left of 'Utils' when no variable is declared
+  SoundManager.cpp
+  OpenALEngine.cpp
+  imgui.cpp
+  imgui_demo.cpp
+  imgui_draw.cpp
+  imgui_impl_glfw.cpp
+  imgui_impl_opengl3.cpp
+  imgui_tables.cpp
+  imgui_widgets.cpp
+  main.cpp
+D:\585\KnockOut\KnockOut\Shader.cpp(57,40): warning C4101: 'e': unreferenced local variable
+D:\585\KnockOut\KnockOut\Utils.h(16,2): warning C4091: 'static ': ignored on left of 'Utils' when no variable is declared
+D:\585\KnockOut\KnockOut\main.cpp(196,22): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  Shader.cpp
+D:\585\KnockOut\KnockOut\Shader.cpp(57,40): warning C4101: 'e': unreferenced local variable
+  SnippetVehicle4WCreate.cpp
+  SnippetVehicleCreate.cpp
+  SnippetVehicleFilterShader.cpp
+  SnippetVehicleNoDriveCreate.cpp
+  SnippetVehicleSceneQuery.cpp
+D:\585\KnockOut\KnockOut\SnippetVehicleSceneQuery.cpp(32,10): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+  Generating Code...
+D:\585\KnockOut\KnockOut\Renderer.cpp(440): warning C4715: 'Renderer::getGroundMeshes': not all control paths return a value
+  Compiling...
+  SnippetVehicleTankCreate.cpp
+  SnippetVehicleTireFriction.cpp
+  Texture2D.cpp
+  Utils.cpp
+D:\585\KnockOut\KnockOut\Utils.h(16,2): warning C4091: 'static ': ignored on left of 'Utils' when no variable is declared
+  VehiclePhysx.cpp
+D:\585\KnockOut\KnockOut\VehiclePhysx.cpp(228,41): warning C4305: 'argument': truncation from 'float' to 'const bool'
+D:\585\KnockOut\KnockOut\VehiclePhysx.cpp(242,41): warning C4305: 'argument': truncation from 'float' to 'const bool'
+D:\585\KnockOut\KnockOut\VehiclePhysx.cpp(761,41): warning C4267: '=': conversion from 'size_t' to 'physx::PxU32', possible loss of data
+D:\585\KnockOut\KnockOut\VehiclePhysx.cpp(765,47): warning C4267: '=': conversion from 'size_t' to 'physx::PxU32', possible loss of data
+  Generating Code...
+D:\585\KnockOut\KnockOut\VehiclePhysx.cpp(617): warning C4715: 'VehiclePhysx::getVehicleTrans': not all control paths return a value
+D:\585\KnockOut\KnockOut\VehiclePhysx.cpp(643): warning C4715: 'VehiclePhysx::getVehiclePos': not all control paths return a value
+D:\585\KnockOut\KnockOut\VehiclePhysx.cpp(679): warning C4715: 'VehiclePhysx::getBoxTrans': not all control paths return a value
+LINK : warning LNK4098: defaultlib 'LIBCMT' conflicts with use of other libs; use /NODEFAULTLIB:library
+LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
+glew32s.lib(glew.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'glew32s.lib(glew.obj)' or at 'D:\585\KnockOut\x64\Debug\vc120.pdb'; linking object as if no debug info
+PhysXExtensions_static_64.lib(ExtCpuWorkerThread.obj) : warning LNK4099: PDB 'PhysXExtensions_static_64.pdb' was not found with 'PhysXExtensions_static_64.lib(ExtCpuWorkerThread.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXExtensions_static_64.pdb'; linking object as if no debug info
+PhysXExtensions_static_64.lib(ExtDefaultCpuDispatcher.obj) : warning LNK4099: PDB 'PhysXExtensions_static_64.pdb' was not found with 'PhysXExtensions_static_64.lib(ExtDefaultCpuDispatcher.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXExtensions_static_64.pdb'; linking object as if no debug info
+PhysXExtensions_static_64.lib(ExtDefaultErrorCallback.obj) : warning LNK4099: PDB 'PhysXExtensions_static_64.pdb' was not found with 'PhysXExtensions_static_64.lib(ExtDefaultErrorCallback.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXExtensions_static_64.pdb'; linking object as if no debug info
+PhysXExtensions_static_64.lib(ExtDefaultStreams.obj) : warning LNK4099: PDB 'PhysXExtensions_static_64.pdb' was not found with 'PhysXExtensions_static_64.lib(ExtDefaultStreams.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXExtensions_static_64.pdb'; linking object as if no debug info
+PhysXExtensions_static_64.lib(ExtRigidBodyExt.obj) : warning LNK4099: PDB 'PhysXExtensions_static_64.pdb' was not found with 'PhysXExtensions_static_64.lib(ExtRigidBodyExt.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXExtensions_static_64.pdb'; linking object as if no debug info
+PhysXExtensions_static_64.lib(ExtSimpleFactory.obj) : warning LNK4099: PDB 'PhysXExtensions_static_64.pdb' was not found with 'PhysXExtensions_static_64.lib(ExtSimpleFactory.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXExtensions_static_64.pdb'; linking object as if no debug info
+PhysXPvdSDK_static_64.lib(PxProfileEventImpl.obj) : warning LNK4099: PDB 'PhysXPvdSDK_static_64.pdb' was not found with 'PhysXPvdSDK_static_64.lib(PxProfileEventImpl.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXPvdSDK_static_64.pdb'; linking object as if no debug info
+PhysXPvdSDK_static_64.lib(PxPvd.obj) : warning LNK4099: PDB 'PhysXPvdSDK_static_64.pdb' was not found with 'PhysXPvdSDK_static_64.lib(PxPvd.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXPvdSDK_static_64.pdb'; linking object as if no debug info
+PhysXPvdSDK_static_64.lib(PxPvdDataStream.obj) : warning LNK4099: PDB 'PhysXPvdSDK_static_64.pdb' was not found with 'PhysXPvdSDK_static_64.lib(PxPvdDataStream.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXPvdSDK_static_64.pdb'; linking object as if no debug info
+PhysXPvdSDK_static_64.lib(PxPvdDefaultSocketTransport.obj) : warning LNK4099: PDB 'PhysXPvdSDK_static_64.pdb' was not found with 'PhysXPvdSDK_static_64.lib(PxPvdDefaultSocketTransport.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXPvdSDK_static_64.pdb'; linking object as if no debug info
+PhysXPvdSDK_static_64.lib(PxPvdImpl.obj) : warning LNK4099: PDB 'PhysXPvdSDK_static_64.pdb' was not found with 'PhysXPvdSDK_static_64.lib(PxPvdImpl.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXPvdSDK_static_64.pdb'; linking object as if no debug info
+PhysXPvdSDK_static_64.lib(PxPvdMemClient.obj) : warning LNK4099: PDB 'PhysXPvdSDK_static_64.pdb' was not found with 'PhysXPvdSDK_static_64.lib(PxPvdMemClient.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXPvdSDK_static_64.pdb'; linking object as if no debug info
+PhysXPvdSDK_static_64.lib(PxPvdObjectModelMetaData.obj) : warning LNK4099: PDB 'PhysXPvdSDK_static_64.pdb' was not found with 'PhysXPvdSDK_static_64.lib(PxPvdObjectModelMetaData.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXPvdSDK_static_64.pdb'; linking object as if no debug info
+PhysXPvdSDK_static_64.lib(PxPvdObjectRegistrar.obj) : warning LNK4099: PDB 'PhysXPvdSDK_static_64.pdb' was not found with 'PhysXPvdSDK_static_64.lib(PxPvdObjectRegistrar.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXPvdSDK_static_64.pdb'; linking object as if no debug info
+PhysXPvdSDK_static_64.lib(PxPvdProfileZoneClient.obj) : warning LNK4099: PDB 'PhysXPvdSDK_static_64.pdb' was not found with 'PhysXPvdSDK_static_64.lib(PxPvdProfileZoneClient.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXPvdSDK_static_64.pdb'; linking object as if no debug info
+PhysXVehicle_static_64.lib(PxVehicleComponents.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(PxVehicleComponents.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXVehicle_static_64.pdb'; linking object as if no debug info
+PhysXVehicle_static_64.lib(PxVehicleDrive.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(PxVehicleDrive.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXVehicle_static_64.pdb'; linking object as if no debug info
+PhysXVehicle_static_64.lib(PxVehicleDrive4W.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(PxVehicleDrive4W.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXVehicle_static_64.pdb'; linking object as if no debug info
+PhysXVehicle_static_64.lib(PxVehicleDriveNW.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(PxVehicleDriveNW.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXVehicle_static_64.pdb'; linking object as if no debug info
+PhysXVehicle_static_64.lib(PxVehicleDriveTank.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(PxVehicleDriveTank.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXVehicle_static_64.pdb'; linking object as if no debug info
+PhysXVehicle_static_64.lib(PxVehicleMetaData.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(PxVehicleMetaData.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXVehicle_static_64.pdb'; linking object as if no debug info
+PhysXVehicle_static_64.lib(PxVehicleNoDrive.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(PxVehicleNoDrive.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXVehicle_static_64.pdb'; linking object as if no debug info
+PhysXVehicle_static_64.lib(PxVehicleSDK.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(PxVehicleSDK.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXVehicle_static_64.pdb'; linking object as if no debug info
+PhysXVehicle_static_64.lib(PxVehicleSerialization.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(PxVehicleSerialization.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXVehicle_static_64.pdb'; linking object as if no debug info
+PhysXVehicle_static_64.lib(PxVehicleSuspWheelTire4.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(PxVehicleSuspWheelTire4.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXVehicle_static_64.pdb'; linking object as if no debug info
+PhysXVehicle_static_64.lib(PxVehicleTireFriction.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(PxVehicleTireFriction.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXVehicle_static_64.pdb'; linking object as if no debug info
+PhysXVehicle_static_64.lib(PxVehicleUpdate.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(PxVehicleUpdate.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXVehicle_static_64.pdb'; linking object as if no debug info
+PhysXVehicle_static_64.lib(PxVehicleWheels.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(PxVehicleWheels.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXVehicle_static_64.pdb'; linking object as if no debug info
+PhysXVehicle_static_64.lib(VehicleUtilControl.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(VehicleUtilControl.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXVehicle_static_64.pdb'; linking object as if no debug info
+PhysXVehicle_static_64.lib(VehicleUtilSetup.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(VehicleUtilSetup.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXVehicle_static_64.pdb'; linking object as if no debug info
+PhysXVehicle_static_64.lib(VehicleUtilTelemetry.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(VehicleUtilTelemetry.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXVehicle_static_64.pdb'; linking object as if no debug info
+PhysXVehicle_static_64.lib(PxVehicleAutoGeneratedMetaDataObjects.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(PxVehicleAutoGeneratedMetaDataObjects.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXVehicle_static_64.pdb'; linking object as if no debug info
+PhysXVehicle_static_64.lib(PxVehicleMetaDataObjects.obj) : warning LNK4099: PDB 'PhysXVehicle_static_64.pdb' was not found with 'PhysXVehicle_static_64.lib(PxVehicleMetaDataObjects.obj)' or at 'D:\585\KnockOut\x64\Debug\PhysXVehicle_static_64.pdb'; linking object as if no debug info
   KnockOut.vcxproj -> D:\585\KnockOut\x64\Debug\KnockOut.exe
