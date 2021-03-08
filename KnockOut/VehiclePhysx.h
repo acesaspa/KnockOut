@@ -43,6 +43,7 @@ public:
 	void applyForce(PxVec3 force, int index);
 	PxVec3 getRotation();
 	void stopVehicle(int index);
+	void removeGround(std::vector<Mesh*> groundMeshes);
 
 	PxVehicleDrive4WRawInputData* getVehDat();
 	glm::vec3 getOpponentPos();

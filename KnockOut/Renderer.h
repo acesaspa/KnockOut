@@ -29,7 +29,7 @@ public:
 		bool defense,
 		float interX,
 		float interY);
-	std::vector<Mesh*> getGroundMeshes();
+	std::vector<Mesh*> getGroundMeshes(int index);
 
 private:
 	void renderObject(Shader ourShader, Mesh* meshToRender, Texture2D* textureToApply, glm::vec3 translation = glm::vec3(0.f, 0.f, 0.f), glm::vec3 rotationAxis = glm::vec3(0.f, 0.f, 0.f),
