@@ -207,10 +207,13 @@ int main(int argc, char** argv) {
 		std::vector<PxMat44> pxOpponents;
 		pxOpponents.push_back(Physics.getVehicleTrans(2));
 
-		beh.frameUpdate(Physics.getVehDat(), Physics.getOpponentPos(), Physics.getOpponentForVec());
+
+
+		beh.frameUpdate(Physics.getVehDat(), Physics.getOpponentPos(), Physics.getOpponentForVec(), Physics.getVehiclePos(), Physics.getPlayerForVec());
 
 		//---------------------------------------------------------------
-		mainRenderer.renderGameFrame(Physics.getVehicleTrans(1), pxOpponents, Physics.getGroundPos(), pxObjects, ourShader, view, mainCamera.getCameraPos(),Physics.getGameStatus(),jump,attack,defense);
+		mainRenderer.renderGameFrame(Physics.getVehicleTrans(1), pxOpponents, Physics.getGroundPos(), pxObjects, ourShader, view, mainCamera.getCameraPos(),Physics.getGameStatus(),jump,attack,defense,
+		beh.intersectionX, beh.intersectionY);
 		//---------------------------------------------------------------
 
 		//MARK: Render Imgui

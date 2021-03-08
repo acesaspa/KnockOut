@@ -69,7 +69,12 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans, //TODO: what are di
 	int status,
 	bool jump,
 	bool attack,
-	bool defense){ //render a single frame of the game
+	bool defense,
+
+	float interX,
+	float interY
+	
+	){ //render a single frame of the game
 
 	applyShaderValues(ourShader, cameraPos, view);
 
@@ -101,6 +106,10 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans, //TODO: what are di
 
 	//You Win
 	if(status == 2) renderObject(ourShader, &YouWinMesh, &YouWinTexture, glm::vec3(-30.0f, 1.0f, 10.0f), defaultRotation, defaultRotAmountDeg, powerUpScale);
+
+
+	//AI test
+	renderObject(ourShader, &objectMeshes[0], &objectTextures[0], glm::vec3(interX, 1.f, interY), defaultRotation, defaultRotAmountDeg, defaultScale);
 }
 
 

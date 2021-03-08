@@ -26,7 +26,9 @@ public:
 		int status,
 		bool jump,
 		bool attack,
-		bool defense);
+		bool defense,
+		float interX,
+		float interY);
 	std::vector<Mesh*> getGroundMeshes();
 
 private:
