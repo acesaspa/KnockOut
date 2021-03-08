@@ -113,7 +113,7 @@ int main(int argc, char** argv) {
 	//MARK: Init Sounds
 	OpenALEngine wavPlayer = OpenALEngine();
 	SoundManager bgm = wavPlayer.createSoundPlayer(0);
-	bgm.setVolume(0.0f);
+	bgm.setVolume(0.5f);
 	bgm.loopSound(true);
 
 
