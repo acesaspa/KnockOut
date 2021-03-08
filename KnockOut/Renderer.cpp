@@ -109,7 +109,7 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans, //TODO: what are di
 
 
 	//AI test
-	renderObject(ourShader, &objectMeshes[0], &objectTextures[0], glm::vec3(interX, 1.f, interY), defaultRotation, defaultRotAmountDeg, defaultScale);
+	//renderObject(ourShader, &objectMeshes[0], &objectTextures[0], glm::vec3(interX, 1.f, interY), defaultRotation, defaultRotAmountDeg, defaultScale);
 }
 
 

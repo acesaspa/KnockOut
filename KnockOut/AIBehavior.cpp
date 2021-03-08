@@ -2,11 +2,13 @@
 
 
 int counter = 0;
+int attackCounter = 0;
+bool attacking = false;
 
 void AIBehavior::frameUpdate(physx::PxVehicleDrive4WRawInputData* carInputData, glm::vec3 carPos, glm::vec3 carForwardVec, glm::vec3 playerPos, glm::vec3 playerForwardVector) {
 	counter++;
-	carInputData->setAnalogAccel(0.5f);
-	carInputData->setAnalogSteer(-1.f);
+	carInputData->setAnalogAccel(0.3f);
+	//carInputData->setAnalogSteer(-1.f);
 
 	//TODO: remember it's turning and stop calculating
 
@@ -56,28 +58,28 @@ void AIBehavior::turnTowardsPlayer(glm::vec3 opponentPos, glm::vec3 opponentForV
 	float angle = calculateAngleBetweenLines(calculateSlope(playerPos.z + playerForVec.z, playerPos.z, playerPos.x + playerForVec.x, playerPos.x),
 		calculateSlope(opponentPos.z + opponentForVec.z, opponentPos.z, opponentPos.x + opponentForVec.x, opponentPos.x));
 
-
-	//std::cout << "dist car to inter: " << distCarToIntersection << " dist vec to inter: " << distVecToIntersection << " dist inter to player or: " << distInterToPlayerOrigin << std::endl;
 	if (distCarToIntersection > distVecToIntersection && distInterToPlayerOrigin <= tolerance) { //intersection forward & within tol -> WE HAVE AN ATTACK VECTOR
 		std::cout << "GOT ATTACK VECTOR" << std::endl;
+		attackCounter++;
 		carInputData->setAnalogSteer(0.f);
 		carInputData->setAnalogAccel(1.f);
 	}
-	else if (counter%20 == 0) { //else slow down, and turn in the right direction
-		//carInputData->setAnalogAccel(0.5f);
-		if (pointIsRight(glm::vec3(opponentPos.x, 0.f, opponentPos.z), glm::vec3(intersectionX, 0.f, intersectionY), glm::vec3(playerPos.x, 0.f, playerPos.z))) {
+	else /*if (attackCounter > 120)*/ { //else slow down, and turn in the right direction
+		carInputData->setAnalogAccel(0.5f);
+		attackCounter = 0;
+		if (pointIsRight(glm::vec3(opponentPos.x, 0.f, opponentPos.z), glm::vec3(opponentPos.x+opponentForVec.x, 0.f, opponentPos.z+opponentForVec.z), glm::vec3(playerPos.x, 0.f, playerPos.z))) {
 
 			//TURNING RIGHT
 			carInputData->setAnalogAccel(1.f);
-			carInputData->setAnalogSteer(-0.5f);
-			std::cout << "player right, turning right" << std::endl;
+			carInputData->setAnalogSteer(-1.f);
+			//std::cout << "player right, turning right" << std::endl;
 		}
 		else {
 
 			//TURNING LEFT
 			carInputData->setAnalogAccel(1.f);
-			carInputData->setAnalogSteer(0.5f);
-			std::cout << "player left, turning left" << std::endl;
+			carInputData->setAnalogSteer(1.f);
+			//std::cout << "player left, turning left" << std::endl;
 		}
 	}
 }
