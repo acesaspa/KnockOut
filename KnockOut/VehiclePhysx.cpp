@@ -141,13 +141,13 @@ PxU32					gVehicleOrderProgress = 0;
 bool					gVehicleOrderComplete = false;
 bool					gMimicKeyInputs = false;
 
-VehicleDesc VehiclePhysx::initVehicleDesc()
+VehicleDesc VehiclePhysx::initVehicleDesc(PxF32 mass)
 {
 	//Set up the chassis mass, dimensions, moment of inertia, and center of mass offset.
 	//The moment of inertia is just the moment of inertia of a cuboid but modified for easier steering.
 	//Center of mass offset is 0.65m above the base of the chassis and 0.25m towards the front.
-	const PxF32 chassisMass = 1000.0f;
-	const PxVec3 chassisDims(2.5f, 1.0f, 5.0f);
+	const PxF32 chassisMass = 500;
+	const PxVec3 chassisDims(2.5f, 1.5f, 5.0f);
 	const PxVec3 chassisMOI
 	((chassisDims.y * chassisDims.y + chassisDims.z * chassisDims.z) * chassisMass / 12.0f,
 		(chassisDims.x * chassisDims.x + chassisDims.z * chassisDims.z) * 0.8f * chassisMass / 12.0f,
@@ -158,9 +158,9 @@ VehicleDesc VehiclePhysx::initVehicleDesc()
 	//Moment of inertia is just the moment of inertia of a cylinder.
 	const PxF32 wheelMass = 1.0f;
 	const PxF32 wheelRadius = 1.0f;
-	const PxF32 wheelWidth = 0.3f;
+	const PxF32 wheelWidth = 0.4f;
 	const PxF32 wheelMOI = 0.5f * wheelMass * wheelRadius * wheelRadius;
-	const PxU32 nbWheels = 6;
+	const PxU32 nbWheels = 4;
 
 	VehicleDesc vehicleDesc;
 
@@ -344,13 +344,13 @@ void VehiclePhysx::initPhysics(std::vector<Mesh*> groundMeshes)
 	cookGroundMeshes(groundMeshes);
 
 	//Create a vehicle that will drive on the plane.
-	VehicleDesc vehicleDesc = initVehicleDesc();
+	VehicleDesc vehicleDesc = initVehicleDesc(1000);
 	gVehicle4W = createVehicle4W(vehicleDesc, gPhysics, gCooking);
 	PxTransform startTransform(PxVec3(0, (vehicleDesc.chassisDims.y * 0.5f + vehicleDesc.wheelRadius + 1.0f), 0), PxQuat(PxIdentity));
 	gVehicle4W->getRigidDynamicActor()->setGlobalPose(startTransform);
 	gScene->addActor(*gVehicle4W->getRigidDynamicActor());
 
-	VehicleDesc vehicleDesc2 = initVehicleDesc();
+	VehicleDesc vehicleDesc2 = initVehicleDesc(1000);
 	gVehicle4W2 = createVehicle4W(vehicleDesc2, gPhysics, gCooking);
 	PxTransform startTransform2(PxVec3(0.f, (vehicleDesc2.chassisDims.y * 0.5f + vehicleDesc2.wheelRadius + 1.0f), -15.f), PxQuat(PxIdentity));
 	gVehicle4W2->getRigidDynamicActor()->setGlobalPose(startTransform2);
@@ -497,8 +497,6 @@ void VehiclePhysx::stepPhysics()
 	PxBounds3 pxBounds2 = vehicles2[1]->getRigidDynamicActor()->getWorldBounds();
 	PxTransform pos2 = vehicles2[1]->getRigidDynamicActor()->getGlobalPose();
 	glm::vec3 cubePos2 = glm::vec3(pos2.p[0], pos2.p[1], pos2.p[2]);
-
-
 
 	/*
 	if (pos.p[2] >= 300 || pos.p[2] <= -300 || pos.p[0] >= 300 || pos.p[0] <= -300) {
@@ -727,6 +725,10 @@ glm::vec3 VehiclePhysx::getPlayerForVec() {
 	return glm::vec3(vDir.x, vDir.y, vDir.z);
 }
 
+PxVehicleDrive4W* VehiclePhysx::getOpponent4W() {
+	return gVehicle4W2;
+}
+
 
 
 
@@ -811,14 +813,14 @@ void VehiclePhysx::checkGameOver() {
 void VehiclePhysx::reset() {
 
 	gScene->removeActor(*gVehicle4W->getRigidDynamicActor());
-	VehicleDesc vehicleDesc = initVehicleDesc();
+	VehicleDesc vehicleDesc = initVehicleDesc(1000);
 	PxTransform startTransform(PxVec3(0, (vehicleDesc.chassisDims.y * 0.5f + vehicleDesc.wheelRadius + 1.0f), 0), PxQuat(PxIdentity));
 	gVehicle4W->getRigidDynamicActor()->setGlobalPose(startTransform);
 	gVehicle4W->getRigidDynamicActor()->setLinearVelocity(PxVec3(0, 0, 0));
 	gScene->addActor(*gVehicle4W->getRigidDynamicActor());
 	
 	gScene->removeActor(*gVehicle4W2->getRigidDynamicActor());
-	VehicleDesc vehicleDesc2 = initVehicleDesc();
+	VehicleDesc vehicleDesc2 = initVehicleDesc(1000);
 	PxTransform startTransform2(PxVec3(15.f, (vehicleDesc2.chassisDims.y * 0.5f + vehicleDesc2.wheelRadius + 100000.0f), 0), PxQuat(PxIdentity));
 	gVehicle4W2->getRigidDynamicActor()->setGlobalPose(startTransform2);
 	gVehicle4W2->getRigidDynamicActor()->setLinearVelocity(PxVec3(0, 0, 0));

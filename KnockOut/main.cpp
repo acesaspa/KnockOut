@@ -216,9 +216,13 @@ int main(int argc, char** argv) {
 		std::vector<PxMat44> pxOpponents;
 		pxOpponents.push_back(Physics.getVehicleTrans(2));
 
+		//TODO: game over screen
 
+		//TODO: shadows
+		//TODO: load objects
 
-		beh.frameUpdate(Physics.getVehDat(), Physics.getOpponentPos(), Physics.getOpponentForVec(), Physics.getVehiclePos(1), Physics.getPlayerForVec());
+		beh.frameUpdate(Physics.getVehDat(), Physics.getOpponentPos(), Physics.getOpponentForVec(), Physics.getVehiclePos(1), Physics.getPlayerForVec(),
+			Physics.getOpponent4W());
 
 		//---------------------------------------------------------------
 		mainRenderer.renderGameFrame(Physics.getVehicleTrans(1), pxOpponents, Physics.getGroundPos(), pxObjects, ourShader, view, mainCamera.getCameraPos(),Physics.getGameStatus(),jump,attack,defense,

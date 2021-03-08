@@ -4,11 +4,10 @@
 int counter = 0;
 int attackCounter = 0;
 bool attacking = false;
+float prevFrameDistance = 0.f;
 
-void AIBehavior::frameUpdate(physx::PxVehicleDrive4WRawInputData* carInputData, glm::vec3 carPos, glm::vec3 carForwardVec, glm::vec3 playerPos, glm::vec3 playerForwardVector) {
-	counter++;
-	carInputData->setAnalogAccel(0.3f);
-	//carInputData->setAnalogSteer(-1.f);
+void AIBehavior::frameUpdate(physx::PxVehicleDrive4WRawInputData* carInputData, glm::vec3 carPos, glm::vec3 carForwardVec, glm::vec3 playerPos, glm::vec3 playerForwardVector,
+	physx::PxVehicleDrive4W* opponentVehicle4W) {
 
 	//TODO: remember it's turning and stop calculating
 
@@ -34,54 +33,37 @@ void AIBehavior::frameUpdate(physx::PxVehicleDrive4WRawInputData* carInputData, 
 	//	turnTowardsPlayer(carPos, carForwardVec, playerPos, playerForwardVector, carInputData, counter);
 	//}
 
-	turnTowardsPlayer(carPos, carForwardVec, playerPos, playerForwardVector, carInputData, counter);
+	turnTowardsPlayer(carPos, carForwardVec, playerPos, playerForwardVector, carInputData, opponentVehicle4W);
 }
 
 
 
-void AIBehavior::turnTowardsPlayer(glm::vec3 opponentPos, glm::vec3 opponentForVec, glm::vec3 playerPos, glm::vec3 playerForVec, physx::PxVehicleDrive4WRawInputData* carInputData, int counter) {
-	float opponentSlope = calculateSlope(opponentPos.z + opponentForVec.z, opponentPos.z, opponentPos.x + opponentForVec.x, opponentPos.x);
-	float playerSlope = calculateSlope(playerPos.z + playerForVec.z, playerPos.z, playerPos.x + playerForVec.x, playerPos.x);
+void AIBehavior::turnTowardsPlayer(glm::vec3 opponentPos, glm::vec3 opponentForVec, glm::vec3 playerPos, glm::vec3 playerForVec,
+	physx::PxVehicleDrive4WRawInputData* carInputData, physx::PxVehicleDrive4W* opponentVehicle4W) {
 
-	float opponentLinComp = calculateLinearComp(opponentPos.x, opponentPos.z, opponentSlope);
-	float playerLinComp = calculateLinearComp(playerPos.x, playerPos.z, playerSlope);
+	float curDistance = calculateDistance(playerPos.z, opponentPos.z, playerPos.x, opponentPos.x);
 
-	intersectionX = calculateIntersectionX(opponentLinComp, playerLinComp, playerSlope, opponentSlope); //where vector lines intersect
-	intersectionY = calculateIntersectionY(opponentSlope, intersectionX, opponentLinComp);
-
-	float distCarToIntersection = calculateDistance(intersectionY, opponentPos.z, intersectionX, opponentPos.x);
-	float distVecToIntersection = calculateDistance(intersectionY, opponentPos.z + opponentForVec.z, intersectionX, opponentPos.x + opponentForVec.x);
-	float distInterToPlayerOrigin = calculateDistance(intersectionY, playerPos.z, intersectionX, playerPos.x);
-	float tolerance = 2.f;
-
-
-	float angle = calculateAngleBetweenLines(calculateSlope(playerPos.z + playerForVec.z, playerPos.z, playerPos.x + playerForVec.x, playerPos.x),
-		calculateSlope(opponentPos.z + opponentForVec.z, opponentPos.z, opponentPos.x + opponentForVec.x, opponentPos.x));
-
-	if (distCarToIntersection > distVecToIntersection && distInterToPlayerOrigin <= tolerance) { //intersection forward & within tol -> WE HAVE AN ATTACK VECTOR
-		std::cout << "GOT ATTACK VECTOR" << std::endl;
-		attackCounter++;
-		carInputData->setAnalogSteer(0.f);
+	//TODO: baseline of AI backing off to build up speed, works pretty well except that it can be exploited
+	if (calculateDistance(playerPos.z, opponentPos.z, playerPos.x, opponentPos.x) < 15.f
+		&& opponentVehicle4W->computeForwardSpeed() < 7.5f && curDistance > prevFrameDistance) { //opponent too slow & too close & player not explointing this
+		//std::cout << "BACKING OFF" << std::endl;
+		opponentVehicle4W->mDriveDynData.forceGearChange(physx::PxVehicleGearsData::eREVERSE);
 		carInputData->setAnalogAccel(1.f);
+		carInputData->setAnalogSteer(0.f);
 	}
-	else /*if (attackCounter > 120)*/ { //else slow down, and turn in the right direction
-		carInputData->setAnalogAccel(0.5f);
-		attackCounter = 0;
-		if (pointIsRight(glm::vec3(opponentPos.x, 0.f, opponentPos.z), glm::vec3(opponentPos.x+opponentForVec.x, 0.f, opponentPos.z+opponentForVec.z), glm::vec3(playerPos.x, 0.f, playerPos.z))) {
+	else {
 
-			//TURNING RIGHT
-			carInputData->setAnalogAccel(1.f);
+		opponentVehicle4W->mDriveDynData.forceGearChange(physx::PxVehicleGearsData::eFIRST);
+		carInputData->setAnalogAccel(1.f);
+		if (pointIsRight(glm::vec3(opponentPos.x, 0.f, opponentPos.z), glm::vec3(opponentPos.x + opponentForVec.x, 0.f, opponentPos.z + opponentForVec.z), glm::vec3(playerPos.x, 0.f, playerPos.z))) {
 			carInputData->setAnalogSteer(-1.f);
-			//std::cout << "player right, turning right" << std::endl;
 		}
 		else {
-
-			//TURNING LEFT
-			carInputData->setAnalogAccel(1.f);
 			carInputData->setAnalogSteer(1.f);
-			//std::cout << "player left, turning left" << std::endl;
 		}
 	}
+
+	prevFrameDistance = curDistance;
 }
 
 

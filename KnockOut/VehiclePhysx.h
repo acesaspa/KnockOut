@@ -24,7 +24,7 @@ public:
 	void startBrakeMode();
 	void startAccelerateReverseMode();
 	void startAccelerateForwardsMode();
-	VehicleDesc initVehicleDesc();
+	VehicleDesc initVehicleDesc(PxF32 mass);
 	PxMat44 getVehicleTrans(int index);
 	float getAngleAroundY();
 	glm::vec3 getVehiclePos(int index);
@@ -48,6 +48,7 @@ public:
 	glm::vec3 getOpponentPos();
 	glm::vec3 getOpponentForVec();
 	glm::vec3 getPlayerForVec();
+	PxVehicleDrive4W* getOpponent4W();
 
 private:
 	void cookGroundMesh(Mesh* meshToCook);
