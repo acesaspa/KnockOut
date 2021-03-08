@@ -37,7 +37,7 @@ void Renderer::setUpRendering(glm::vec3 cameraPos, Shader ourShader) { //call on
 	DefPowerUpTexture.loadTexture("shieldUV.png", true);
 
 	playerMesh.loadOBJ("blueCar.obj");
-	playerTexture.loadTexture("greenCar.png", true, true);
+	playerTexture.loadTexture("blueCar.png", true, true);
 
 	citySurfaceMesh.loadOBJ("cityLevel.obj");
 	cityTexture.loadTexture("asphalt.jpg", true);
