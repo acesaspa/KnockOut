@@ -1,9 +1,1 @@
-﻿  VehiclePhysx.cpp
-D:\585\KnockOut\KnockOut\VehiclePhysx.cpp(227,41): warning C4305: 'argument': truncation from 'float' to 'const bool'
-D:\585\KnockOut\KnockOut\VehiclePhysx.cpp(241,41): warning C4305: 'argument': truncation from 'float' to 'const bool'
-D:\585\KnockOut\KnockOut\VehiclePhysx.cpp(753,41): warning C4267: '=': conversion from 'size_t' to 'physx::PxU32', possible loss of data
-D:\585\KnockOut\KnockOut\VehiclePhysx.cpp(757,47): warning C4267: '=': conversion from 'size_t' to 'physx::PxU32', possible loss of data
-D:\585\KnockOut\KnockOut\VehiclePhysx.cpp(613): warning C4715: 'VehiclePhysx::getVehicleTrans': not all control paths return a value
-D:\585\KnockOut\KnockOut\VehiclePhysx.cpp(639): warning C4715: 'VehiclePhysx::getVehiclePos': not all control paths return a value
-D:\585\KnockOut\KnockOut\VehiclePhysx.cpp(675): warning C4715: 'VehiclePhysx::getBoxTrans': not all control paths return a value
-  KnockOut.vcxproj -> D:\585\KnockOut\x64\Debug\KnockOut.exe
+﻿
