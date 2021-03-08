@@ -146,7 +146,7 @@ int main(int argc, char** argv) {
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 	mainRenderer.setUpRendering(mainCamera.getCameraPos(), ourShader);
-	Physics.initPhysics(mainRenderer.getGroundMeshes());	
+	Physics.initPhysics(mainRenderer.getGroundMeshes(1));	
 
 
 	//MARK: RENDER LOOP ---------------------------------------------------------------------------------------------------------------
@@ -163,6 +163,7 @@ int main(int argc, char** argv) {
 			if (!reset) {
 				reset = true;
 				Physics.reset();
+				Physics.removeGround(mainRenderer.getGroundMeshes(2));
 			}
 		}
 		if (glm::length(Physics.getVehiclePos(1)-glm::vec3(-30.0f, 1.0f, 10.0f)) < 2.f && reset) {
