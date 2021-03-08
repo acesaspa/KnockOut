@@ -224,12 +224,12 @@ void VehiclePhysx::startTurnHardLeftMode()
 {
 	if (gMimicKeyInputs)
 	{
-		gVehicleInputData.setDigitalAccel(true);
+		gVehicleInputData.setDigitalAccel(0.1f);
 		gVehicleInputData.setDigitalSteerLeft(true);
 	}
 	else
 	{
-		gVehicleInputData.setAnalogAccel(true);
+		gVehicleInputData.setAnalogAccel(0.1f);
 		gVehicleInputData.setAnalogSteer(-1.0f);
 	}
 }
@@ -238,12 +238,12 @@ void VehiclePhysx::startTurnHardRightMode()
 {
 	if (gMimicKeyInputs)
 	{
-		gVehicleInputData.setDigitalAccel(true);
+		gVehicleInputData.setDigitalAccel(0.1f);
 		gVehicleInputData.setDigitalSteerRight(true);
 	}
 	else
 	{
-		gVehicleInputData.setAnalogAccel(1.0f);
+		gVehicleInputData.setAnalogAccel(0.1f);
 		gVehicleInputData.setAnalogSteer(1.0f);
 	}
 }
@@ -463,8 +463,14 @@ void VehiclePhysx::incrementDrivingMode(const PxF32 timestep)
 	}
 }
 
+PxVec3 VehiclePhysx::getRotation() {
+	return gVehicle4W->getRigidDynamicActor()->getGlobalPose().q.getBasisVector0();
+	//return gVehicle4W->getRigidDynamicActor()->getGlobalPose().q.getAngle();
+}
+
 void VehiclePhysx::stepPhysics()
 {
+
 	const PxF32 timestep = 1.0f / 60.0f;
 
 	//Cycle through the driving modes to demonstrate how to accelerate/reverse/brake/turn etc.
@@ -615,12 +621,21 @@ float VehiclePhysx::getAngleAroundY() {
 	return angleAroundY;
 }
 
-glm::vec3 VehiclePhysx::getVehiclePos() {
-	PxVehicleWheels* vehicles[1] = { gVehicle4W };
-	PxBounds3 pxBounds = vehicles[0]->getRigidDynamicActor()->getWorldBounds();
-	PxTransform pos = vehicles[0]->getRigidDynamicActor()->getGlobalPose();
-	glm::vec3 cubePos = glm::vec3(pos.p[0], pos.p[1], pos.p[2]);
-	return cubePos;
+glm::vec3 VehiclePhysx::getVehiclePos(int index) {
+	if (index == 1) {
+		PxVehicleWheels* vehicles[1] = { gVehicle4W };
+		PxBounds3 pxBounds = vehicles[0]->getRigidDynamicActor()->getWorldBounds();
+		PxTransform pos = vehicles[0]->getRigidDynamicActor()->getGlobalPose();
+		glm::vec3 cubePos = glm::vec3(pos.p[0], pos.p[1], pos.p[2]);
+		return cubePos;
+	}
+	if (index == 2) {
+		PxVehicleWheels* vehicles[1] = { gVehicle4W2 };
+		PxBounds3 pxBounds = vehicles[0]->getRigidDynamicActor()->getWorldBounds();
+		PxTransform pos = vehicles[0]->getRigidDynamicActor()->getGlobalPose();
+		glm::vec3 cubePos = glm::vec3(pos.p[0], pos.p[1], pos.p[2]);
+		return cubePos;
+	}
 }
 
 glm::vec3 VehiclePhysx::getGroundPos() {
@@ -808,4 +823,22 @@ void VehiclePhysx::reset() {
 	gVehicle4W2->getRigidDynamicActor()->setGlobalPose(startTransform2);
 	gVehicle4W2->getRigidDynamicActor()->setLinearVelocity(PxVec3(0, 0, 0));
 	gScene->addActor(*gVehicle4W2->getRigidDynamicActor());
+}
+
+void VehiclePhysx::applyForce(PxVec3 force, int index) {
+	if (index == 1) {
+		gVehicle4W->getRigidDynamicActor()->addForce(force);
+	}
+	if (index == 2) {
+		gVehicle4W2->getRigidDynamicActor()->addForce(force);
+	}
+}
+
+void VehiclePhysx::stopVehicle(int index) {
+	if (index == 1) {
+		gVehicle4W->getRigidDynamicActor()->setLinearVelocity(PxVec3(0.f, 0.f, 0.f));
+	}
+	if (index == 2) {
+		gVehicle4W2->getRigidDynamicActor()->setLinearVelocity(PxVec3(0.f, 0.f, 0.f));
+	}
 }
