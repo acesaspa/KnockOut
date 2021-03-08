@@ -47,6 +47,7 @@ public:
 	PxVehicleDrive4WRawInputData* getVehDat();
 	glm::vec3 getOpponentPos();
 	glm::vec3 getOpponentForVec();
+	glm::vec3 getPlayerForVec();
 
 private:
 	void cookGroundMesh(Mesh* meshToCook);

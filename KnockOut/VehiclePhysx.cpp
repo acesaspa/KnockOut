@@ -352,7 +352,7 @@ void VehiclePhysx::initPhysics(std::vector<Mesh*> groundMeshes)
 
 	VehicleDesc vehicleDesc2 = initVehicleDesc();
 	gVehicle4W2 = createVehicle4W(vehicleDesc2, gPhysics, gCooking);
-	PxTransform startTransform2(PxVec3(5.f, (vehicleDesc2.chassisDims.y * 0.5f + vehicleDesc2.wheelRadius + 1.0f), 0.f), PxQuat(PxIdentity));
+	PxTransform startTransform2(PxVec3(20.f, (vehicleDesc2.chassisDims.y * 0.5f + vehicleDesc2.wheelRadius + 1.0f), 0.f), PxQuat(PxIdentity));
 	gVehicle4W2->getRigidDynamicActor()->setGlobalPose(startTransform2);
 	gScene->addActor(*gVehicle4W2->getRigidDynamicActor());
 
@@ -715,6 +715,13 @@ glm::vec3 VehiclePhysx::getOpponentPos() {
 
 glm::vec3 VehiclePhysx::getOpponentForVec() {
 	PxVehicleWheels* vehicles[1] = { gVehicle4W2 };
+	PxQuat vehicleQuaternion = vehicles[0]->getRigidDynamicActor()->getGlobalPose().q;
+	PxVec3 vDir = vehicleQuaternion.getBasisVector2();
+	return glm::vec3(vDir.x, vDir.y, vDir.z);
+}
+
+glm::vec3 VehiclePhysx::getPlayerForVec() {
+	PxVehicleWheels* vehicles[1] = { gVehicle4W };
 	PxQuat vehicleQuaternion = vehicles[0]->getRigidDynamicActor()->getGlobalPose().q;
 	PxVec3 vDir = vehicleQuaternion.getBasisVector2();
 	return glm::vec3(vDir.x, vDir.y, vDir.z);
