@@ -358,7 +358,7 @@ void VehiclePhysx::initPhysics(std::vector<Mesh*> groundMeshes)
 
 	VehicleDesc vehicleDesc2 = initVehicleDesc(1000);
 	gVehicle4W2 = createVehicle4W(vehicleDesc2, gPhysics, gCooking);
-	PxTransform startTransform2(PxVec3(0.f, (vehicleDesc2.chassisDims.y * 0.5f + vehicleDesc2.wheelRadius + 1.0f), -15.f), PxQuat(PxIdentity));
+	PxTransform startTransform2(PxVec3(5.f, (vehicleDesc2.chassisDims.y * 0.5f + vehicleDesc2.wheelRadius + 1.0f), -10.f), PxQuat(PxIdentity));
 	gVehicle4W2->getRigidDynamicActor()->setGlobalPose(startTransform2);
 	gScene->addActor(*gVehicle4W2->getRigidDynamicActor());
 
@@ -807,11 +807,11 @@ void VehiclePhysx::checkGameOver() {
 	PxTransform pos2 = vehicles2[1]->getRigidDynamicActor()->getGlobalPose();
 	glm::vec3 cubePos2 = glm::vec3(pos2.p[0], pos2.p[1], pos2.p[2]);
 
-	if (cubePos.y < 0) {
+	if (cubePos.y < -10) {
 		GameStatus = 1;
 	}
 
-	if (cubePos2.y < 0 && cubePos.y > 0) {
+	if (cubePos2.y < -10 && cubePos.y > 0) {
 		GameStatus = 2;
 	}
 }
@@ -848,5 +848,6 @@ void VehiclePhysx::stopVehicle(int index) {
 	}
 	if (index == 2) {
 		gVehicle4W2->getRigidDynamicActor()->setLinearVelocity(PxVec3(0.f, 0.f, 0.f));
+		gVehicleInputData2.setAnalogHandbrake(1.f);
 	}
 }
