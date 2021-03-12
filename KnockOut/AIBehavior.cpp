@@ -33,12 +33,12 @@ void AIBehavior::frameUpdate(physx::PxVehicleDrive4WRawInputData* carInputData, 
 	//	turnTowardsPlayer(carPos, carForwardVec, playerPos, playerForwardVector, carInputData, counter);
 	//}
 
-	turnTowardsPlayer(carPos, carForwardVec, playerPos, playerForwardVector, carInputData, opponentVehicle4W);
+	attackPlayer(carPos, carForwardVec, playerPos, playerForwardVector, carInputData, opponentVehicle4W);
 }
 
 
 
-void AIBehavior::turnTowardsPlayer(glm::vec3 opponentPos, glm::vec3 opponentForVec, glm::vec3 playerPos, glm::vec3 playerForVec,
+void AIBehavior::attackPlayer(glm::vec3 opponentPos, glm::vec3 opponentForVec, glm::vec3 playerPos, glm::vec3 playerForVec,
 	physx::PxVehicleDrive4WRawInputData* carInputData, physx::PxVehicleDrive4W* opponentVehicle4W) {
 
 	float curDistance = calculateDistance(playerPos.z, opponentPos.z, playerPos.x, opponentPos.x);
@@ -70,7 +70,7 @@ void AIBehavior::turnTowardsPlayer(glm::vec3 opponentPos, glm::vec3 opponentForV
 
 
 
-int AIBehavior::shouldTurn(glm::vec3 pos, glm::vec3 forVec) {
+int AIBehavior::shouldChangeCourse(glm::vec3 pos, glm::vec3 forVec) { //determines whether it's close to & headed toward a hole, an object, or the edge of the map
 	//only dealing with 2 dimens where y corresponds to our z
 
 	int numOfEdgesClose = 0;
@@ -120,11 +120,6 @@ int AIBehavior::shouldTurn(glm::vec3 pos, glm::vec3 forVec) {
 			return 0;
 		}
 	}
-
-	//if (numOfEdgesClose == 1) return 0;
-	//else {
-
-	//}
 	
 	return -1;
 }
