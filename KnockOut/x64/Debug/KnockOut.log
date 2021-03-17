@@ -1,8 +1,8 @@
-﻿  Camera.cpp
-D:\585\KnockOut\KnockOut\Camera.cpp(65,11): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-D:\585\KnockOut\KnockOut\Camera.cpp(66,11): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-D:\585\KnockOut\KnockOut\Camera.cpp(70,16): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-D:\585\KnockOut\KnockOut\Camera.cpp(71,16): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-D:\585\KnockOut\KnockOut\Camera.cpp(72,10): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-D:\585\KnockOut\KnockOut\Camera.cpp(73,10): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-  KnockOut.vcxproj -> D:\585\KnockOut\x64\Debug\KnockOut.exe
+﻿  main.cpp
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\Shader.cpp(57,40): warning C4101: 'e': unreferenced local variable
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\Utils.h(16,2): warning C4091: 'static ': ignored on left of 'Utils' when no variable is declared
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(156,14): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(159,12): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(160,12): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(314,22): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  KnockOut.vcxproj -> C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\x64\Debug\KnockOut.exe

@@ -4,6 +4,8 @@
 #include "Utils.h"
 #include <map>
 #include <stb_image.h>
+#include <list>
+#include "PowerUp.h"
 
 glm::vec3 vehicleScale = glm::vec3(0.5f, 0.6f, 0.5f);
 glm::vec3 powerUpScale = glm::vec3(0.5f, 0.5f, 0.5f);
@@ -20,6 +22,7 @@ unsigned int textVAO, textVBO;
 //byskox
 unsigned int cubemapTexture;
 unsigned int skyboxVAO, skyboxVBO;
+
 
 
 
@@ -341,11 +344,16 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans, //TODO: what are di
 	glm::mat4 view,
 	glm::vec3 cameraPos,
 	int status,
-	bool jump,
-	bool attack,
-	bool defense
-	
+	std::list<PowerUp*>& powerups
 	){ //render a single frame of the game
+
+	//PowerUp* c = new PowerUp;
+	//c->foo();
+	//c->bar = 3;
+
+	//a.foo();
+
+	//std::cout << c->bar << "\n";
 
 	applyShaderValues(ourShader, cameraPos, view);
 
@@ -367,9 +375,26 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans, //TODO: what are di
 		renderObject(ourShader, &objectMeshes[0], &objectTextures[0], worldOrigin, defaultRotation, defaultRotAmountDeg, defaultScale, pxObjectsTrans[i]);
 
 	//POWERUPS
-	if(jump) renderObject(ourShader, &jmpPowerUpMesh, &JmpPowerUpTexture, glm::vec3(20.0f, 1.0f, 10.0f), defaultRotation, defaultRotAmountDeg, powerUpScale);
-	if(attack) renderObject(ourShader, &atkPowerUpMesh, &AtkPowerUpTexture, glm::vec3(20.0f, 1.0f, 10.0f), defaultRotation, defaultRotAmountDeg, powerUpScale);
-	if(defense) renderObject(ourShader, &defPowerUpMesh, &DefPowerUpTexture, glm::vec3(20.0f, 1.0f, 10.0f), defaultRotation, defaultRotAmountDeg, powerUpScale);
+	
+	for (std::list<PowerUp*>::const_iterator it = powerups.begin(); it != powerups.end(); it++) {
+		//std::cout << (*it)->getLocation().x << "\n";
+		if ((*it)->isCollected==false) {
+			switch ((*it)->Type) {
+				case(1):
+					renderObject(ourShader, &jmpPowerUpMesh, &JmpPowerUpTexture, (*it)->Location, defaultRotation, defaultRotAmountDeg, powerUpScale);
+					break;
+				case(2):
+					renderObject(ourShader, &atkPowerUpMesh, &AtkPowerUpTexture, (*it)->Location, defaultRotation, defaultRotAmountDeg, powerUpScale);
+					break;
+				case(3):
+					renderObject(ourShader, &defPowerUpMesh, &DefPowerUpTexture, (*it)->Location, defaultRotation, defaultRotAmountDeg, powerUpScale);
+			}
+		}
+	}
+	
+	//if(jump) renderObject(ourShader, &jmpPowerUpMesh, &JmpPowerUpTexture, glm::vec3(20.0f, 1.0f, 10.0f), defaultRotation, defaultRotAmountDeg, powerUpScale);
+	//if(attack) renderObject(ourShader, &atkPowerUpMesh, &AtkPowerUpTexture, glm::vec3(20.0f, 1.0f, 10.0f), defaultRotation, defaultRotAmountDeg, powerUpScale);
+	//if(defense) renderObject(ourShader, &defPowerUpMesh, &DefPowerUpTexture, glm::vec3(20.0f, 1.0f, 10.0f), defaultRotation, defaultRotAmountDeg, powerUpScale);
 
 
 	//Game Over

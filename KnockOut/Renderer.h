@@ -11,6 +11,9 @@
 #include "Mesh.h"
 #include "Texture2D.h"
 #include "Shader.cpp"
+#include <list>
+#include "PowerUp.h"
+//#include "Class.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -40,9 +43,7 @@ public:
 		glm::mat4 view,
 		glm::vec3 cameraPos,
 		int status,
-		bool jump,
-		bool attack,
-		bool defense);
+		std::list<PowerUp*>& powerups);
 	std::vector<Mesh*> getGroundMeshes(int index);
 
 private:

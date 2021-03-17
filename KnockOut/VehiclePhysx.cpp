@@ -346,7 +346,7 @@ void VehiclePhysx::initPhysics(std::vector<Mesh*> groundMeshes)
 	//Create/cook level surface.
 	PxFilterData groundPlaneSimFilterData(COLLISION_FLAG_GROUND, COLLISION_FLAG_GROUND_AGAINST, 0, 0);
 	gGroundPlane = createDrivablePlane(groundPlaneSimFilterData, gMaterial, gPhysics);
-	//gScene->addActor(*gGroundPlane); //TODO: remove, or whatever...
+	gScene->addActor(*gGroundPlane); //TODO: remove, or whatever...
 	cookGroundMeshes(groundMeshes);
 
 	//Create a vehicle that will drive on the plane.
@@ -737,13 +737,6 @@ PxVehicleDrive4W* VehiclePhysx::getOpponent4W() {
 
 
 
-
-
-
-
-
-
-
 //MARK: Cooooking
 void VehiclePhysx::cookGroundMeshes(std::vector<Mesh*> groundMeshes) {
 	for (int i = 0; i < groundMeshes.size(); i++) {
@@ -757,6 +750,8 @@ void VehiclePhysx::cookGroundMesh(Mesh* meshToCook) {
 
 	std::vector<PxVec3> vertices = meshToCook->getActualVertices();
 	std::vector<PxU32> indices = meshToCook->getVertexIndices();
+
+	//std::cout << "size " << vertices.size() << "\n";
 
 	meshDesc.points.count = vertices.size(); //total number of vertices
 	meshDesc.points.stride = sizeof(PxVec3);

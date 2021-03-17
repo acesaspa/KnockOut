@@ -21,7 +21,9 @@
   <ItemGroup>
     <ClCompile Include="AIBehavior.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="PowerUp.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="MyContact.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="SoundManager.cpp" />
     <ClCompile Include="OpenALEngine.cpp" />
@@ -41,6 +43,7 @@
     <ClCompile Include="SnippetVehicleSceneQuery.cpp" />
     <ClCompile Include="SnippetVehicleTankCreate.cpp" />
     <ClCompile Include="SnippetVehicleTireFriction.cpp" />
+    <ClCompile Include="Source.cpp" />
     <ClCompile Include="Texture2D.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="VehiclePhysx.cpp" />
@@ -48,7 +51,9 @@
   <ItemGroup>
     <ClInclude Include="AIBehavior.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="PowerUp.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="MyContact.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="SoundManager.h" />
     <ClInclude Include="OpenALEngine.h" />
@@ -66,6 +71,7 @@
     <ClInclude Include="SnippetVehicleSceneQuery.h" />
     <ClInclude Include="SnippetVehicleTireFriction.h" />
     <ClInclude Include="SnippetVehicleWheelQueryResult.h" />
+    <ClInclude Include="Source.h" />
     <ClInclude Include="Texture2D.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="VehiclePhysx.h" />
