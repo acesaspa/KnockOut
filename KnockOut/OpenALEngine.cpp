@@ -47,6 +47,8 @@ void OpenALEngine::initialize()
 
 	//Add sound files here
 	soundFiles[0] = "./Sounds/bgm.wav";
+	soundFiles[1] = "./Sounds/crash.wav";
+	soundFiles[2] = "./Sounds/powerup.wav";
 }
 void OpenALEngine::updateListenerPosition(float x, float y, float z) 
 {

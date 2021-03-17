@@ -1,8 +1,1 @@
-﻿  Camera.cpp
-D:\585\KnockOut\KnockOut\Camera.cpp(65,11): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-D:\585\KnockOut\KnockOut\Camera.cpp(66,11): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-D:\585\KnockOut\KnockOut\Camera.cpp(70,16): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-D:\585\KnockOut\KnockOut\Camera.cpp(71,16): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-D:\585\KnockOut\KnockOut\Camera.cpp(72,10): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-D:\585\KnockOut\KnockOut\Camera.cpp(73,10): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-  KnockOut.vcxproj -> D:\585\KnockOut\x64\Debug\KnockOut.exe
+﻿
