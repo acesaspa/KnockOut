@@ -141,6 +141,38 @@ public:
 };*/
 
 
+/* 
+0 = PLAY
+1 = GAME OVER / YOU WIN SCREEN
+2 = MAIN MENU SCREEN
+*/
+int st = 0;
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (key == GLFW_KEY_1 && action == GLFW_PRESS && st == 0) {
+		printf("PLAY\n");
+		//set game status to PLAY
+	}
+	else if (key == GLFW_KEY_1 && action == GLFW_PRESS && st == 1) {
+		printf("GAME OVER\n");
+		//set game status to MENU
+		st = 3;
+
+	}
+	else if (key == GLFW_KEY_1 && action == GLFW_PRESS && st == 2) {
+		printf("YOU WIN\n");
+		//set game status to MENU
+		st = 3;
+	}
+	else if (key == GLFW_KEY_1 && action == GLFW_PRESS && st == 3) {
+		printf("MENU\n");
+		//set game status to PLAY
+		st = 0;
+	}
+}
+
+
 void addPowerUp() {
 
 	
@@ -229,6 +261,7 @@ int main(int argc, char** argv) {
 	std::cout << glGetString(GL_VERSION) << std::endl;
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetKeyCallback(window, key_callback);
 
 	Shader ourShader("vertex_shader.vs", "fragment_shader.fs");
 	Shader textShader("text.vs", "text.fs");
@@ -250,21 +283,39 @@ int main(int argc, char** argv) {
 	mainRenderer.setUpRendering(mainCamera.getCameraPos(), ourShader, textShader);
 	mainRenderer.prepText(textShader);
 	mainRenderer.prepSkybox(skyboxShader);
-	Physics.initPhysics(mainRenderer.getGroundMeshes(1));	
+	Physics.initPhysics(mainRenderer.getGroundMeshes(1));
 
 	//MARK: RENDER LOOP ---------------------------------------------------------------------------------------------------------------
 	while (!glfwWindowShouldClose(window)) {
 
 		addPowerUp();
 
-		//MARK: GAME OVER CHECK
-		Physics.checkGameOver();
-		if (Physics.getGameStatus() != 0) {
+		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
+			Physics.setGameStatus(0);
+			Physics.reset();
+		}
 
+		if (powerup == 1) {
+			mainRenderer.setUIBoost(1);
+		}
+		else if (powerup == 2) {
+			mainRenderer.setUIBoost(2);
+		}
+		else if (powerup == 3) {
+			mainRenderer.setUIBoost(3);
+		}
+		else {
+			mainRenderer.setUIBoost(0);
+		}
+
+		//MARK: GAME OVER CHECK
+		if (Physics.getGameStatus() == 0) {
+			Physics.checkGameOver();
+		}
+		if (Physics.getGameStatus() != 0) {
 			if (!reset) {
 				reset = true;
 				Physics.reset();
-				Physics.removeGround(mainRenderer.getGroundMeshes(2));
 			}
 		}
 		if (glm::length(Physics.getVehiclePos(1)-glm::vec3(-30.0f, 1.0f, 10.0f)) < 2.f && reset) {
@@ -315,14 +366,59 @@ int main(int argc, char** argv) {
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 		processInput(window);
-		Physics.stepPhysics();
+		if (Physics.getGameStatus() == 0) {
+			Physics.stepPhysics();
+		}
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		mainCamera.updateCamera(Physics.getAngleAroundY(), Physics.getVehiclePos(1));
+		if (Physics.getGameStatus() == 0) {
+			mainCamera.updateCamera(Physics.getAngleAroundY(), Physics.getVehiclePos(1));
+		}
+		else if (Physics.getGameStatus() == 3) {
+			//give camera the position of the game over screen
+			mainCamera.updateCamera(0.f, glm::vec3(-26.0f, 6.0f + 1110.f, 10.0f));
+			
+			//Press 1 to go to main menu
+			if (st == 3) {
+				Physics.setGameStatus(-1);
+			}
+			//Press 2 to exit
+			else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
+				glfwSetWindowShouldClose(window, true);
+			}
+		}
+		else if (Physics.getGameStatus() == 4) {
+			//give camera the position of the you win screen
+			mainCamera.updateCamera(0.f, glm::vec3(-26.0f, 6.0f + 1120.f, 10.0f));
+			
+			//Press 1 to go to main menu
+			if (st == 3) {
+				Physics.setGameStatus(-1);
+			}
+			//Press 2 to exit
+			else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
+				glfwSetWindowShouldClose(window, true);
+			}
+		}
+		else if (Physics.getGameStatus() == -1) {
+			//give camera the position of the main menu screen
+			mainCamera.updateCamera(0.f, glm::vec3(-26.0f, 6.0f + 1130.f, 10.0f));
+			//Press 1 to play
+			if (st == 0){
+				reset = true;
+				Physics.reset();
+				printf("reset\n");
+				Physics.setGameStatus(0);
+			}
+			//Press 2 to exit
+			else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
+				glfwSetWindowShouldClose(window, true);
+			}
+			st = 3;
+		}
 		glm::mat4 view = mainCamera.getViewMatrix();
-
 
 		//MARK: Render Scene
 		glClearColor(0.53f, 0.81f, 0.92f, 1.0f);
@@ -344,17 +440,24 @@ int main(int argc, char** argv) {
 		//TODO: power-up indicator
 
 
-		//beh.frameUpdate(Physics.getVehDat(), Physics.getOpponentPos(), Physics.getOpponentForVec(), Physics.getVehiclePos(1), Physics.getPlayerForVec(),Physics.getOpponent4W());
+		beh.frameUpdate(Physics.getVehDat(), Physics.getOpponentPos(), Physics.getOpponentForVec(), Physics.getVehiclePos(1), Physics.getPlayerForVec(),Physics.getOpponent4W());
+			Physics.getOpponent4W());
 
 		
+		//Game over
 		if (Physics.getGameStatus() == 1) {
-			mainRenderer.renderText(textShader, "GAME OVER", 300.f, 400.0f, 2.0f, glm::vec3(190 / 255.f, 0.f, 0.f));
+			//Camera will go to game over screen
+			st = 1;
+			Physics.setGameStatus(3);
 		}
+		//You win
 		else if (Physics.getGameStatus() == 2) {
-			mainRenderer.renderText(textShader, "YOU WIN", 390.f, 400.0f, 2.0f, glm::vec3(57 / 255.f, 1.f, 20 / 255.f));
+			//Camera will go to you win screen
+			st = 2;
+			Physics.setGameStatus(4);
 		}
-		else {
 			mainRenderer.renderGameFrame(Physics.getVehicleTrans(1), pxOpponents, Physics.getGroundPos(), pxObjects, ourShader, textShader, skyboxShader, view, mainCamera.getCameraPos(), Physics.getGameStatus(), powerups);
+			mainRenderer.renderGameFrame(Physics.getVehicleTrans(1), pxOpponents, Physics.getGroundPos(), pxObjects, ourShader, textShader, skyboxShader, view, mainCamera.getCameraPos(), Physics.getGameStatus(), jump, attack, defense);
 		}
 
 
@@ -372,7 +475,6 @@ int main(int argc, char** argv) {
 		}
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
 
 
 		//MARK: Frame End
@@ -442,7 +544,6 @@ void processInput(GLFWwindow* window) {
 		Physics.setGMimicKeyInputs(true);
 		Physics.startTurnHardLeftMode();
 	}
-	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
 		
 		for (std::list<PowerUp*>::const_iterator it = powerups.begin(); it != powerups.end(); it++) {
 			if ((*it)->isCollected) {
@@ -472,6 +573,7 @@ void processInput(GLFWwindow* window) {
 			}
 		}
 		
+		}
 	}
 }
 

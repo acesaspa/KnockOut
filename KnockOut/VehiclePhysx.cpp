@@ -52,7 +52,7 @@ PxRigidDynamic* gBox2 = NULL;
 PxRigidDynamic* gBox3 = NULL;
 PxRigidStatic* meshBody = NULL;
 
-bool					gIsVehicleInAir = true;
+bool gIsVehicleInAir = true;
 
 
 PxF32 gSteerVsForwardSpeedData[2 * 8] =
@@ -811,6 +811,10 @@ void VehiclePhysx::checkGameOver() {
 	}
 }
 
+void VehiclePhysx::setGameStatus(int status) {
+	GameStatus = status;
+}
+
 void VehiclePhysx::reset() {
 
 	gScene->removeActor(*gVehicle4W->getRigidDynamicActor());
@@ -822,7 +826,7 @@ void VehiclePhysx::reset() {
 	
 	gScene->removeActor(*gVehicle4W2->getRigidDynamicActor());
 	VehicleDesc vehicleDesc2 = initVehicleDesc(1000);
-	PxTransform startTransform2(PxVec3(15.f, (vehicleDesc2.chassisDims.y * 0.5f + vehicleDesc2.wheelRadius + 100000.0f), 0), PxQuat(PxIdentity));
+	PxTransform startTransform2(PxVec3(15.f, (vehicleDesc2.chassisDims.y * 0.5f + vehicleDesc2.wheelRadius + 1.0f), 0), PxQuat(PxIdentity));
 	gVehicle4W2->getRigidDynamicActor()->setGlobalPose(startTransform2);
 	gVehicle4W2->getRigidDynamicActor()->setLinearVelocity(PxVec3(0, 0, 0));
 	gScene->addActor(*gVehicle4W2->getRigidDynamicActor());

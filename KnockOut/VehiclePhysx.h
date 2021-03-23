@@ -38,6 +38,7 @@ public:
 	void forceGearChange(int input);
 	void cookGroundMeshes(std::vector<Mesh*> groundMeshes);
 	int getGameStatus();
+	void setGameStatus(int x);
 	void checkGameOver();
 	void reset();
 	void applyForce(PxVec3 force, int index);

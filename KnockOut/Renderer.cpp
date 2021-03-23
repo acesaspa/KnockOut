@@ -15,6 +15,21 @@ glm::vec3 defaultRotation = glm::vec3(0.f, 1.0f, 0.f);
 glm::vec3 worldOrigin = glm::vec3(0.f, 0.0f, 0.f);
 float defaultRotAmountDeg = 0.f;
 
+float screenRotDeg = 180.0f;
+glm::vec3 screenRotation = glm::vec3(1.f, -.10f, 0.f);
+glm::vec3 screenScale = glm::vec3(3.f, 3.f, 3.f);
+
+float UIRotDeg = 90.f;
+glm::vec3 UITranslation = glm::vec3(1.42f, -.11f, -1.9f);
+glm::vec3 UIRot = glm::vec3(0.f, 0.f, 1.f);
+glm::vec3 UIScale = glm::vec3(1.f, 1.f, 1.f);
+
+// 0 = no boost
+// 1 = jump boost
+// 2 = attack boost
+// 3 = defense boost
+int uiBoost = 0;
+
 //text
 std::map<GLchar, Character> Characters;
 unsigned int textVAO, textVBO;
@@ -22,10 +37,6 @@ unsigned int textVAO, textVBO;
 //byskox
 unsigned int cubemapTexture;
 unsigned int skyboxVAO, skyboxVBO;
-
-
-
-
 
 unsigned int loadCubemap(std::vector<std::string> faces)
 {
@@ -57,6 +68,13 @@ unsigned int loadCubemap(std::vector<std::string> faces)
 	return textureID;
 }
 
+int Renderer::getUIBoost() {
+	return uiBoost;
+}
+
+void Renderer::setUIBoost(int ui) {
+	uiBoost = ui;
+}
 
 void Renderer::prepSkybox(Shader shader) {
 	float skyboxVertices[] = {
@@ -115,12 +133,12 @@ void Renderer::prepSkybox(Shader shader) {
 
 	std::vector<std::string> faces
 	{
-		"right.jpg",
-		"left.jpg",
-		"top.jpg",
-		"bottom.jpg",
-		"front.jpg",
-		"back.jpg"
+		"right2.jpg",
+		"left2.jpg",
+		"top2.jpg",
+		"bottom2.jpg",
+		"front2.jpg",
+		"back2.jpg"
 	};
 	cubemapTexture = loadCubemap(faces);
 
@@ -296,33 +314,45 @@ void Renderer::setUpRendering(glm::vec3 cameraPos, Shader ourShader, Shader text
 	ourShader.setInt("material.specular", 1);
 
 	//MARK: Object Setup
-	GameOverMesh.loadOBJ("Powerup.obj");
-	GameOverTexture.loadTexture("gameOverUV.png", true);
+	//Screens
+	MainMenuScreen.loadOBJ("menu.obj");
+	MainMenuTexture.loadTexture("MainMenuScreen.jpg", true);
+	GameOverScreen.loadOBJ("menu.obj");
+	GameOverTexture.loadTexture("GameOverScreen.jpg", true);
+	YouWinScreen.loadOBJ("menu.obj");
+	YouWinTexture.loadTexture("YouWinScreen.jpg", true);
 
-	YouWinMesh.loadOBJ("Powerup.obj");
-	YouWinTexture.loadTexture("youWinUV.png", true);
+	//UI
+	NoBoostUI.loadOBJ("boostUI.obj");
+	NoBoostTxt.loadTexture("noBoostUI.jpg", true);
+	JumpUI.loadOBJ("boostUI.obj");
+	JumpTxt.loadTexture("jumpUI.jpg", true);
+	AttackUI.loadOBJ("boostUI.obj");
+	AttackTxt.loadTexture("AttackUI.jpg", true);
+	DefendUI.loadOBJ("boostUI.obj");
+	DefendTxt.loadTexture("defendUI.jpg", true);
 
+	//Powerups
 	jmpPowerUpMesh.loadOBJ("Powerup.obj");
 	JmpPowerUpTexture.loadTexture("jumpUV.png", true);
-
 	atkPowerUpMesh.loadOBJ("Powerup.obj");
 	AtkPowerUpTexture.loadTexture("attackUV.png", true);
-
 	defPowerUpMesh.loadOBJ("Powerup.obj");
 	DefPowerUpTexture.loadTexture("shieldUV.png", true);
-
+	
+	//Player car
 	playerMesh.loadOBJ("blueCar.obj");
 	playerTexture.loadTexture("blueCar.png", true, true);
 
+	//Terrain
 	citySurfaceMesh.loadOBJ("cityLevel.obj");
 	cityTexture.loadTexture("asphalt.jpg", true);
-
 	grassSurfaceMesh.loadOBJ("grassLevel.obj");
 	grassTexture.loadTexture("grass.jpg", true);
-
 	desertSurfaceMesh.loadOBJ("sandLevel.obj");
 	desertTexture.loadTexture("desert_texture.jpg", true);
 
+	//Wooden crates
 	cubeMesh.loadVertexData(Utils::cubeVertexData, Utils::cubeArrayLen);
 	objectMeshes.push_back(cubeMesh);
 	cubeTexture.loadTexture("container_texture.jpg", true);
@@ -335,6 +365,7 @@ void Renderer::setUpRendering(glm::vec3 cameraPos, Shader ourShader, Shader text
 
 ///render a single frame of the game
 void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans, //TODO: what are different texture units for?
+	physx::PxMat44 pxUITrans,
 	std::vector<physx::PxMat44> pxOpponentsTrans,
 	glm::vec3 pxLevelPos,
 	std::vector<physx::PxTransform> pxObjectsTrans,
@@ -361,6 +392,23 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans, //TODO: what are di
 	glm::mat4 model = glm::mat4(1.0f); //identity matrix
 	renderObject(ourShader, &playerMesh, &playerTexture, glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.0f, 1.0f, 0.0f), 180.f, vehicleScale, pxPlayerTrans);
 
+	//no boost
+	if (uiBoost == 0) {
+		renderObject(ourShader, &NoBoostUI, &NoBoostTxt, UITranslation, UIRot, UIRotDeg, UIScale, pxUITrans);
+	}
+	//jump boost
+	else if (uiBoost == 1) {
+		renderObject(ourShader, &JumpUI, &JumpTxt, UITranslation, UIRot, UIRotDeg, UIScale, pxUITrans);
+	}
+	//attack boost
+	else if (uiBoost == 2) {
+		renderObject(ourShader, &AttackUI, &AttackTxt, UITranslation, UIRot, UIRotDeg, UIScale, pxUITrans);
+	}
+	//defense boost
+	else if (uiBoost == 3) {
+		renderObject(ourShader, &DefendUI, &DefendTxt, UITranslation, UIRot, UIRotDeg, UIScale, pxUITrans);
+	}
+
 	//OPPONENTS
 	for (int i = 0; i < pxOpponentsTrans.size(); i++) 
 		renderObject(ourShader, &playerMesh, &playerTexture, glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.0f, 1.0f, 0.0f), 180.f, vehicleScale, pxOpponentsTrans[i]);
@@ -368,7 +416,7 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans, //TODO: what are di
 	//GROUND
 	renderObject(ourShader, &citySurfaceMesh, &cityTexture, worldOrigin, defaultRotation, defaultRotAmountDeg, levelScale);
 	renderObject(ourShader, &grassSurfaceMesh, &grassTexture, worldOrigin, defaultRotation, defaultRotAmountDeg, levelScale);
-	if (status == 0) { renderObject(ourShader, &desertSurfaceMesh, &desertTexture, worldOrigin, defaultRotation, defaultRotAmountDeg, levelScale); }
+	renderObject(ourShader, &desertSurfaceMesh, &desertTexture, worldOrigin, defaultRotation, defaultRotAmountDeg, levelScale);
 
 	//OBJECTS
 	for (int i = 0; i < pxObjectsTrans.size(); i++)
@@ -396,12 +444,14 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans, //TODO: what are di
 	//if(attack) renderObject(ourShader, &atkPowerUpMesh, &AtkPowerUpTexture, glm::vec3(20.0f, 1.0f, 10.0f), defaultRotation, defaultRotAmountDeg, powerUpScale);
 	//if(defense) renderObject(ourShader, &defPowerUpMesh, &DefPowerUpTexture, glm::vec3(20.0f, 1.0f, 10.0f), defaultRotation, defaultRotAmountDeg, powerUpScale);
 
-
 	//Game Over
-	if(status == 1) renderObject(ourShader, &GameOverMesh, &GameOverTexture, glm::vec3(-30.0f, 1.0f, 10.0f), defaultRotation, defaultRotAmountDeg, powerUpScale);
+	renderObject(ourShader, &GameOverScreen, &GameOverTexture, glm::vec3(-30.0f, 10.0f+1110.f, 10.0f), screenRotation, screenRotDeg, screenScale);
 
 	//You Win
-	if(status == 2) renderObject(ourShader, &YouWinMesh, &YouWinTexture, glm::vec3(-30.0f, 1.0f, 10.0f), defaultRotation, defaultRotAmountDeg, powerUpScale);
+	renderObject(ourShader, &YouWinScreen, &YouWinTexture, glm::vec3(-30.0f, 10.0f+1120.f, 10.0f), screenRotation, screenRotDeg, screenScale);
+
+	//Main menu
+	renderObject(ourShader, &MainMenuScreen, &MainMenuTexture, glm::vec3(-30.0f, 10.0f + 1130.f, 10.0f), screenRotation, screenRotDeg, screenScale);
 
 	// draw skybox as last
 	glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
