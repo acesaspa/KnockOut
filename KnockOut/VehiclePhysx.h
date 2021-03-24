@@ -44,6 +44,7 @@ public:
 	PxVec3 getRotation();
 	void stopVehicle(int index);
 	void removeGround(std::vector<Mesh*> groundMeshes);
+	void setGameStatus(int status);
 
 	PxVehicleDrive4WRawInputData* getVehDat();
 	glm::vec3 getOpponentPos();

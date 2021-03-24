@@ -179,9 +179,16 @@ VehicleDesc VehiclePhysx::initVehicleDesc(PxF32 mass)
 	vehicleDesc.numWheels = nbWheels;
 	vehicleDesc.wheelMaterial = gMaterial;
 	vehicleDesc.chassisSimFilterData = PxFilterData(COLLISION_FLAG_WHEEL, COLLISION_FLAG_WHEEL_AGAINST, 0, 0);
-
+	//vehicleDesc.wheelSimFilterData = PxFilterData(COLLISION_FLAG_WHEEL, COLLISION_FLAG_WHEEL_AGAINST, 0, 0);
+	/*
+	just a heads up, the above code 2 lines above this for chassisSimFilterData overrides the call further up.
+	This means that the vehicle chassis WILL NOT collide with the ground when it flips over. If you want to fix this, simply comment
+	that line and uncomment the one with wheelSimFilterData
+	This does mean you will probably need code to flip the vehicle if it doesn't fall through
+	*/
 	return vehicleDesc;
 }
+
 
 void VehiclePhysx::startAccelerateForwardsMode()
 {
@@ -326,7 +333,7 @@ void VehiclePhysx::initPhysics(std::vector<Mesh*> groundMeshes)
 		pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
 		pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
 	}
-	gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f);
+	gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.9f);
 
 	gCooking = PxCreateCooking(PX_PHYSICS_VERSION, *gFoundation, PxCookingParams(PxTolerancesScale()));
 
@@ -346,7 +353,7 @@ void VehiclePhysx::initPhysics(std::vector<Mesh*> groundMeshes)
 	//Create/cook level surface.
 	PxFilterData groundPlaneSimFilterData(COLLISION_FLAG_GROUND, COLLISION_FLAG_GROUND_AGAINST, 0, 0);
 	gGroundPlane = createDrivablePlane(groundPlaneSimFilterData, gMaterial, gPhysics);
-	//gScene->addActor(*gGroundPlane); //TODO: remove, or whatever...
+	gScene->addActor(*gGroundPlane); //TODO: remove, or whatever...
 	cookGroundMeshes(groundMeshes);
 
 	//Create a vehicle that will drive on the plane.
@@ -737,13 +744,6 @@ PxVehicleDrive4W* VehiclePhysx::getOpponent4W() {
 
 
 
-
-
-
-
-
-
-
 //MARK: Cooooking
 void VehiclePhysx::cookGroundMeshes(std::vector<Mesh*> groundMeshes) {
 	for (int i = 0; i < groundMeshes.size(); i++) {
@@ -757,6 +757,8 @@ void VehiclePhysx::cookGroundMesh(Mesh* meshToCook) {
 
 	std::vector<PxVec3> vertices = meshToCook->getActualVertices();
 	std::vector<PxU32> indices = meshToCook->getVertexIndices();
+
+	//std::cout << "size " << vertices.size() << "\n";
 
 	meshDesc.points.count = vertices.size(); //total number of vertices
 	meshDesc.points.stride = sizeof(PxVec3);
@@ -814,6 +816,10 @@ void VehiclePhysx::checkGameOver() {
 	if (cubePos2.y < -10 && cubePos.y > 0) {
 		GameStatus = 2;
 	}
+}
+
+void VehiclePhysx::setGameStatus(int status) {
+	GameStatus = status;
 }
 
 void VehiclePhysx::reset() {

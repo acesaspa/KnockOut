@@ -125,7 +125,7 @@ int AIBehavior::shouldTurn(glm::vec3 pos, glm::vec3 forVec) {
 	//else {
 
 	//}
-	
+
 	return -1;
 }
 
@@ -153,7 +153,7 @@ float AIBehavior::calculateIntersectionX(float b2, float b1, float m1, float m2)
 }
 
 float AIBehavior::calculateIntersectionY(float m1, float x, float b1) {
-	return m1*x + b1;
+	return m1 * x + b1;
 }
 
 float AIBehavior::calculateLinearComp(float x, float y, float m) { //y = mx + B
@@ -161,9 +161,9 @@ float AIBehavior::calculateLinearComp(float x, float y, float m) { //y = mx + B
 }
 
 float AIBehavior::calculateSlope(float y2, float y1, float x2, float x1) { //y = Mx + b
-	return (y2-y1) / (x2-x1);
+	return (y2 - y1) / (x2 - x1);
 }
 
 float AIBehavior::calculateDistance(float y2, float y1, float x2, float x1) { //Pythagorean
-	return glm::sqrt(glm::pow(x2-x1, 2) + glm::pow(y2-y1, 2));
+	return glm::sqrt(glm::pow(x2 - x1, 2) + glm::pow(y2 - y1, 2));
 }
