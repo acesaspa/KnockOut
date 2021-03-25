@@ -26,7 +26,7 @@ class OpenALEngine
 		bool _strcmp(const char* base, const char* cp);
 		bool loadWavFile(const char* filename, ALuint* buffer);
 
-		static const int ARR_SIZE = 1;
+		static const int ARR_SIZE = 10;
 		const char* soundFiles[ARR_SIZE];
 
 		int sourcesMade;
