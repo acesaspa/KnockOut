@@ -421,6 +421,7 @@ int main(int argc, char** argv) {
 
 
 		//MARK: Frame End
+		glfwSwapInterval(1);
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
