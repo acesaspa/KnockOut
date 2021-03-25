@@ -11,6 +11,8 @@
 #include "Mesh.h"
 #include "Texture2D.h"
 #include "Shader.cpp"
+#include <list>
+#include "PowerUp.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -26,11 +28,14 @@ struct Character {
 
 class Renderer {
 public:
+	int getUIBoost();
+	void setUIBoost(int x);
 	void prepSkybox(Shader shader);
 	void renderText(Shader& shader, std::string text, float x, float y, float scale, glm::vec3 color);
 	void prepText(Shader shader);
 	void setUpRendering(glm::vec3 cameraPos, Shader ourShader, Shader textShader/*, physx::PxPhysics* gPhysics, physx::PxCooking* gCooking, physx::PxScene* gScene*/);
 	void renderGameFrame(physx::PxMat44 pxPlayerTrans,
+		physx::PxMat44 pxUITrans,
 		std::vector<physx::PxMat44> pxOpponentsTrans,
 		glm::vec3 pxLevelPos,
 		std::vector<physx::PxTransform> pxObjectsTrans,
@@ -40,9 +45,7 @@ public:
 		glm::mat4 view,
 		glm::vec3 cameraPos,
 		int status,
-		bool jump,
-		bool attack,
-		bool defense);
+		std::list<PowerUp*>& powerups);
 	std::vector<Mesh*> getGroundMeshes(int index);
 
 
@@ -73,10 +76,21 @@ private:
 	Mesh playerMesh;
 	Mesh treeMesh;
 
+	Mesh MainMenuScreen;
+	Texture2D MainMenuTexture;
 	Mesh GameOverMesh;
 	Texture2D GameOverTexture;
 	Mesh YouWinMesh;
 	Texture2D YouWinTexture;
+
+	Mesh NoBoostUI;
+	Texture2D NoBoostTxt;
+	Mesh JumpUI;
+	Texture2D JumpTxt;
+	Mesh AttackUI;
+	Texture2D AttackTxt;
+	Mesh DefendUI;
+	Texture2D DefendTxt;
 
 	Mesh jmpPowerUpMesh;
 	Mesh atkPowerUpMesh;
