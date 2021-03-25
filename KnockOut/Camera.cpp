@@ -36,6 +36,14 @@ void Camera::setCameraPos(glm::vec3 newPos) {
 	cameraPos = newPos;
 }
 
+glm::vec3 Camera::getCameraFront() {
+	return cameraFront;
+}
+
+glm::vec3 Camera::getCameraUp() {
+	return cameraUp;
+}
+
 glm::mat4 Camera::getViewMatrix() {
 	glm::mat4 view = glm::mat4(1.f);
 	view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
@@ -77,7 +85,7 @@ void Camera::mouseCallback(GLFWwindow* window, double xpos, double ypos) {
 	yoffset *= sensitivity;
 
 	yaw += xoffset;
-	//pitch += yoffset;
+	if(Utils::getFreeCamMode()) pitch += yoffset;
 	//disabling camera pitch movement triggered by mouse
 
 	if (pitch > 89.0f) pitch = 89.0f;

@@ -45,9 +45,13 @@ public:
 		bool defense);
 	std::vector<Mesh*> getGroundMeshes(int index);
 
+
+	std::vector<glm::vec3> getBB();
+
 private:
 	void renderObject(Shader ourShader, Mesh* meshToRender, Texture2D* textureToApply, glm::vec3 translation = glm::vec3(0.f, 0.f, 0.f), glm::vec3 rotationAxis = glm::vec3(0.f, 0.f, 0.f),
 		float rotationAmountDeg = 0.f, glm::vec3 scale = glm::vec3(0.f, 0.f, 0.f), physx::PxMat44 pxTransMat = physx::PxIdentity);
+	void renderSkyBox(Shader skyboxShader, glm::mat4 view);
 	void applyShaderValues(Shader ourShader, glm::vec3 cameraPos, glm::mat4 view);
 
 	std::vector<Mesh> objectMeshes;
@@ -67,6 +71,7 @@ private:
 
 	Mesh cubeMesh;
 	Mesh playerMesh;
+	Mesh treeMesh;
 
 	Mesh GameOverMesh;
 	Texture2D GameOverTexture;
@@ -79,6 +84,7 @@ private:
 
 	Texture2D playerTexture;
 	Texture2D cubeTexture;
+	Texture2D treeTexture;
 	Texture2D JmpPowerUpTexture;
 	Texture2D AtkPowerUpTexture;
 	Texture2D DefPowerUpTexture;

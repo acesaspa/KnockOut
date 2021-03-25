@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <limits>
 
 Mesh::Mesh()
 	:mLoaded(false)
@@ -97,6 +98,8 @@ bool Mesh::loadOBJ(const std::string& filename)
 			mVertices.push_back(meshVertex);
 		}
 
+		//generateBoundingBox();
+		//TODO
 		initBuffers();
 		return (mLoaded = true);
 	}
@@ -188,6 +191,131 @@ std::vector<physx::PxU32> Mesh::getVertexIndices() {
 		indices.push_back(vertexIndices[i]);
 	}
 	return indices;
+}
+
+std::vector<glm::vec3> Mesh::getBoundingBoxVertices() {
+	if(boundingBox.size() < 1) generateBoundingBox();
+	return boundingBox;
+}
+
+void Mesh::generateBoundingBox() { //populates the boundingBox vector with bounding box vertices based on scale and position on the map
+	int xMaxIndex, xMinIndex, zMaxIndex, zMinIndex, yMaxIndex, yMinIndex; //indices for the corresponding mins and maxes
+	float xMax = FLT_MIN, xMin = FLT_MAX, zMax = FLT_MIN, zMin = FLT_MAX, yMax = FLT_MIN, yMin = FLT_MAX;
+
+	for (int i = 0; i < actualVertices.size(); i++) {
+		if (actualVertices[i].x > xMax) { //X coord
+			xMax = actualVertices[i].x;
+			xMaxIndex = i;
+		}
+
+		if (actualVertices[i].x < xMin) {
+			xMin = actualVertices[i].x;
+			xMinIndex = i;
+		}
+
+
+		if (actualVertices[i].y > yMax) { //Y coord
+			yMax = actualVertices[i].y;
+			yMaxIndex = i;
+		}
+
+		if (actualVertices[i].y < yMin) {
+			yMin = actualVertices[i].y;
+			yMinIndex = i;
+		}
+
+
+		if (actualVertices[i].z > zMax) { //Z coord
+			zMax = actualVertices[i].z;
+			zMaxIndex = i;
+		}
+
+		if (actualVertices[i].z < zMin) {
+			zMin = actualVertices[i].z;
+			zMinIndex = i;
+		}
+	}
+
+	if (isMostOuterLevel) {
+		yMax = 50.f;
+		yMin = 0.f;
+	}
+
+	//combine coordinates for all 4 surrounding faces (8 triangles)
+	//boundingBox.push_back(glm::vec3(xMin, yMin, actualVertices[xMinIndex].z)); //1
+	//boundingBox.push_back(glm::vec3(xMin, yMax, actualVertices[xMinIndex].z));
+	//boundingBox.push_back(glm::vec3(actualVertices[zMinIndex].x, yMin, zMin));
+
+	//boundingBox.push_back(glm::vec3(actualVertices[zMinIndex].x, yMax, zMin)); //2
+	//boundingBox.push_back(glm::vec3(actualVertices[zMinIndex].x, yMin, zMin));
+	//boundingBox.push_back(glm::vec3(xMin, yMax, actualVertices[xMinIndex].z));
+
+	//boundingBox.push_back(glm::vec3(actualVertices[zMinIndex].x, yMax, zMin)); //3
+	//boundingBox.push_back(glm::vec3(actualVertices[zMinIndex].x, yMin, zMin));
+	//boundingBox.push_back(glm::vec3(xMax, yMin, actualVertices[xMaxIndex].z));
+
+	//boundingBox.push_back(glm::vec3(xMax, yMax, actualVertices[xMaxIndex].z)); //4
+	//boundingBox.push_back(glm::vec3(xMax, yMin, actualVertices[xMaxIndex].z));
+	//boundingBox.push_back(glm::vec3(actualVertices[zMinIndex].x, yMax, zMin));
+
+	//boundingBox.push_back(glm::vec3(xMax, yMax, actualVertices[xMaxIndex].z)); //5
+	//boundingBox.push_back(glm::vec3(xMax, yMin, actualVertices[xMaxIndex].z));
+	//boundingBox.push_back(glm::vec3(actualVertices[zMaxIndex].x, yMin, zMax));
+
+	//boundingBox.push_back(glm::vec3(actualVertices[zMaxIndex].x, yMin, zMax)); //6
+	//boundingBox.push_back(glm::vec3(actualVertices[zMaxIndex].x, yMax, zMax));
+	//boundingBox.push_back(glm::vec3(xMax, yMax, actualVertices[xMaxIndex].z));
+
+	//boundingBox.push_back(glm::vec3(actualVertices[zMaxIndex].x, yMin, zMax)); //7
+	//boundingBox.push_back(glm::vec3(actualVertices[zMaxIndex].x, yMax, zMax));
+	//boundingBox.push_back(glm::vec3(xMin, yMin, actualVertices[xMinIndex].z));
+
+	//boundingBox.push_back(glm::vec3(xMin, yMax, actualVertices[xMinIndex].z)); //8
+	//boundingBox.push_back(glm::vec3(xMin, yMin, actualVertices[xMinIndex].z));
+	//boundingBox.push_back(glm::vec3(actualVertices[zMaxIndex].x, yMax, zMax));
+
+	boundingBox.push_back(glm::vec3(xMin, yMin, zMin)); //1
+	boundingBox.push_back(glm::vec3(xMin, yMax, zMin));
+	boundingBox.push_back(glm::vec3(xMax, yMin, zMin));
+
+	boundingBox.push_back(glm::vec3(xMax, yMax, zMin)); //2
+	boundingBox.push_back(glm::vec3(xMax, yMin, zMin));
+	boundingBox.push_back(glm::vec3(xMin, yMax, zMin));
+
+	boundingBox.push_back(glm::vec3(xMax, yMax, zMin)); //3
+	boundingBox.push_back(glm::vec3(xMax, yMin, zMin));
+	boundingBox.push_back(glm::vec3(xMax, yMin, zMax));
+
+	boundingBox.push_back(glm::vec3(xMax, yMax, zMax)); //4
+	boundingBox.push_back(glm::vec3(xMax, yMin, zMax));
+	boundingBox.push_back(glm::vec3(xMin, yMax, zMin));
+
+	boundingBox.push_back(glm::vec3(xMax, yMax, zMax)); //5
+	boundingBox.push_back(glm::vec3(xMax, yMin, zMax));
+	boundingBox.push_back(glm::vec3(zMin, yMin, zMax));
+
+	boundingBox.push_back(glm::vec3(xMin, yMin, zMax)); //6
+	boundingBox.push_back(glm::vec3(xMin, yMax, zMax));
+	boundingBox.push_back(glm::vec3(xMax, yMax, zMax));
+
+	boundingBox.push_back(glm::vec3(xMin, yMin, zMax)); //7
+	boundingBox.push_back(glm::vec3(xMin, yMax, zMax));
+	boundingBox.push_back(glm::vec3(xMin, yMin, zMin));
+
+	boundingBox.push_back(glm::vec3(xMin, yMax, zMin)); //8
+	boundingBox.push_back(glm::vec3(xMin, yMin, zMin));
+	boundingBox.push_back(glm::vec3(xMin, yMax, zMax));
+
+
+	//for (int i = 0; i < boundingBox.size(); i++) {
+	//	std::cout << boundingBox[i].x << " " << boundingBox[i].y << " " << boundingBox[i].z << std::endl;
+	//	if ((i+1) % 3 == 0) std::cout << std::endl;
+	//}
+}
+
+
+void Mesh::setIsMostOuterLevel(bool isOuter) {
+	isMostOuterLevel = isOuter;
 }
 
 

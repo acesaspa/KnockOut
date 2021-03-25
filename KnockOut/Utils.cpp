@@ -2,6 +2,9 @@
 
 
 //MARK: Variables & Data
+bool Utils::getFreeCamMode() {
+	return false;
+}
 
 float Utils::cubeVertexData[] = {
 	// positions          // normals           // texture coords
@@ -62,6 +65,52 @@ float Utils::planeVertexData[] = {
 int Utils::planeArrayLen = 48;
 
 
+float Utils::holesBoundingBoxData[] = { //TODO: measure using player pos & imgUI, 4 sided
+	-15.3
+
+
+	//hole 0 corner 0 yMax
+	//hole 0 corner 0 yMin 
+	//hole 0 corner 1 yMin
+
+	//hole 0 corner 1 yMax
+	//hole 0 corner 1 yMin
+	//hole 0 corner 0 yMax
+
+	//hole 0 corner 1 yMax
+	//hole 0 corner 1 yMin
+	//hole 0 corner 2 yMin
+
+	//hole 0 corner 2 yMax
+	//hole 0 corner 2 yMin
+	//hole 0 corner 1 yMax
+
+	//hole 0 corner 2 yMax
+	//hole 0 corner 2 yMin
+	//hole 0 corner 3 yMin
+
+	//hole 0 corner 3 yMax
+	//hole 0 corner 3 yMin
+	//hole 0 corner 2 yMax
+
+	//hole 0 corner 3 yMax
+	//hole 0 corner 3 yMin
+	//hole 0 corner 0 yMin
+
+	//hole 0 corner 0 yMax
+	//hole 0 corner 0 yMin
+	//hole 0 corner 3 yMax  //24 total entries per hole
+};
+
+int Utils::holesBBDatLen = 0;
+
+
+
+
+
+
+
+
 
 
 
@@ -105,6 +154,10 @@ glm::vec3 Utils::getRigidStaticPos(physx::PxRigidStatic* pxRigid) {
 	return glm::vec3(transMat.p[0], transMat.p[1], transMat.p[2]);
 }
 
+//std::vector<float> Utils::getBBcords(float cornerCoords[]) {
+//	//TODO: standardize stuff
+//	return;
+//}
 
 
 

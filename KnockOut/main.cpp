@@ -113,7 +113,6 @@ int main(int argc, char** argv) {
 	bgm.setVolume(0.5f);
 	bgm.loopSound(true);
 
-
 	//MARK: Init Glfw
 	const char* glsl_version = "#version 130";
 	GLFWwindow* window;
@@ -150,6 +149,7 @@ int main(int argc, char** argv) {
 	mainRenderer.prepText(textShader);
 	mainRenderer.prepSkybox(skyboxShader);
 	Physics.initPhysics(mainRenderer.getGroundMeshes(1));	
+	beh.boundingBox = mainRenderer.getBB();
 
 
 	//MARK: RENDER LOOP ---------------------------------------------------------------------------------------------------------------
@@ -226,8 +226,7 @@ int main(int argc, char** argv) {
 		//TODO: power-up indicator
 
 
-		beh.frameUpdate(Physics.getVehDat(), Physics.getOpponentPos(), Physics.getOpponentForVec(), Physics.getVehiclePos(1), Physics.getPlayerForVec(),
-			Physics.getOpponent4W());
+		//beh.frameUpdate(Physics.getVehDat(), Physics.getOpponentPos(), Physics.getOpponentForVec(), Physics.getVehiclePos(1), Physics.getPlayerForVec(), Physics.getOpponent4W());
 
 		
 		if (Physics.getGameStatus() == 1) {
@@ -259,6 +258,7 @@ int main(int argc, char** argv) {
 
 
 		//MARK: Frame End
+		glfwSwapInterval(1);
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
@@ -295,66 +295,70 @@ void processInput(GLFWwindow* window) {
 	Physics.releaseAllControls();
 
 	float cameraSpeed = 10 * deltaTime;
-	//if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) mainCamera.getCameraPos() += cameraSpeed * mainCamera.cameraFront;
-	//if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) mainCamera.getCameraPos() -= cameraSpeed * mainCamera.cameraFront;
-	//if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) mainCamera.getCameraPos() -= glm::normalize(glm::cross(mainCamera.getCameraFront(), mainCamera.getCameraUp())) * cameraSpeed;
-	//if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) mainCamera.getCameraPos() += glm::normalize(glm::cross(mainCamera.getCameraFront(), mainCamera.getCameraUp())) * cameraSpeed;
 
-	if ((glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_UP) == GLFW_REPEAT)) {
-		Physics.setGMimicKeyInputs(true);
-		Physics.forceGearChange(PxVehicleGearsData::eFIRST);
-		Physics.startAccelerateForwardsMode();
+	if (Utils::getFreeCamMode()) {
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) mainCamera.getCameraPos() += cameraSpeed * mainCamera.getCameraFront();
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) mainCamera.getCameraPos() -= cameraSpeed * mainCamera.getCameraFront();
+		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) mainCamera.getCameraPos() -= glm::normalize(glm::cross(mainCamera.getCameraFront(), mainCamera.getCameraUp())) * cameraSpeed;
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) mainCamera.getCameraPos() += glm::normalize(glm::cross(mainCamera.getCameraFront(), mainCamera.getCameraUp())) * cameraSpeed;
 	}
-	if ((glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_REPEAT)) {
-		Physics.setGMimicKeyInputs(true);
-		Physics.forceGearChange(PxVehicleGearsData::eREVERSE);
-		Physics.startAccelerateReverseMode();
-	}
-	if ((glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_REPEAT)) {
-		//std::cout << "DOWN1\n";
-		Physics.setGMimicKeyInputs(true);
-		Physics.startBrakeMode();
-	}
-	if ((glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_REPEAT)) {
-		//std::cout << "LEFT1\n";
-		Physics.setGMimicKeyInputs(true);
-		Physics.startTurnHardRightMode();
-	}
-	if ((glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_REPEAT)) {
-		//std::cout << "RIGHT1\n";
-		Physics.setGMimicKeyInputs(true);
-		Physics.startTurnHardLeftMode();
-	}
-	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-		if (powerup == 1) {
-			std::cout << "UP FORCE\n";
-			Physics.applyForce(PxVec3(0.f, 700000.f, 0.f), 1);
-			powerup = 0;
+	else {
+		if ((glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_UP) == GLFW_REPEAT)) {
+			Physics.setGMimicKeyInputs(true);
+			Physics.forceGearChange(PxVehicleGearsData::eFIRST);
+			Physics.startAccelerateForwardsMode();
 		}
-		if (powerup == 2) {
-			std::cout << "FRONT FORCE\n";
-
-			glm::mat4 rotation = glm::rotate(glm::mat4{ 1.f }, float(-M_PI/2.f), glm::vec3(0,1,0));
-			PxVec3 pre = (Physics.getRotation() + PxVec3(0.f, 0.05f, 0.f));
-			glm::vec4 rot = glm::vec4(pre.x, pre.y, pre.z, 0.f);
-			glm::vec4 rotated = rotation * rot;
-			Physics.applyForce(1000000.f*PxVec3(rotated.x,rotated.y,rotated.z), 1);
-			powerup = 0;
+		if ((glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_REPEAT)) {
+			Physics.setGMimicKeyInputs(true);
+			Physics.forceGearChange(PxVehicleGearsData::eREVERSE);
+			Physics.startAccelerateReverseMode();
 		}
-		if (powerup == 3) {
-			std::cout << "SHIELD FORCE\n";
-
-			glm::vec3 vehiclePos = Physics.getVehiclePos(1);
-			glm::vec3 enemyPos = Physics.getVehiclePos(2);
-
-			glm::vec3 direction = enemyPos - vehiclePos;
-
-			if (glm::length(direction) < 10) {
-
-				Physics.stopVehicle(2);
+		if ((glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_REPEAT)) {
+			//std::cout << "DOWN1\n";
+			Physics.setGMimicKeyInputs(true);
+			Physics.startBrakeMode();
+		}
+		if ((glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_REPEAT)) {
+			//std::cout << "LEFT1\n";
+			Physics.setGMimicKeyInputs(true);
+			Physics.startTurnHardRightMode();
+		}
+		if ((glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_REPEAT)) {
+			//std::cout << "RIGHT1\n";
+			Physics.setGMimicKeyInputs(true);
+			Physics.startTurnHardLeftMode();
+		}
+		if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+			if (powerup == 1) {
+				std::cout << "UP FORCE\n";
+				Physics.applyForce(PxVec3(0.f, 700000.f, 0.f), 1);
+				powerup = 0;
 			}
+			if (powerup == 2) {
+				std::cout << "FRONT FORCE\n";
 
-			powerup = 0;
+				glm::mat4 rotation = glm::rotate(glm::mat4{ 1.f }, float(-M_PI / 2.f), glm::vec3(0, 1, 0));
+				PxVec3 pre = (Physics.getRotation() + PxVec3(0.f, 0.05f, 0.f));
+				glm::vec4 rot = glm::vec4(pre.x, pre.y, pre.z, 0.f);
+				glm::vec4 rotated = rotation * rot;
+				Physics.applyForce(1000000.f * PxVec3(rotated.x, rotated.y, rotated.z), 1);
+				powerup = 0;
+			}
+			if (powerup == 3) {
+				std::cout << "SHIELD FORCE\n";
+
+				glm::vec3 vehiclePos = Physics.getVehiclePos(1);
+				glm::vec3 enemyPos = Physics.getVehiclePos(2);
+
+				glm::vec3 direction = enemyPos - vehiclePos;
+
+				if (glm::length(direction) < 10) {
+
+					Physics.stopVehicle(2);
+				}
+
+				powerup = 0;
+			}
 		}
 	}
 }

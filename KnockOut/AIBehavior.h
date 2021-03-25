@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <glm/glm.hpp>
+#include <glm/gtx/intersect.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <vector>
 #include "../include/physx/PxPhysicsAPI.h"
 #include "../include/physx/snippetcommon/SnippetPrint.h"
@@ -17,18 +19,21 @@
 #include "../include/physx/snippetcommon/SnippetPVD.h"
 #include "../include/physx/snippetutils/SnippetUtils.h"
 
+#include "Utils.h"
+
 class AIBehavior {
 public:
 	void frameUpdate(physx::PxVehicleDrive4WRawInputData* carInputData, glm::vec3 carPos, glm::vec3 carForwardVec, glm::vec3 playerPos, glm::vec3 playerForwardVector,
 		physx::PxVehicleDrive4W* opponentVehicle4W);
-	float intersectionX;
-	float intersectionY;
+
+	std::vector<glm::vec3> boundingBox;
 
 private:
 	bool pointIsRight(glm::vec3 a, glm::vec3 b, glm::vec3 c);
-	int shouldChangeCourse(glm::vec3 pos, glm::vec3 forVec);
-	void attackPlayer(glm::vec3 opponentPos, glm::vec3 opponentForVec, glm::vec3 playerPos, glm::vec3 playerForVec, physx::PxVehicleDrive4WRawInputData* carInputData,
-		physx::PxVehicleDrive4W* opponentVehicle4W);
+	int shouldChangeCourse();
+	void attackPoint(glm::vec3 pointToAttack);
+	void behave();
+	void setSpeed(float target);
 	float calculateAngleBetweenLines(float m2, float m1);
 	float calculateSlope(float y2, float y1, float x2, float x1);
 	float calculateDistance(float y2, float y1, float x2, float x1);
@@ -36,6 +41,13 @@ private:
 	float calculateIntersectionY(float m1, float x, float b1);
 	float calculateIntersectionX(float b2, float b1, float m1, float m2);
 	bool noIntersection(float x, float y, float m1, float b1, float m2, float b2);
+
+	glm::vec3 playerPosition;
+	glm::vec3 playerForwardVector;
+	glm::vec3 carPosition;
+	glm::vec3 carForwardVector;
+	physx::PxVehicleDrive4WRawInputData* carInputData;
+	physx::PxVehicleDrive4W* carVehicle4W;
 
 
 };

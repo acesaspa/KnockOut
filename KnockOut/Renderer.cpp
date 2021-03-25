@@ -123,8 +123,6 @@ void Renderer::prepSkybox(Shader shader) {
 
 	shader.use();
 	shader.setInt("skybox", 0);
-
-	//TODO: potential issues
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)1200 / (float)800, 0.1f, 500.0f);
 	shader.setMat4("projection", projection);
 }
@@ -311,14 +309,21 @@ void Renderer::setUpRendering(glm::vec3 cameraPos, Shader ourShader, Shader text
 	playerMesh.loadOBJ("blueCar.obj");
 	playerTexture.loadTexture("blueCar.png", true, true);
 
-	citySurfaceMesh.loadOBJ("cityLevel.obj");
+	citySurfaceMesh.loadOBJ("cityLevel2.obj");
 	cityTexture.loadTexture("asphalt.jpg", true);
 
-	grassSurfaceMesh.loadOBJ("grassLevel.obj");
+	grassSurfaceMesh.loadOBJ("grassLevel2.obj");
 	grassTexture.loadTexture("grass.jpg", true);
 
-	desertSurfaceMesh.loadOBJ("sandLevel.obj");
+	desertSurfaceMesh.loadOBJ("sandLevel2.obj");
+	desertSurfaceMesh.setIsMostOuterLevel(true); //used to determine the bounding box of the entire level
 	desertTexture.loadTexture("desert_texture.jpg", true);
+
+	//std::cout << "Desert verts: " << citySurfaceMesh.getActualVertices().size() << std::endl;
+	//std::cout << "Desert inds: " <<  citySurfaceMesh.getVertexIndices().size() << std::endl;
+
+	treeMesh.loadOBJ("normalTree.obj");
+	treeTexture.loadTexture("normalTreeTexture.png", true);
 
 	cubeMesh.loadVertexData(Utils::cubeVertexData, Utils::cubeArrayLen);
 	objectMeshes.push_back(cubeMesh);
@@ -329,6 +334,8 @@ void Renderer::setUpRendering(glm::vec3 cameraPos, Shader ourShader, Shader text
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)1200 / (float)800, 0.1f, 500.0f); //how to show perspective (fov, aspect ratio)
 	ourShader.setMat4("projection", projection); //pass the projection matrix to the fragment shader
 }
+
+
 
 ///render a single frame of the game
 void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans, //TODO: what are different texture units for?
@@ -349,7 +356,7 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans, //TODO: what are di
 
 	applyShaderValues(ourShader, cameraPos, view);
 
-	////PLAYER
+	//PLAYER
 	glm::mat4 model = glm::mat4(1.0f); //identity matrix
 	renderObject(ourShader, &playerMesh, &playerTexture, glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.0f, 1.0f, 0.0f), 180.f, vehicleScale, pxPlayerTrans);
 
@@ -378,22 +385,17 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans, //TODO: what are di
 	//You Win
 	if(status == 2) renderObject(ourShader, &YouWinMesh, &YouWinTexture, glm::vec3(-30.0f, 1.0f, 10.0f), defaultRotation, defaultRotAmountDeg, powerUpScale);
 
-	// draw skybox as last
-	glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
-	skyboxShader.use();
-	skyboxShader.setMat4("view", view);
-	// skybox cube
-	glBindVertexArray(skyboxVAO);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
-	glBindVertexArray(0);
-	glDepthFunc(GL_LESS); // set depth function back to default
+
+	renderObject(ourShader, &treeMesh, &treeTexture, worldOrigin, defaultRotation, defaultRotAmountDeg, defaultScale);
+
+	//Byskox
+	renderSkyBox(skyboxShader, view);
+
+
+	//TESTING
+	//for(int i = 0; i < desertSurfaceMesh.getBoundingBoxVertices().size(); i++)
+	//	renderObject(ourShader, &objectMeshes[0], &objectTextures[0], desertSurfaceMesh.getBoundingBoxVertices()[i], defaultRotation, defaultRotAmountDeg, defaultScale);
 }
-
-
-
-
 
 
 
@@ -423,6 +425,19 @@ void Renderer::renderObject(Shader ourShader, Mesh* meshToRender, Texture2D* tex
 	meshToRender->draw();
 }
 
+void Renderer::renderSkyBox(Shader skyboxShader, glm::mat4 view) {
+	glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
+	skyboxShader.use();
+	skyboxShader.setMat4("view", view);
+
+	glBindVertexArray(skyboxVAO);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glBindVertexArray(0);
+	glDepthFunc(GL_LESS); // set depth function back to default
+}
+
 std::vector<Mesh*> Renderer::getGroundMeshes(int index) { //returns pointers to all ground meshes, cannot be called before setup
 	if (index == 1) {
 		std::vector<Mesh*> meshes;
@@ -437,4 +452,11 @@ std::vector<Mesh*> Renderer::getGroundMeshes(int index) { //returns pointers to 
 		meshes.push_back(&grassSurfaceMesh);
 		return meshes;
 	}
+}
+
+
+
+
+std::vector<glm::vec3> Renderer::getBB() { //TODO: make a bit more streamlined once the segment logic is in
+	return desertSurfaceMesh.getBoundingBoxVertices();
 }

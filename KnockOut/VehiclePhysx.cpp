@@ -147,19 +147,19 @@ VehicleDesc VehiclePhysx::initVehicleDesc(PxF32 mass)
 	//Set up the chassis mass, dimensions, moment of inertia, and center of mass offset.
 	//The moment of inertia is just the moment of inertia of a cuboid but modified for easier steering.
 	//Center of mass offset is 0.65m above the base of the chassis and 0.25m towards the front.
-	const PxF32 chassisMass = 500;
+	const PxF32 chassisMass = 300;
 	const PxVec3 chassisDims(2.5f, 1.5f, 5.0f);
 	const PxVec3 chassisMOI
-	((chassisDims.y * chassisDims.y + chassisDims.z * chassisDims.z) * chassisMass / 12.0f,
-		(chassisDims.x * chassisDims.x + chassisDims.z * chassisDims.z) * 0.8f * chassisMass / 12.0f,
-		(chassisDims.x * chassisDims.x + chassisDims.y * chassisDims.y) * chassisMass / 12.0f);
+	((chassisDims.y * chassisDims.y + chassisDims.z * chassisDims.z) * chassisMass / 8.0f,
+		(chassisDims.x * chassisDims.x + chassisDims.z * chassisDims.z) * 0.8f * chassisMass / 8.0f,
+		(chassisDims.x * chassisDims.x + chassisDims.y * chassisDims.y) * chassisMass / 8.0f);
 	const PxVec3 chassisCMOffset(0.0f, -chassisDims.y * 0.5f + 0.65f, 0.25f);
 
 	//Set up the wheel mass, radius, width, moment of inertia, and number of wheels.
 	//Moment of inertia is just the moment of inertia of a cylinder.
-	const PxF32 wheelMass = 1.0f;
+	const PxF32 wheelMass = 10.0f;
 	const PxF32 wheelRadius = 1.0f;
-	const PxF32 wheelWidth = 0.4f;
+	const PxF32 wheelWidth = 0.2f;
 	const PxF32 wheelMOI = 0.5f * wheelMass * wheelRadius * wheelRadius;
 	const PxU32 nbWheels = 4;
 
@@ -178,7 +178,7 @@ VehicleDesc VehiclePhysx::initVehicleDesc(PxF32 mass)
 	vehicleDesc.wheelMOI = wheelMOI;
 	vehicleDesc.numWheels = nbWheels;
 	vehicleDesc.wheelMaterial = gMaterial;
-	vehicleDesc.chassisSimFilterData = PxFilterData(COLLISION_FLAG_WHEEL, COLLISION_FLAG_WHEEL_AGAINST, 0, 0);
+	vehicleDesc.wheelSimFilterData = PxFilterData(COLLISION_FLAG_WHEEL, COLLISION_FLAG_WHEEL_AGAINST, 0, 0);
 
 	return vehicleDesc;
 }
@@ -191,7 +191,7 @@ void VehiclePhysx::startAccelerateForwardsMode()
 	}
 	else
 	{
-		gVehicleInputData.setAnalogAccel(100.0f);
+		gVehicleInputData.setAnalogAccel(1.0f);
 	}
 }
 
@@ -311,7 +311,7 @@ void VehiclePhysx::initPhysics(std::vector<Mesh*> groundMeshes)
 	gPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, PxTolerancesScale(), true, gPvd);
 
 	PxSceneDesc sceneDesc(gPhysics->getTolerancesScale());
-	sceneDesc.gravity = PxVec3(0.0f, -9.81f, 0.0f);
+	sceneDesc.gravity = PxVec3(0.0f, -20.f, 0.0f);
 
 	PxU32 numWorkers = 1;
 	gDispatcher = PxDefaultCpuDispatcherCreate(numWorkers);
@@ -326,7 +326,7 @@ void VehiclePhysx::initPhysics(std::vector<Mesh*> groundMeshes)
 		pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
 		pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
 	}
-	gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f);
+	gMaterial = gPhysics->createMaterial(0.6f, 0.6f, 1.f);
 
 	gCooking = PxCreateCooking(PX_PHYSICS_VERSION, *gFoundation, PxCookingParams(PxTolerancesScale()));
 
@@ -349,16 +349,17 @@ void VehiclePhysx::initPhysics(std::vector<Mesh*> groundMeshes)
 	//gScene->addActor(*gGroundPlane); //TODO: remove, or whatever...
 	cookGroundMeshes(groundMeshes);
 
+
 	//Create a vehicle that will drive on the plane.
 	VehicleDesc vehicleDesc = initVehicleDesc(1000);
 	gVehicle4W = createVehicle4W(vehicleDesc, gPhysics, gCooking);
-	PxTransform startTransform(PxVec3(0, (vehicleDesc.chassisDims.y * 0.5f + vehicleDesc.wheelRadius + 1.0f), 0), PxQuat(PxIdentity));
+	PxTransform startTransform(PxVec3(-10.f, (vehicleDesc.chassisDims.y * 0.5f + vehicleDesc.wheelRadius + 2.0f), -10.f), PxQuat(PxIdentity));
 	gVehicle4W->getRigidDynamicActor()->setGlobalPose(startTransform);
 	gScene->addActor(*gVehicle4W->getRigidDynamicActor());
 
 	VehicleDesc vehicleDesc2 = initVehicleDesc(1000);
 	gVehicle4W2 = createVehicle4W(vehicleDesc2, gPhysics, gCooking);
-	PxTransform startTransform2(PxVec3(5.f, (vehicleDesc2.chassisDims.y * 0.5f + vehicleDesc2.wheelRadius + 1.0f), -10.f), PxQuat(PxIdentity));
+	PxTransform startTransform2(PxVec3(10.f, (vehicleDesc2.chassisDims.y * 0.5f + vehicleDesc2.wheelRadius + 2.0f), 10.f), PxQuat(PxIdentity));
 	gVehicle4W2->getRigidDynamicActor()->setGlobalPose(startTransform2);
 	gScene->addActor(*gVehicle4W2->getRigidDynamicActor());
 
@@ -372,6 +373,7 @@ void VehiclePhysx::initPhysics(std::vector<Mesh*> groundMeshes)
 	myData.word1 = 2;
 	shape->setSimulationFilterData(myData);
 	gBox->attachShape(*shape);
+	gBox->setMass(50.f);
 	gScene->addActor(*gBox);
 
 	PxTransform localTm2(PxVec3(0.f, 3.0f, 10.0f));
@@ -382,6 +384,7 @@ void VehiclePhysx::initPhysics(std::vector<Mesh*> groundMeshes)
 	myData2.word1 = 2;
 	shape2->setSimulationFilterData(myData2);
 	gBox2->attachShape(*shape2);
+	gBox2->setMass(50.f);
 	gScene->addActor(*gBox2);
 
 	PxTransform localTm3(PxVec3(0, 6.0f, 10.0f));
@@ -392,6 +395,7 @@ void VehiclePhysx::initPhysics(std::vector<Mesh*> groundMeshes)
 	myData3.word1 = 2;
 	shape3->setSimulationFilterData(myData3);
 	gBox3->attachShape(*shape3);
+	gBox3->setMass(50.f);
 	gScene->addActor(*gBox3);
 
 	//Set the vehicle to rest in first gear.
@@ -563,7 +567,7 @@ void VehiclePhysx::stepPhysics()
 	gScene->simulate(timestep);
 	gScene->fetchResults(true);
 
-	//gVehicle4W->setBaseFlag(PxRigi)
+	//std::cout << "Speed: " << gVehicle4W->computeForwardSpeed() << " accel: " << gVehicleInputData.getAnalogAccel() << std::endl;
 }
 
 void VehiclePhysx::cleanupPhysics()
@@ -752,7 +756,7 @@ void VehiclePhysx::cookGroundMeshes(std::vector<Mesh*> groundMeshes) {
 }
 
 void VehiclePhysx::cookGroundMesh(Mesh* meshToCook) {
-	PxMaterial* gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f); //create some material
+	PxMaterial* gMaterial = gPhysics->createMaterial(0.8f, 0.8f, 0.1f); //create some material
 	PxTriangleMeshDesc meshDesc; //mesh cooking from a triangle mesh
 
 	std::vector<PxVec3> vertices = meshToCook->getActualVertices();
@@ -765,6 +769,9 @@ void VehiclePhysx::cookGroundMesh(Mesh* meshToCook) {
 	meshDesc.triangles.count = indices.size() / 3; //total number of triangles (each index = 1 vertex, so divide by 3 to get the num of triangles)
 	meshDesc.triangles.stride = 3 * sizeof(PxU32);
 	meshDesc.triangles.data = reinterpret_cast<const void*>(indices.data());
+
+	//std::cout << "actual verts: " << meshDesc.points.count << std::endl;
+	//std::cout << "actual inds: " << meshDesc.triangles.count * 3 << std::endl;
 
 	//PxCookingParams params = gCooking->getParams();
 	////TODO: potentially do this
@@ -817,7 +824,6 @@ void VehiclePhysx::checkGameOver() {
 }
 
 void VehiclePhysx::reset() {
-
 	gScene->removeActor(*gVehicle4W->getRigidDynamicActor());
 	VehicleDesc vehicleDesc = initVehicleDesc(1000);
 	PxTransform startTransform(PxVec3(0, (vehicleDesc.chassisDims.y * 0.5f + vehicleDesc.wheelRadius + 1.0f), 0), PxQuat(PxIdentity));

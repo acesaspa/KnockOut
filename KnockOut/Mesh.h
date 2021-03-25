@@ -25,15 +25,21 @@ public:
 	bool loadOBJ(const std::string& filename);
 	void loadVertexData(float vertexData[], int arraySize);
 	void draw();
+
 	std::vector<physx::PxU32> getVertexIndices();
 	std::vector<physx::PxVec3> getActualVertices();
+	std::vector<glm::vec3> getBoundingBoxVertices();
+	void setIsMostOuterLevel(bool isOuter);
 
 private:
 	void initBuffers();
+	void generateBoundingBox();
 	bool mLoaded;
+	bool isMostOuterLevel = false;
 	std::vector<Vertex> mVertices;
 	std::vector<glm::vec3> actualVertices;
 	GLuint mVBO, mVAO;
 	std::vector<unsigned int> vertexIndices, uvIndices, normalIndices;
+	std::vector<glm::vec3> boundingBox;
 };
 #endif 

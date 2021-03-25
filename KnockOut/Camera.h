@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "Utils.h"
 
 
 class Camera {
@@ -16,6 +17,8 @@ public:
 	void setCameraPos(glm::vec3 newPos);
 	bool getMouseVisible();
 	void setMouseVisible(bool mouseVis);
+	glm::vec3 getCameraFront();
+	glm::vec3 getCameraUp();
 };
 
 
