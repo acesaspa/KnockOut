@@ -10,13 +10,67 @@ float hitPointDist = 30.f;
 float hitPointRad = 10.f;
 float playerForVecMultiplier = 5.f;
 bool attackingPoint = true; //true = attacking hit point, false = attacking player directly, needs to be set to true when switching to attacking state
+float yMax = 50.f;
+
+std::vector<glm::vec3> holeBBs;
 
 glm::vec3 mapUpVec = glm::vec3(0.f, 0.5f, 1.f);
 glm::vec3 mapDownVec = glm::vec3(0.f, 0.5f, -1.f);
 glm::vec3 mapRightVec = glm::vec3(-1.f, 0.5f, 0.f);
 glm::vec3 mapLeftVec = glm::vec3(1.f, 0.5f, 0.f);
 
-int opponentState = 2; //0 = roaming, 1 = defending, 2 = attacking
+int opponentState = 0; //0 = roaming, 1 = defending, 2 = attacking
+
+
+void initHoleBBs(){
+	for (int i = 0; i < Utils::holesBBDatLen; i = i + 8) {
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i], yMax, Utils::holesBoundingBoxData[i + 1]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i], 0.f, Utils::holesBoundingBoxData[i + 1]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i+2], 0.f, Utils::holesBoundingBoxData[i + 3]));
+
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i+2], yMax, Utils::holesBoundingBoxData[i + 3]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i+2], 0.f, Utils::holesBoundingBoxData[i + 3]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i], yMax, Utils::holesBoundingBoxData[i + 1]));
+
+
+
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 4], yMax, Utils::holesBoundingBoxData[i + 5]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 4], 0.f, Utils::holesBoundingBoxData[i + 5]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 2], 0.f, Utils::holesBoundingBoxData[i + 3]));
+
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 2], yMax, Utils::holesBoundingBoxData[i + 3]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 2], 0.f, Utils::holesBoundingBoxData[i + 3]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 4], yMax, Utils::holesBoundingBoxData[i + 5]));
+
+
+
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 6], yMax, Utils::holesBoundingBoxData[i + 7]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 6], 0.f, Utils::holesBoundingBoxData[i + 7]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 4], 0.f, Utils::holesBoundingBoxData[i + 5]));
+
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 4], yMax, Utils::holesBoundingBoxData[i + 5]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 4], 0.f, Utils::holesBoundingBoxData[i + 5]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 6], yMax, Utils::holesBoundingBoxData[i + 7]));
+
+
+
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i], yMax, Utils::holesBoundingBoxData[i + 1]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i], 0.f, Utils::holesBoundingBoxData[i + 1]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 6], 0.f, Utils::holesBoundingBoxData[i + 7]));
+
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 6], yMax, Utils::holesBoundingBoxData[i + 7]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 6], 0.f, Utils::holesBoundingBoxData[i + 7]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i], yMax, Utils::holesBoundingBoxData[i + 1]));
+
+	}
+}
+
+
+AIBehavior::AIBehavior() {
+	initHoleBBs();
+}
+
+
 
 void AIBehavior::frameUpdate(physx::PxVehicleDrive4WRawInputData* carInputDat, glm::vec3 carPos, glm::vec3 carForwardVec, glm::vec3 playerPos, glm::vec3 playerForwardVec, physx::PxVehicleDrive4W* carVeh4W) {
 
@@ -41,57 +95,55 @@ void AIBehavior::behave() {
 	if (shouldChangeCourse() == 1) {
 		//carInputData->setAnalogHandbrake(true);
 		carInputData->setAnalogSteer(1.f);
-		setSpeed(maxSpeed * 0.4);
+		setSpeed(maxSpeed * 0.2);
 	}else {
 
 
 		//ATTACKING
 		if (opponentState == 2) { //prioritize attacking state over every other state
-			//setSpeed(maxSpeed);
-			carInputData->setAnalogAccel(1.f);
+			setSpeed(maxSpeed);
 
 			if (attackingPoint) { //first get close to a "hit point" (point that will allow for an attack vector)
-				std::cout << "point" << std::endl;
 				float playerDistFromClosestEdge = FLT_MAX;
 				float dist;
 				glm::vec2 intersectionBary;
 				glm::vec3 closestEdgeIntersection = glm::vec3(0.f,0.f,0.f);
 
-				for (int i = 0; i < boundingBox.size(); i = i + 3) {
-					if (glm::intersectRayTriangle(playerPosition, mapUpVec, boundingBox[i], boundingBox[i + 1], boundingBox[i + 2], intersectionBary, dist) && dist < playerDistFromClosestEdge && dist > 0.f) {
+				for (int i = 0; i < levelBB.size(); i = i + 3) {
+					if (glm::intersectRayTriangle(playerPosition, mapUpVec, levelBB[i], levelBB[i + 1], levelBB[i + 2], intersectionBary, dist) && dist < playerDistFromClosestEdge && dist > 0.f) {
 						playerDistFromClosestEdge = dist;
 						float w = 1 - (intersectionBary.x + intersectionBary.y);
 						closestEdgeIntersection = glm::vec3( //convert barycentric to world coord
-							intersectionBary.x * boundingBox[i].x + intersectionBary.y * boundingBox[i + 1].x + w * boundingBox[i + 2].x,
-							intersectionBary.x * boundingBox[i].y + intersectionBary.y * boundingBox[i + 1].y + w * boundingBox[i + 2].y,
-							intersectionBary.x * boundingBox[i].z + intersectionBary.y * boundingBox[i + 1].z + w * boundingBox[i + 2].z);
+							intersectionBary.x * levelBB[i].x + intersectionBary.y * levelBB[i + 1].x + w * levelBB[i + 2].x,
+							intersectionBary.x * levelBB[i].y + intersectionBary.y * levelBB[i + 1].y + w * levelBB[i + 2].y,
+							intersectionBary.x * levelBB[i].z + intersectionBary.y * levelBB[i + 1].z + w * levelBB[i + 2].z);
 					}
 
-					if (glm::intersectRayTriangle(playerPosition, mapDownVec, boundingBox[i], boundingBox[i + 1], boundingBox[i + 2], intersectionBary, dist) && dist < playerDistFromClosestEdge && dist > 0.f) {
+					if (glm::intersectRayTriangle(playerPosition, mapDownVec, levelBB[i], levelBB[i + 1], levelBB[i + 2], intersectionBary, dist) && dist < playerDistFromClosestEdge && dist > 0.f) {
 						playerDistFromClosestEdge = dist;
 						float w = 1 - (intersectionBary.x + intersectionBary.y);
 						closestEdgeIntersection = glm::vec3( //convert barycentric to world coord
-							intersectionBary.x * boundingBox[i].x + intersectionBary.y * boundingBox[i + 1].x + w * boundingBox[i + 2].x,
-							intersectionBary.x * boundingBox[i].y + intersectionBary.y * boundingBox[i + 1].y + w * boundingBox[i + 2].y,
-							intersectionBary.x * boundingBox[i].z + intersectionBary.y * boundingBox[i + 1].z + w * boundingBox[i + 2].z);
+							intersectionBary.x * levelBB[i].x + intersectionBary.y * levelBB[i + 1].x + w * levelBB[i + 2].x,
+							intersectionBary.x * levelBB[i].y + intersectionBary.y * levelBB[i + 1].y + w * levelBB[i + 2].y,
+							intersectionBary.x * levelBB[i].z + intersectionBary.y * levelBB[i + 1].z + w * levelBB[i + 2].z);
 					}
 
-					if (glm::intersectRayTriangle(playerPosition, mapLeftVec, boundingBox[i], boundingBox[i + 1], boundingBox[i + 2], intersectionBary, dist) && dist < playerDistFromClosestEdge && dist > 0.f) {
+					if (glm::intersectRayTriangle(playerPosition, mapLeftVec, levelBB[i], levelBB[i + 1], levelBB[i + 2], intersectionBary, dist) && dist < playerDistFromClosestEdge && dist > 0.f) {
 						playerDistFromClosestEdge = dist;
 						float w = 1 - (intersectionBary.x + intersectionBary.y);
 						closestEdgeIntersection = glm::vec3( //convert barycentric to world coord
-							intersectionBary.x * boundingBox[i].x + intersectionBary.y * boundingBox[i + 1].x + w * boundingBox[i + 2].x,
-							intersectionBary.x * boundingBox[i].y + intersectionBary.y * boundingBox[i + 1].y + w * boundingBox[i + 2].y,
-							intersectionBary.x * boundingBox[i].z + intersectionBary.y * boundingBox[i + 1].z + w * boundingBox[i + 2].z);
+							intersectionBary.x * levelBB[i].x + intersectionBary.y * levelBB[i + 1].x + w * levelBB[i + 2].x,
+							intersectionBary.x * levelBB[i].y + intersectionBary.y * levelBB[i + 1].y + w * levelBB[i + 2].y,
+							intersectionBary.x * levelBB[i].z + intersectionBary.y * levelBB[i + 1].z + w * levelBB[i + 2].z);
 					}
 
-					if (glm::intersectRayTriangle(playerPosition, mapRightVec, boundingBox[i], boundingBox[i + 1], boundingBox[i + 2], intersectionBary, dist) && dist < playerDistFromClosestEdge && dist > 0.f) {
+					if (glm::intersectRayTriangle(playerPosition, mapRightVec, levelBB[i], levelBB[i + 1], levelBB[i + 2], intersectionBary, dist) && dist < playerDistFromClosestEdge && dist > 0.f) {
 						playerDistFromClosestEdge = dist;
 						float w = 1 - (intersectionBary.x + intersectionBary.y);
 						closestEdgeIntersection = glm::vec3( //convert barycentric to world coord
-							intersectionBary.x * boundingBox[i].x + intersectionBary.y * boundingBox[i + 1].x + w * boundingBox[i + 2].x,
-							intersectionBary.x * boundingBox[i].y + intersectionBary.y * boundingBox[i + 1].y + w * boundingBox[i + 2].y,
-							intersectionBary.x * boundingBox[i].z + intersectionBary.y * boundingBox[i + 1].z + w * boundingBox[i + 2].z);
+							intersectionBary.x * levelBB[i].x + intersectionBary.y * levelBB[i + 1].x + w * levelBB[i + 2].x,
+							intersectionBary.x * levelBB[i].y + intersectionBary.y * levelBB[i + 1].y + w * levelBB[i + 2].y,
+							intersectionBary.x * levelBB[i].z + intersectionBary.y * levelBB[i + 1].z + w * levelBB[i + 2].z);
 					}
 				}
 
@@ -187,19 +239,15 @@ int AIBehavior::shouldChangeCourse() { //determines whether it's close to & head
 	glm::vec2 intersectionBary;
 	float dist = 0.f;
 
-	for (int i = 0; i < boundingBox.size(); i = i + 3) {
+	for (int i = 0; i < levelBB.size(); i = i + 3) {
 
-		if (glm::intersectRayTriangle(carPosition, carForwardVector, boundingBox[i], boundingBox[i + 1], boundingBox[i + 2],intersectionBary, dist) && dist < 100.f && dist > 0.f) {
+		if (glm::intersectRayTriangle(carPosition, carForwardVector, levelBB[i], levelBB[i + 1], levelBB[i + 2],intersectionBary, dist) && dist < 100.f && dist > 0.f) {
 			return 1;
 		}
 	}
 
-	for (int i = 0; i < Utils::holesBBDatLen; i = i + 9) {
-		if (glm::intersectRayTriangle(carPosition, carForwardVector,
-			glm::vec3(Utils::holesBoundingBoxData[i], Utils::holesBoundingBoxData[i + 1], Utils::holesBoundingBoxData[i + 2]),
-			glm::vec3(Utils::holesBoundingBoxData[i + 3], Utils::holesBoundingBoxData[i + 4], Utils::holesBoundingBoxData[i + 5]),
-			glm::vec3(Utils::holesBoundingBoxData[i + 6], Utils::holesBoundingBoxData[i + 7], Utils::holesBoundingBoxData[i + 8]),
-			intersectionBary, dist) && dist < 50.f && dist > 0.f) {
+	for (int i = 0; i < holeBBs.size(); i = i + 3) {
+		if (glm::intersectRayTriangle(carPosition, carForwardVector, holeBBs[i], holeBBs[i + 1], holeBBs[i + 2], intersectionBary, dist) && dist < 20.f && dist > 0.f) {
 			return 1;
 		}
 	}
@@ -220,13 +268,6 @@ void AIBehavior::setSpeed(float target) {
 		carVehicle4W->mDriveDynData.forceGearChange(physx::PxVehicleGearsData::eREVERSE);
 		carInputData->setAnalogAccel(1.0f);
 	}
-
-	//if (numOfEdgesClose == 1) return 0;
-	//else {
-
-	//}
-
-	return -1;
 }
 
 

@@ -4,6 +4,5 @@
 #include <iostream>
 
 void Source::passValue(PowerUp& a) {
-	std::cout << "passValue\n";
 	a.foo();
 }

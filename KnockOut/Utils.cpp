@@ -66,43 +66,18 @@ int Utils::planeArrayLen = 48;
 
 
 float Utils::holesBoundingBoxData[] = { //TODO: measure using player pos & imgUI, 4 sided
-	-15.3
+	-16.f, 11, //city 1
+	-15.8f, 29.f,
+	-29.f, 29.f,
+	-27.f, 15.f,
 
-
-	//hole 0 corner 0 yMax
-	//hole 0 corner 0 yMin 
-	//hole 0 corner 1 yMin
-
-	//hole 0 corner 1 yMax
-	//hole 0 corner 1 yMin
-	//hole 0 corner 0 yMax
-
-	//hole 0 corner 1 yMax
-	//hole 0 corner 1 yMin
-	//hole 0 corner 2 yMin
-
-	//hole 0 corner 2 yMax
-	//hole 0 corner 2 yMin
-	//hole 0 corner 1 yMax
-
-	//hole 0 corner 2 yMax
-	//hole 0 corner 2 yMin
-	//hole 0 corner 3 yMin
-
-	//hole 0 corner 3 yMax
-	//hole 0 corner 3 yMin
-	//hole 0 corner 2 yMax
-
-	//hole 0 corner 3 yMax
-	//hole 0 corner 3 yMin
-	//hole 0 corner 0 yMin
-
-	//hole 0 corner 0 yMax
-	//hole 0 corner 0 yMin
-	//hole 0 corner 3 yMax  //24 total entries per hole
+	11.4f, 2.f, //city 2
+	23.f, 4.f,
+	25.f, -11.f,
+	15.5f, -16.f
 };
 
-int Utils::holesBBDatLen = 0;
+int Utils::holesBBDatLen = 8;
 
 
 

@@ -353,7 +353,7 @@ void VehiclePhysx::initPhysics(std::vector<Mesh*> groundMeshes)
 	//Create/cook level surface.
 	PxFilterData groundPlaneSimFilterData(COLLISION_FLAG_GROUND, COLLISION_FLAG_GROUND_AGAINST, 0, 0);
 	gGroundPlane = createDrivablePlane(groundPlaneSimFilterData, gMaterial, gPhysics);
-	gScene->addActor(*gGroundPlane); //TODO: remove, or whatever...
+	//gScene->addActor(*gGroundPlane); //TODO: remove, or whatever...
 	cookGroundMeshes(groundMeshes);
 
 

@@ -349,7 +349,7 @@ void Renderer::setUpRendering(glm::vec3 cameraPos, Shader ourShader, Shader text
 	citySurfaceMesh.loadOBJ("cityLevel2.obj");
 	cityTexture.loadTexture("asphalt.jpg", true);
 
-	grassSurfaceMesh.loadOBJ("grassLevel2.obj");
+	grassSurfaceMesh.loadOBJ("test.obj");
 	grassTexture.loadTexture("grass.jpg", true);
 
 	desertSurfaceMesh.loadOBJ("sandLevel2.obj");

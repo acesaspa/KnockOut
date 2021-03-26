@@ -5,7 +5,6 @@
 #include <glm/gtc/type_ptr.hpp>
 
 PowerUp::PowerUp(glm::vec3 location, int type) {
-    std::cout << "init\n";
 
     Location.x = location.x;
     Location.y = location.y;
@@ -19,5 +18,4 @@ PowerUp::PowerUp(glm::vec3 location, int type) {
 
 void PowerUp::foo()
 {
-    std::cout << "test";
 }

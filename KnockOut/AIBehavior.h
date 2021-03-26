@@ -23,10 +23,11 @@
 
 class AIBehavior {
 public:
+	AIBehavior();
 	void frameUpdate(physx::PxVehicleDrive4WRawInputData* carInputData, glm::vec3 carPos, glm::vec3 carForwardVec, glm::vec3 playerPos, glm::vec3 playerForwardVector,
 		physx::PxVehicleDrive4W* opponentVehicle4W);
 
-	std::vector<glm::vec3> boundingBox;
+	std::vector<glm::vec3> levelBB;
 
 private:
 	bool pointIsRight(glm::vec3 a, glm::vec3 b, glm::vec3 c);

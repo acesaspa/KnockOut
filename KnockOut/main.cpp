@@ -126,8 +126,6 @@ void addPowerUp() {
 			float z = rand() % (100 + 100 + 1) - 100;
 			float y = 5.f;
 
-			std::cout << x << " " << y << " " << z << "\n\n";
-
 			std::vector<Mesh*> groundMeshes = mainRenderer.getGroundMeshes(1);
 
 			float minDistance = 1000.f;
@@ -139,7 +137,6 @@ void addPowerUp() {
 				std::vector<PxVec3> vertices = meshToCook->getActualVertices();
 				std::vector<PxU32> indices = meshToCook->getVertexIndices();
 
-				std::cout << "size " << vertices.size() << "\n";
 
 
 				for (int j = 0; j < vertices.size(); j++) {
@@ -161,7 +158,7 @@ void addPowerUp() {
 
 			}
 
-			std::cout << height.x << " " << height.y << " " << height.z << "\n";
+			//std::cout << height.x << " " << height.y << " " << height.z << "\n";
 
 			PowerUp *test3 = new PowerUp(height+glm::vec3(0.f,1.f,0.f),powerChoice);
 			powerups.push_back(test3);
@@ -217,7 +214,7 @@ int main(int argc, char** argv) {
 	mainRenderer.prepText(textShader);
 	mainRenderer.prepSkybox(skyboxShader);
 	Physics.initPhysics(mainRenderer.getGroundMeshes(1));	
-	beh.boundingBox = mainRenderer.getBB();
+	beh.levelBB = mainRenderer.getBB();
 
 	//MARK: RENDER LOOP ---------------------------------------------------------------------------------------------------------------
 	while (!glfwWindowShouldClose(window)) {
@@ -375,7 +372,7 @@ int main(int argc, char** argv) {
 		//TODO: power-up indicator
 
 
-		//beh.frameUpdate(Physics.getVehDat(), Physics.getOpponentPos(), Physics.getOpponentForVec(), Physics.getVehiclePos(1), Physics.getPlayerForVec(), Physics.getOpponent4W());
+		beh.frameUpdate(Physics.getVehDat(), Physics.getOpponentPos(), Physics.getOpponentForVec(), Physics.getVehiclePos(1), Physics.getPlayerForVec(), Physics.getOpponent4W());
 
 
 		if (Physics.getGameStatus() == 1) {
