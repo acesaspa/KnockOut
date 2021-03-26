@@ -77,7 +77,7 @@ float Utils::holesBoundingBoxData[] = { //TODO: measure using player pos & imgUI
 	15.5f, -16.f
 };
 
-int Utils::holesBBDatLen = 8;
+int Utils::holesBBDatLen = 16;
 
 
 
