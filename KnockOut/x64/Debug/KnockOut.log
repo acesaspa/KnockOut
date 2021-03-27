@@ -1,8 +1,9 @@
-﻿  main.cpp
-C:\585\KnockOut\KnockOut\Shader.cpp(57,40): warning C4101: 'e': unreferenced local variable
-C:\585\KnockOut\KnockOut\Utils.h(21,2): warning C4091: 'static ': ignored on left of 'Utils' when no variable is declared
-C:\585\KnockOut\KnockOut\main.cpp(122,14): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-C:\585\KnockOut\KnockOut\main.cpp(125,12): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
-C:\585\KnockOut\KnockOut\main.cpp(126,12): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
-C:\585\KnockOut\KnockOut\main.cpp(297,22): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  KnockOut.vcxproj -> C:\585\KnockOut\x64\Debug\KnockOut.exe
+﻿  VehiclePhysx.cpp
+C:\Users\Sarcgasm\Desktop\KnockOut-dev\KnockOut\VehiclePhysx.cpp(235,41): warning C4305: 'argument': truncation from 'float' to 'const bool'
+C:\Users\Sarcgasm\Desktop\KnockOut-dev\KnockOut\VehiclePhysx.cpp(249,41): warning C4305: 'argument': truncation from 'float' to 'const bool'
+C:\Users\Sarcgasm\Desktop\KnockOut-dev\KnockOut\VehiclePhysx.cpp(767,41): warning C4267: '=': conversion from 'size_t' to 'physx::PxU32', possible loss of data
+C:\Users\Sarcgasm\Desktop\KnockOut-dev\KnockOut\VehiclePhysx.cpp(771,47): warning C4267: '=': conversion from 'size_t' to 'physx::PxU32', possible loss of data
+C:\Users\Sarcgasm\Desktop\KnockOut-dev\KnockOut\VehiclePhysx.cpp(628): warning C4715: 'VehiclePhysx::getVehicleTrans': not all control paths return a value
+C:\Users\Sarcgasm\Desktop\KnockOut-dev\KnockOut\VehiclePhysx.cpp(654): warning C4715: 'VehiclePhysx::getVehiclePos': not all control paths return a value
+C:\Users\Sarcgasm\Desktop\KnockOut-dev\KnockOut\VehiclePhysx.cpp(690): warning C4715: 'VehiclePhysx::getBoxTrans': not all control paths return a value
+  KnockOut.vcxproj -> C:\Users\Sarcgasm\Desktop\KnockOut-dev\x64\Debug\KnockOut.exe

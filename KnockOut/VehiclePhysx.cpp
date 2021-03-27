@@ -839,9 +839,9 @@ void VehiclePhysx::reset() {
 	
 	gScene->removeActor(*gVehicle4W2->getRigidDynamicActor());
 	VehicleDesc vehicleDesc2 = initVehicleDesc(1000);
-	PxTransform startTransform2(PxVec3(15.f, (vehicleDesc2.chassisDims.y * 0.5f + vehicleDesc2.wheelRadius + 100000.0f), 0), PxQuat(PxIdentity));
+	PxTransform startTransform2(PxVec3(10.f, (vehicleDesc2.chassisDims.y * 0.5f + vehicleDesc2.wheelRadius + 1.0f), 10), PxQuat(PxIdentity));
 	gVehicle4W2->getRigidDynamicActor()->setGlobalPose(startTransform2);
-	gVehicle4W2->getRigidDynamicActor()->setLinearVelocity(PxVec3(0, 0, 0));
+	gVehicle4W2->getRigidDynamicActor()->setLinearVelocity(PxVec3(0, 0, 0)); 
 	gScene->addActor(*gVehicle4W2->getRigidDynamicActor());
 }
 

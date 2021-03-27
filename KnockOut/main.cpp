@@ -216,6 +216,8 @@ int main(int argc, char** argv) {
 	Physics.initPhysics(mainRenderer.getGroundMeshes(1));	
 	beh.levelBB = mainRenderer.getBB();
 
+	glfwSetKeyCallback(window, key_callback);
+
 	//MARK: RENDER LOOP ---------------------------------------------------------------------------------------------------------------
 	while (!glfwWindowShouldClose(window)) {
 
@@ -247,7 +249,7 @@ int main(int argc, char** argv) {
 			if (!reset) {
 				reset = true;
 				Physics.reset();
-				Physics.removeGround(mainRenderer.getGroundMeshes(2));
+				Physics.removeGround(mainRenderer.getGroundMeshes(1));
 			}
 		}
 		if (glm::length(Physics.getVehiclePos(1)-glm::vec3(-30.0f, 1.0f, 10.0f)) < 2.f && reset) {
