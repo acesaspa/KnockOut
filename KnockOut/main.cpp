@@ -126,7 +126,7 @@ void addPowerUp() {
 			float z = rand() % (100 + 100 + 1) - 100;
 			float y = 5.f;
 
-			std::vector<Mesh*> groundMeshes = mainRenderer.getGroundMeshes(1);
+			std::vector<Mesh*> groundMeshes = mainRenderer.getGroundMeshes(Physics.getNumCars());
 
 			float minDistance = 1000.f;
 			glm::vec3 height = glm::vec3(0, 0, 0);
@@ -213,13 +213,16 @@ int main(int argc, char** argv) {
 	mainRenderer.setUpRendering(mainCamera.getCameraPos(), ourShader, textShader);
 	mainRenderer.prepText(textShader);
 	mainRenderer.prepSkybox(skyboxShader);
-	Physics.initPhysics(mainRenderer.getGroundMeshes(1));	
+	Physics.initPhysics(mainRenderer.getGroundMeshes(0));	
 	beh.levelBB = mainRenderer.getBB();
 
 	glfwSetKeyCallback(window, key_callback);
+	Physics.setGameStatus(0);
 
 	//MARK: RENDER LOOP ---------------------------------------------------------------------------------------------------------------
 	while (!glfwWindowShouldClose(window)) {
+
+		//std::cout << Physics.getGameStatus() << " status \n";
 
 		addPowerUp();
 
@@ -241,6 +244,8 @@ int main(int argc, char** argv) {
 			mainRenderer.setUIBoost(0);
 		}
 		//MARK: GAME OVER CHECK
+
+		/*
 		if (Physics.getGameStatus() == 0) {
 			Physics.checkGameOver();
 		}
@@ -252,8 +257,18 @@ int main(int argc, char** argv) {
 				Physics.removeGround(mainRenderer.getGroundMeshes(1));
 			}
 		}
-		if (glm::length(Physics.getVehiclePos(1)-glm::vec3(-30.0f, 1.0f, 10.0f)) < 2.f && reset) {
-			glfwSetWindowShouldClose(window, GLFW_TRUE);
+		*/
+		if (Physics.getGameStatus() == 0) {
+			Physics.checkGameOver();
+			Physics.updateNumCars();
+			if (Physics.getChanged() && Physics.getGameStatus()==0) {
+				Physics.setChanged(false);
+				//std::cout << "remove ground\n";
+				powerups.clear();
+				//std::cout << Physics.getNumCars() << "\n";
+				Physics.removeGround(mainRenderer.getGroundMeshes(Physics.getNumCars()));
+			}
+			//Physics.removeGround(mainRenderer.getGroundMeshes(Physics.getNumCars()));
 		}
 
 		//PowerUp Pick Up
@@ -363,18 +378,16 @@ int main(int argc, char** argv) {
 		pxObjects.push_back(Physics.getBoxTrans(3));
 		std::vector<PxMat44> pxOpponents;
 		pxOpponents.push_back(Physics.getVehicleTrans(2));
+		pxOpponents.push_back(Physics.getVehicleTrans(3));
+		pxOpponents.push_back(Physics.getVehicleTrans(4));
 
-		//TODO: skybox
-		
+
 		//TODO: shadows
-		//TODO: objects
-		//TODO: another car
 		//TODO: different behavior for the car
 		//TODO: green segment logic
-		//TODO: power-up indicator
 
 
-		beh.frameUpdate(Physics.getVehDat(), Physics.getOpponentPos(), Physics.getOpponentForVec(), Physics.getVehiclePos(1), Physics.getPlayerForVec(), Physics.getOpponent4W());
+		//beh.frameUpdate(Physics.getVehDat(), Physics.getOpponentPos(), Physics.getOpponentForVec(), Physics.getVehiclePos(1), Physics.getPlayerForVec(), Physics.getOpponent4W());
 
 
 		if (Physics.getGameStatus() == 1) {
@@ -384,12 +397,13 @@ int main(int argc, char** argv) {
 		}
 		//You win
 		else if (Physics.getGameStatus() == 2) {
+			//std::cout << "you win\n";
 			//Camera will go to you win screen
 			st = 2;
 			Physics.setGameStatus(4);
 		}
 		else {
-			mainRenderer.renderGameFrame(Physics.getVehicleTrans(1), Physics.getVehicleTrans(1), pxOpponents, Physics.getGroundPos(), pxObjects, ourShader, textShader, skyboxShader, view, mainCamera.getCameraPos(), Physics.getGameStatus(), powerups);
+			mainRenderer.renderGameFrame(Physics.getVehicleTrans(1), Physics.getVehicleTrans(1), pxOpponents, Physics.getGroundPos(), pxObjects, ourShader, textShader, skyboxShader, view, mainCamera.getCameraPos(), Physics.getNumCars(), powerups);
 		}
 		/*
 		if (Physics.getGameStatus() == 1) {

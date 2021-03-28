@@ -44,14 +44,20 @@ PxBatchQuery* gBatchQuery = NULL;
 PxVehicleDrivableSurfaceToTireFrictionPairs* gFrictionPairs = NULL;
 
 PxRigidStatic* gGroundPlane = NULL;
-PxVehicleDrive4W* gVehicle4W = NULL;
-PxVehicleDrive4W* gVehicle4W2 = NULL;
+//PxVehicleDrive4W* gVehicle4W1 = NULL;
+//PxVehicleDrive4W* gVehicle4W2 = NULL;
+//PxVehicleDrive4W* gVehicle4W3 = NULL;
+//PxVehicleDrive4W* gVehicle4W4 = NULL;
+int NumCars = 0;
+PxVehicleDrive4W* Vehicles[4] = {NULL,NULL, NULL, NULL};
 int GameStatus = 0;
 PxRigidDynamic* gBox = NULL;
 PxRigidDynamic* gBox2 = NULL;
 PxRigidDynamic* gBox3 = NULL;
-PxRigidStatic* meshBody = NULL;
-
+PxRigidStatic* meshBody1 = NULL;
+PxRigidStatic* meshBody2 = NULL;
+PxRigidStatic* meshBody3 = NULL;
+bool changed = false;
 bool					gIsVehicleInAir = true;
 
 
@@ -104,8 +110,10 @@ PxVehiclePadSmoothingData gPadSmoothingData =
 	}
 };
 
-PxVehicleDrive4WRawInputData gVehicleInputData;
+PxVehicleDrive4WRawInputData gVehicleInputData1;
 PxVehicleDrive4WRawInputData gVehicleInputData2;
+PxVehicleDrive4WRawInputData gVehicleInputData3;
+PxVehicleDrive4WRawInputData gVehicleInputData4;
 
 enum DriveMode
 {
@@ -141,6 +149,62 @@ PxF32					gVehicleModeTimer = 0.0f;
 PxU32					gVehicleOrderProgress = 0;
 bool					gVehicleOrderComplete = false;
 bool					gMimicKeyInputs = false;
+
+void VehiclePhysx::updateNumCars() {
+	PxBounds3 pxBounds2 = Vehicles[1]->getRigidDynamicActor()->getWorldBounds();
+	PxTransform pos2 = Vehicles[1]->getRigidDynamicActor()->getGlobalPose();
+	glm::vec3 cubePos2 = glm::vec3(pos2.p[0], pos2.p[1], pos2.p[2]);
+
+	PxBounds3 pxBounds3 = Vehicles[2]->getRigidDynamicActor()->getWorldBounds();
+	PxTransform pos3 = Vehicles[2]->getRigidDynamicActor()->getGlobalPose();
+	glm::vec3 cubePos3 = glm::vec3(pos3.p[0], pos3.p[1], pos3.p[2]);
+
+	PxBounds3 pxBounds4 = Vehicles[3]->getRigidDynamicActor()->getWorldBounds();
+	PxTransform pos4 = Vehicles[3]->getRigidDynamicActor()->getGlobalPose();
+	glm::vec3 cubePos4 = glm::vec3(pos4.p[0], pos4.p[1], pos4.p[2]);
+
+	int temp = 0;
+	if (cubePos2.y < -8 || cubePos2.y > 1000) {
+		Vehicles[1]->getRigidDynamicActor()->setGlobalPose(PxTransform(0,1000000000, 0));
+		Vehicles[1]->getRigidDynamicActor()->putToSleep();
+		//std::cout << "test1\n";
+		temp += 1;
+	}
+	if (cubePos3.y < -8 || cubePos3.y > 1000) {
+		Vehicles[2]->getRigidDynamicActor()->setGlobalPose(PxTransform(0, 1000000000, 0));
+		Vehicles[2]->getRigidDynamicActor()->putToSleep();
+		//std::cout << "test2\n";
+		temp += 1;
+	}
+	if (cubePos4.y < -8 || cubePos4.y > 1000) {
+		Vehicles[3]->getRigidDynamicActor()->setGlobalPose(PxTransform(0, 1000000000, 0));
+		Vehicles[3]->getRigidDynamicActor()->putToSleep();
+		//std::cout << "test3\n";
+		temp += 1;
+	}
+
+	if (temp != NumCars && temp!=3) {
+		changed = true;
+	}
+	if (temp == 3) {
+		GameStatus = 2;
+	}
+
+	NumCars = temp;
+	//std::cout << NumCars << "\n";
+}
+
+int VehiclePhysx::getNumCars() {
+	return NumCars;
+}
+
+bool VehiclePhysx::getChanged() {
+	return changed;
+}
+
+void VehiclePhysx::setChanged(bool input) {
+	changed = input;
+}
 
 VehicleDesc VehiclePhysx::initVehicleDesc(PxF32 mass)
 {
@@ -194,25 +258,25 @@ void VehiclePhysx::startAccelerateForwardsMode()
 {
 	if (gMimicKeyInputs)
 	{
-		gVehicleInputData.setDigitalAccel(true);
+		gVehicleInputData1.setDigitalAccel(true);
 	}
 	else
 	{
-		gVehicleInputData.setAnalogAccel(1.0f);
+		gVehicleInputData1.setAnalogAccel(1.0f);
 	}
 }
 
 void VehiclePhysx::startAccelerateReverseMode()
 {
-	gVehicle4W->mDriveDynData.forceGearChange(PxVehicleGearsData::eREVERSE);
+	Vehicles[0]->mDriveDynData.forceGearChange(PxVehicleGearsData::eREVERSE);
 
 	if (gMimicKeyInputs)
 	{
-		gVehicleInputData.setDigitalAccel(true);
+		gVehicleInputData1.setDigitalAccel(true);
 	}
 	else
 	{
-		gVehicleInputData.setAnalogAccel(1.0f);
+		gVehicleInputData1.setAnalogAccel(1.0f);
 	}
 }
 
@@ -220,11 +284,11 @@ void VehiclePhysx::startBrakeMode()
 {
 	if (gMimicKeyInputs)
 	{
-		gVehicleInputData.setDigitalBrake(true);
+		gVehicleInputData1.setDigitalBrake(true);
 	}
 	else
 	{
-		gVehicleInputData.setAnalogBrake(1.0f);
+		gVehicleInputData1.setAnalogBrake(1.0f);
 	}
 }
 
@@ -232,13 +296,13 @@ void VehiclePhysx::startTurnHardLeftMode()
 {
 	if (gMimicKeyInputs)
 	{
-		gVehicleInputData.setDigitalAccel(0.1f);
-		gVehicleInputData.setDigitalSteerLeft(true);
+		gVehicleInputData1.setDigitalAccel(0.1f);
+		gVehicleInputData1.setDigitalSteerLeft(true);
 	}
 	else
 	{
-		gVehicleInputData.setAnalogAccel(0.1f);
-		gVehicleInputData.setAnalogSteer(-1.0f);
+		gVehicleInputData1.setAnalogAccel(0.1f);
+		gVehicleInputData1.setAnalogSteer(-1.0f);
 	}
 }
 
@@ -246,13 +310,13 @@ void VehiclePhysx::startTurnHardRightMode()
 {
 	if (gMimicKeyInputs)
 	{
-		gVehicleInputData.setDigitalAccel(0.1f);
-		gVehicleInputData.setDigitalSteerRight(true);
+		gVehicleInputData1.setDigitalAccel(0.1f);
+		gVehicleInputData1.setDigitalSteerRight(true);
 	}
 	else
 	{
-		gVehicleInputData.setAnalogAccel(0.1f);
-		gVehicleInputData.setAnalogSteer(1.0f);
+		gVehicleInputData1.setAnalogAccel(0.1f);
+		gVehicleInputData1.setAnalogSteer(1.0f);
 	}
 }
 
@@ -260,13 +324,13 @@ void VehiclePhysx::startHandbrakeTurnLeftMode()
 {
 	if (gMimicKeyInputs)
 	{
-		gVehicleInputData.setDigitalSteerLeft(true);
-		gVehicleInputData.setDigitalHandbrake(true);
+		gVehicleInputData1.setDigitalSteerLeft(true);
+		gVehicleInputData1.setDigitalHandbrake(true);
 	}
 	else
 	{
-		gVehicleInputData.setAnalogSteer(-1.0f);
-		gVehicleInputData.setAnalogHandbrake(1.0f);
+		gVehicleInputData1.setAnalogSteer(-1.0f);
+		gVehicleInputData1.setAnalogHandbrake(1.0f);
 	}
 }
 
@@ -274,13 +338,13 @@ void VehiclePhysx::startHandbrakeTurnRightMode()
 {
 	if (gMimicKeyInputs)
 	{
-		gVehicleInputData.setDigitalSteerRight(true);
-		gVehicleInputData.setDigitalHandbrake(true);
+		gVehicleInputData1.setDigitalSteerRight(true);
+		gVehicleInputData1.setDigitalHandbrake(true);
 	}
 	else
 	{
-		gVehicleInputData.setAnalogSteer(1.0f);
-		gVehicleInputData.setAnalogHandbrake(1.0f);
+		gVehicleInputData1.setAnalogSteer(1.0f);
+		gVehicleInputData1.setAnalogHandbrake(1.0f);
 	}
 }
 
@@ -289,23 +353,35 @@ void VehiclePhysx::releaseAllControls()
 {
 	if (gMimicKeyInputs)
 	{
-		gVehicleInputData.setDigitalAccel(false);
-		gVehicleInputData.setDigitalSteerLeft(false);
-		gVehicleInputData.setDigitalSteerRight(false);
-		gVehicleInputData.setDigitalBrake(false);
-		gVehicleInputData.setDigitalHandbrake(false);
+		gVehicleInputData1.setDigitalAccel(false);
+		gVehicleInputData1.setDigitalSteerLeft(false);
+		gVehicleInputData1.setDigitalSteerRight(false);
+		gVehicleInputData1.setDigitalBrake(false);
+		gVehicleInputData1.setDigitalHandbrake(false);
 	}
 	else
 	{
-		gVehicleInputData.setAnalogAccel(0.0f);
-		gVehicleInputData.setAnalogSteer(0.0f);
-		gVehicleInputData.setAnalogBrake(0.0f);
-		gVehicleInputData.setAnalogHandbrake(0.0f);
+		gVehicleInputData1.setAnalogAccel(0.0f);
+		gVehicleInputData1.setAnalogSteer(0.0f);
+		gVehicleInputData1.setAnalogBrake(0.0f);
+		gVehicleInputData1.setAnalogHandbrake(0.0f);
 	}
 }
 
 void VehiclePhysx::removeGround(std::vector<Mesh*> groundMeshes) {
-	gScene->removeActor(*meshBody);
+	if (meshBody1->getScene() != NULL) {
+		gScene->removeActor(*meshBody1);
+	}
+	if (meshBody2->getScene() != NULL) {
+		gScene->removeActor(*meshBody2);
+	}
+	if (meshBody3->getScene() != NULL) {
+		gScene->removeActor(*meshBody3);
+	}
+	//gScene->removeActor(*meshBody2);
+	//gScene->removeActor(*meshBody3);
+	//gScene->removeActor()
+	//meshBody->release();
 	cookGroundMeshes(groundMeshes);
 }
 
@@ -358,17 +434,13 @@ void VehiclePhysx::initPhysics(std::vector<Mesh*> groundMeshes)
 
 
 	//Create a vehicle that will drive on the plane.
-	VehicleDesc vehicleDesc = initVehicleDesc(1000);
-	gVehicle4W = createVehicle4W(vehicleDesc, gPhysics, gCooking);
-	PxTransform startTransform(PxVec3(-10.f, (vehicleDesc.chassisDims.y * 0.5f + vehicleDesc.wheelRadius + 2.0f), -10.f), PxQuat(PxIdentity));
-	gVehicle4W->getRigidDynamicActor()->setGlobalPose(startTransform);
-	gScene->addActor(*gVehicle4W->getRigidDynamicActor());
-
-	VehicleDesc vehicleDesc2 = initVehicleDesc(1000);
-	gVehicle4W2 = createVehicle4W(vehicleDesc2, gPhysics, gCooking);
-	PxTransform startTransform2(PxVec3(10.f, (vehicleDesc2.chassisDims.y * 0.5f + vehicleDesc2.wheelRadius + 2.0f), 10.f), PxQuat(PxIdentity));
-	gVehicle4W2->getRigidDynamicActor()->setGlobalPose(startTransform2);
-	gScene->addActor(*gVehicle4W2->getRigidDynamicActor());
+	for (int i = 0; i < 4; i++) {
+		VehicleDesc vehicleDesc = initVehicleDesc(1000);
+		Vehicles[i] = createVehicle4W(vehicleDesc, gPhysics, gCooking);
+		PxTransform startTransform(PxVec3(-10.f*i, (vehicleDesc.chassisDims.y * 0.5f + vehicleDesc.wheelRadius + 2.0f), -10.f), PxQuat(PxIdentity));
+		Vehicles[i]->getRigidDynamicActor()->setGlobalPose(startTransform);
+		gScene->addActor(*Vehicles[i]->getRigidDynamicActor());
+	}
 
 
 	//Create a box for the vehicle to collide with
@@ -407,13 +479,11 @@ void VehiclePhysx::initPhysics(std::vector<Mesh*> groundMeshes)
 
 	//Set the vehicle to rest in first gear.
 	//Set the vehicle to use auto-gears.
-	gVehicle4W->setToRestState();
-	gVehicle4W->mDriveDynData.forceGearChange(PxVehicleGearsData::eFIRST);
-	gVehicle4W->mDriveDynData.setUseAutoGears(true);
-
-	gVehicle4W2->setToRestState();
-	gVehicle4W2->mDriveDynData.forceGearChange(PxVehicleGearsData::eFIRST);
-	gVehicle4W2->mDriveDynData.setUseAutoGears(true);
+	for (int i = 0; i < 4; i++) {
+		Vehicles[i]->setToRestState();
+		Vehicles[i]->mDriveDynData.forceGearChange(PxVehicleGearsData::eFIRST);
+		Vehicles[i]->mDriveDynData.setUseAutoGears(true);
+	}
 
 	gVehicleModeTimer = 0.0f;
 	gVehicleOrderProgress = 0;
@@ -428,7 +498,7 @@ void VehiclePhysx::incrementDrivingMode(const PxF32 timestep)
 		//If the mode just completed was eDRIVE_MODE_ACCEL_REVERSE then switch back to forward gears.
 		if (eDRIVE_MODE_ACCEL_REVERSE == gDriveModeOrder[gVehicleOrderProgress])
 		{
-			gVehicle4W->mDriveDynData.forceGearChange(PxVehicleGearsData::eFIRST);
+			Vehicles[0]->mDriveDynData.forceGearChange(PxVehicleGearsData::eFIRST);
 		}
 
 		//Increment to next driving mode.
@@ -475,13 +545,13 @@ void VehiclePhysx::incrementDrivingMode(const PxF32 timestep)
 		//If the mode about to start is eDRIVE_MODE_ACCEL_REVERSE then switch to reverse gears.
 		if (eDRIVE_MODE_ACCEL_REVERSE == gDriveModeOrder[gVehicleOrderProgress])
 		{
-			gVehicle4W->mDriveDynData.forceGearChange(PxVehicleGearsData::eREVERSE);
+			Vehicles[0]->mDriveDynData.forceGearChange(PxVehicleGearsData::eREVERSE);
 		}
 	}
 }
 
 PxVec3 VehiclePhysx::getRotation() {
-	return gVehicle4W->getRigidDynamicActor()->getGlobalPose().q.getBasisVector0();
+	return Vehicles[0]->getRigidDynamicActor()->getGlobalPose().q.getBasisVector0();
 	//return gVehicle4W->getRigidDynamicActor()->getGlobalPose().q.getAngle();
 }
 
@@ -496,16 +566,20 @@ void VehiclePhysx::stepPhysics()
 	//Update the control inputs for the vehicle.
 	if (gMimicKeyInputs)
 	{
-		PxVehicleDrive4WSmoothDigitalRawInputsAndSetAnalogInputs(gKeySmoothingData, gSteerVsForwardSpeedTable, gVehicleInputData, timestep, gIsVehicleInAir, *gVehicle4W);
+		PxVehicleDrive4WSmoothDigitalRawInputsAndSetAnalogInputs(gKeySmoothingData, gSteerVsForwardSpeedTable, gVehicleInputData1, timestep, gIsVehicleInAir, *Vehicles[0]);
 	}
 	else
 	{
-		PxVehicleDrive4WSmoothAnalogRawInputsAndSetAnalogInputs(gPadSmoothingData, gSteerVsForwardSpeedTable, gVehicleInputData, timestep, gIsVehicleInAir, *gVehicle4W);
+		PxVehicleDrive4WSmoothAnalogRawInputsAndSetAnalogInputs(gPadSmoothingData, gSteerVsForwardSpeedTable, gVehicleInputData1, timestep, gIsVehicleInAir, *Vehicles[0]);
 	}
 
-	PxVehicleDrive4WSmoothAnalogRawInputsAndSetAnalogInputs(gPadSmoothingData, gSteerVsForwardSpeedTable, gVehicleInputData2, timestep, gIsVehicleInAir, *gVehicle4W2);
+	PxVehicleDrive4WSmoothAnalogRawInputsAndSetAnalogInputs(gPadSmoothingData, gSteerVsForwardSpeedTable, gVehicleInputData2, timestep, gIsVehicleInAir, *Vehicles[1]);
+	PxVehicleDrive4WSmoothAnalogRawInputsAndSetAnalogInputs(gPadSmoothingData, gSteerVsForwardSpeedTable, gVehicleInputData3, timestep, gIsVehicleInAir, *Vehicles[2]);
+	PxVehicleDrive4WSmoothAnalogRawInputsAndSetAnalogInputs(gPadSmoothingData, gSteerVsForwardSpeedTable, gVehicleInputData4, timestep, gIsVehicleInAir, *Vehicles[3]);
+
 
 	//FALL OFF
+	/*
 	PxVehicleWheels* vehicles2[2] = { gVehicle4W,gVehicle4W2 };
 	PxBounds3 pxBounds = vehicles2[0]->getRigidDynamicActor()->getWorldBounds();
 	PxTransform pos = vehicles2[0]->getRigidDynamicActor()->getGlobalPose();
@@ -514,7 +588,7 @@ void VehiclePhysx::stepPhysics()
 	PxBounds3 pxBounds2 = vehicles2[1]->getRigidDynamicActor()->getWorldBounds();
 	PxTransform pos2 = vehicles2[1]->getRigidDynamicActor()->getGlobalPose();
 	glm::vec3 cubePos2 = glm::vec3(pos2.p[0], pos2.p[1], pos2.p[2]);
-
+	*/
 	/*
 	if (pos.p[2] >= 300 || pos.p[2] <= -300 || pos.p[0] >= 300 || pos.p[0] <= -300) {
 		PxQuat vehicleQuaternion = gVehicle4W->getRigidDynamicActor()->getGlobalPose().q;
@@ -534,40 +608,24 @@ void VehiclePhysx::stepPhysics()
 	}
 	*/
 
-
-	//Raycasts.
-	PxVehicleWheels* vehicles[1] = { gVehicle4W };
-	PxRaycastQueryResult* raycastResults = gVehicleSceneQueryData->getRaycastQueryResultBuffer(0);
-	const PxU32 raycastResultsSize = gVehicleSceneQueryData->getQueryResultBufferSize();
-	PxVehicleSuspensionRaycasts(gBatchQuery, 1, vehicles, raycastResultsSize, raycastResults);
-
-
-	//Vehicle update.
-	const PxVec3 grav = gScene->getGravity();
-	PxWheelQueryResult wheelQueryResults[PX_MAX_NB_WHEELS];
-	PxVehicleWheelQueryResult vehicleQueryResults[1] = { {wheelQueryResults, gVehicle4W->mWheelsSimData.getNbWheels()} };
-
-	PxVehicleUpdates(timestep, grav, *gFrictionPairs, 1, vehicles, vehicleQueryResults);
-	//Work out if the vehicle is in the air.
-	gIsVehicleInAir = gVehicle4W->getRigidDynamicActor()->isSleeping() ? false : PxVehicleIsInAir(vehicleQueryResults[0]);
+	for (int i = 0; i < 4; i++) {
+		//Raycasts.
+		PxVehicleWheels* vehicles[1] = { Vehicles[i] };
+		PxRaycastQueryResult* raycastResults = gVehicleSceneQueryData->getRaycastQueryResultBuffer(0);
+		const PxU32 raycastResultsSize = gVehicleSceneQueryData->getQueryResultBufferSize();
+		PxVehicleSuspensionRaycasts(gBatchQuery, 1, vehicles, raycastResultsSize, raycastResults);
 
 
-	//Raycasts car 2.
-	PxVehicleWheels* vehicles3[1] = { gVehicle4W2 };
-	PxRaycastQueryResult* raycastResults2 = gVehicleSceneQueryData->getRaycastQueryResultBuffer(0);
-	const PxU32 raycastResultsSize2 = gVehicleSceneQueryData->getQueryResultBufferSize();
-	PxVehicleSuspensionRaycasts(gBatchQuery, 1, vehicles3, raycastResultsSize2, raycastResults2);
+		//Vehicle update.
+		const PxVec3 grav = gScene->getGravity();
+		PxWheelQueryResult wheelQueryResults[PX_MAX_NB_WHEELS];
+		PxVehicleWheelQueryResult vehicleQueryResults[1] = { {wheelQueryResults, Vehicles[i]->mWheelsSimData.getNbWheels()} };
 
+		PxVehicleUpdates(timestep, grav, *gFrictionPairs, 1, vehicles, vehicleQueryResults);
+		//Work out if the vehicle is in the air.
+		gIsVehicleInAir = Vehicles[i]->getRigidDynamicActor()->isSleeping() ? false : PxVehicleIsInAir(vehicleQueryResults[0]);
 
-	//Vehicle update.
-	//const PxVec3 grav = gScene->getGravity();
-	PxWheelQueryResult wheelQueryResults2[PX_MAX_NB_WHEELS];
-	PxVehicleWheelQueryResult vehicleQueryResults2[1] = { {wheelQueryResults2, gVehicle4W2->mWheelsSimData.getNbWheels()} };
-
-	PxVehicleUpdates(timestep, grav, *gFrictionPairs, 1, vehicles3, vehicleQueryResults2);
-	//Work out if the vehicle is in the air.
-	gIsVehicleInAir = gVehicle4W2->getRigidDynamicActor()->isSleeping() ? false : PxVehicleIsInAir(vehicleQueryResults2[0]);
-
+	}
 
 
 	//Scene update.
@@ -580,11 +638,10 @@ void VehiclePhysx::stepPhysics()
 void VehiclePhysx::cleanupPhysics()
 {
 	//gBox->free();
-
-	gVehicle4W->getRigidDynamicActor()->release();
-	gVehicle4W->free();
-	gVehicle4W2->getRigidDynamicActor()->release();
-	gVehicle4W2->free();
+	for (int i = 0; i < 4; i++) {
+		Vehicles[i]->getRigidDynamicActor()->release();
+		Vehicles[i]->free();
+	}
 	PX_RELEASE(gBox);
 	PX_RELEASE(gGroundPlane);
 	PX_RELEASE(gBatchQuery);
@@ -609,26 +666,16 @@ void VehiclePhysx::cleanupPhysics()
 }
 
 PxMat44 VehiclePhysx::getVehicleTrans(int index) {
-	if (index == 1) {
-		PxVehicleWheels* vehicles[1] = { gVehicle4W };
-		PxBounds3 pxBounds = vehicles[0]->getRigidDynamicActor()->getWorldBounds();
-		PxTransform pos = vehicles[0]->getRigidDynamicActor()->getGlobalPose();
-		glm::vec3 cubePos = glm::vec3(pos.p[0], pos.p[1], pos.p[2]);
-		PxMat44 pxTransMatrix = PxMat44(pos);
-		return pxTransMatrix;
-	}
-	if (index == 2) {
-		PxVehicleWheels* vehicles2[1] = { gVehicle4W2 };
-		PxBounds3 pxBounds2 = vehicles2[0]->getRigidDynamicActor()->getWorldBounds();
-		PxTransform pos2 = vehicles2[0]->getRigidDynamicActor()->getGlobalPose();
-		glm::vec3 cubePos2 = glm::vec3(pos2.p[0], pos2.p[1], pos2.p[2]);
-		PxMat44 pxTransMatrix2 = PxMat44(pos2);
-		return pxTransMatrix2;
-	}
+	PxVehicleWheels* vehicles[1] = { Vehicles[index-1] };
+	PxBounds3 pxBounds = vehicles[0]->getRigidDynamicActor()->getWorldBounds();
+	PxTransform pos = vehicles[0]->getRigidDynamicActor()->getGlobalPose();
+	glm::vec3 cubePos = glm::vec3(pos.p[0], pos.p[1], pos.p[2]);
+	PxMat44 pxTransMatrix = PxMat44(pos);
+	return pxTransMatrix;
 }
 
 float VehiclePhysx::getAngleAroundY() {
-	PxVehicleWheels* vehicles[1] = { gVehicle4W };
+	PxVehicleWheels* vehicles[1] = { Vehicles[0] };
 	PxQuat vehicleQuaternion = vehicles[0]->getRigidDynamicActor()->getGlobalPose().q;
 	PxVec3 v_dir = vehicleQuaternion.getBasisVector2();
 	glm::vec3 dir = glm::normalize(glm::vec3(v_dir.x, 0, v_dir.z));
@@ -637,20 +684,11 @@ float VehiclePhysx::getAngleAroundY() {
 }
 
 glm::vec3 VehiclePhysx::getVehiclePos(int index) {
-	if (index == 1) {
-		PxVehicleWheels* vehicles[1] = { gVehicle4W };
-		PxBounds3 pxBounds = vehicles[0]->getRigidDynamicActor()->getWorldBounds();
-		PxTransform pos = vehicles[0]->getRigidDynamicActor()->getGlobalPose();
-		glm::vec3 cubePos = glm::vec3(pos.p[0], pos.p[1], pos.p[2]);
-		return cubePos;
-	}
-	if (index == 2) {
-		PxVehicleWheels* vehicles[1] = { gVehicle4W2 };
-		PxBounds3 pxBounds = vehicles[0]->getRigidDynamicActor()->getWorldBounds();
-		PxTransform pos = vehicles[0]->getRigidDynamicActor()->getGlobalPose();
-		glm::vec3 cubePos = glm::vec3(pos.p[0], pos.p[1], pos.p[2]);
-		return cubePos;
-	}
+	PxVehicleWheels* vehicles[1] = { Vehicles[index-1] };
+	PxBounds3 pxBounds = vehicles[0]->getRigidDynamicActor()->getWorldBounds();
+	PxTransform pos = vehicles[0]->getRigidDynamicActor()->getGlobalPose();
+	glm::vec3 cubePos = glm::vec3(pos.p[0], pos.p[1], pos.p[2]);
+	return cubePos;
 }
 
 glm::vec3 VehiclePhysx::getGroundPos() {
@@ -706,7 +744,7 @@ void VehiclePhysx::setGMimicKeyInputs(bool input) {
 }
 
 void VehiclePhysx::forceGearChange(int input) {
-	gVehicle4W->mDriveDynData.forceGearChange(input);
+	Vehicles[0]->mDriveDynData.forceGearChange(input);
 }
 
 
@@ -721,7 +759,7 @@ PxVehicleDrive4WRawInputData* VehiclePhysx::getVehDat() {
 }
 
 glm::vec3 VehiclePhysx::getOpponentPos() {
-	PxVehicleWheels* vehicles[1] = { gVehicle4W2 };
+	PxVehicleWheels* vehicles[1] = { Vehicles[1] };
 	PxBounds3 pxBounds = vehicles[0]->getRigidDynamicActor()->getWorldBounds();
 	PxTransform pos = vehicles[0]->getRigidDynamicActor()->getGlobalPose();
 	glm::vec3 cubePos = glm::vec3(pos.p[0], pos.p[1], pos.p[2]);
@@ -729,33 +767,34 @@ glm::vec3 VehiclePhysx::getOpponentPos() {
 }
 
 glm::vec3 VehiclePhysx::getOpponentForVec() {
-	PxVehicleWheels* vehicles[1] = { gVehicle4W2 };
+	PxVehicleWheels* vehicles[1] = { Vehicles[1] };
 	PxQuat vehicleQuaternion = vehicles[0]->getRigidDynamicActor()->getGlobalPose().q;
 	PxVec3 vDir = vehicleQuaternion.getBasisVector2();
 	return glm::vec3(vDir.x, vDir.y, vDir.z);
 }
 
 glm::vec3 VehiclePhysx::getPlayerForVec() {
-	PxVehicleWheels* vehicles[1] = { gVehicle4W };
+	PxVehicleWheels* vehicles[1] = { Vehicles[0] };
 	PxQuat vehicleQuaternion = vehicles[0]->getRigidDynamicActor()->getGlobalPose().q;
 	PxVec3 vDir = vehicleQuaternion.getBasisVector2();
 	return glm::vec3(vDir.x, vDir.y, vDir.z);
 }
 
 PxVehicleDrive4W* VehiclePhysx::getOpponent4W() {
-	return gVehicle4W2;
+	return Vehicles[1];
 }
 
 
 
 //MARK: Cooooking
 void VehiclePhysx::cookGroundMeshes(std::vector<Mesh*> groundMeshes) {
+	//std::cout << groundMeshes.size() << "\n";
 	for (int i = 0; i < groundMeshes.size(); i++) {
-		cookGroundMesh(groundMeshes[i]);
+		cookGroundMesh(groundMeshes[i],i);
 	}
 }
 
-void VehiclePhysx::cookGroundMesh(Mesh* meshToCook) {
+void VehiclePhysx::cookGroundMesh(Mesh* meshToCook,int i) {
 	PxMaterial* gMaterial = gPhysics->createMaterial(0.8f, 0.8f, 0.1f); //create some material
 	PxTriangleMeshDesc meshDesc; //mesh cooking from a triangle mesh
 
@@ -788,18 +827,54 @@ void VehiclePhysx::cookGroundMesh(Mesh* meshToCook) {
 	PxTriangleMesh* triMesh = NULL;
 	PxU32 meshSize = 0;
 	triMesh = gCooking->createTriangleMesh(meshDesc, gPhysics->getPhysicsInsertionCallback()); //insert the cooked mesh directly into PxPhysics
-	meshBody = gPhysics->createRigidStatic(PxTransform(PxVec3(0, 0, 0))); //create a rigid body for the cooked mesh
-	PxShape* meshShape = gPhysics->createShape(PxTriangleMeshGeometry(triMesh), *gMaterial); //create a shape from the cooked mesh
+	if (i == 0) {
+		meshBody1 = NULL;
+		meshBody1 = gPhysics->createRigidStatic(PxTransform(PxVec3(0, 0, 0))); //create a rigid body for the cooked mesh
+		PxShape* meshShape = gPhysics->createShape(PxTriangleMeshGeometry(triMesh), *gMaterial); //create a shape from the cooked mesh
 
-	PxFilterData qryFilterData;
-	setupDrivableSurface(qryFilterData);
-	meshShape->setQueryFilterData(qryFilterData);
-	meshShape->setSimulationFilterData(groundPlaneSimFilterData);
+		PxFilterData qryFilterData;
+		setupDrivableSurface(qryFilterData);
+		meshShape->setQueryFilterData(qryFilterData);
+		meshShape->setSimulationFilterData(groundPlaneSimFilterData);
 
-	meshShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, true);
-	meshBody->attachShape(*meshShape); //attach the shape to the body
-	gScene->addActor(*meshBody); //and add it to the scene
-	triMesh->release(); //clean up
+		meshShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, true);
+
+		meshBody1->attachShape(*meshShape); //attach the shape to the body
+		gScene->addActor(*meshBody1); //and add it to the scene
+		triMesh->release(); //clean up
+	}
+	if (i == 1) {
+		meshBody2 = NULL;
+		meshBody2 = gPhysics->createRigidStatic(PxTransform(PxVec3(0, 0, 0))); //create a rigid body for the cooked mesh
+		PxShape* meshShape = gPhysics->createShape(PxTriangleMeshGeometry(triMesh), *gMaterial); //create a shape from the cooked mesh
+
+		PxFilterData qryFilterData;
+		setupDrivableSurface(qryFilterData);
+		meshShape->setQueryFilterData(qryFilterData);
+		meshShape->setSimulationFilterData(groundPlaneSimFilterData);
+
+		meshShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, true);
+
+		meshBody2->attachShape(*meshShape); //attach the shape to the body
+		gScene->addActor(*meshBody2); //and add it to the scene
+		triMesh->release(); //clean up
+	}
+	if (i == 2) {
+		meshBody3 = NULL;
+		meshBody3 = gPhysics->createRigidStatic(PxTransform(PxVec3(0, 0, 0))); //create a rigid body for the cooked mesh
+		PxShape* meshShape = gPhysics->createShape(PxTriangleMeshGeometry(triMesh), *gMaterial); //create a shape from the cooked mesh
+
+		PxFilterData qryFilterData;
+		setupDrivableSurface(qryFilterData);
+		meshShape->setQueryFilterData(qryFilterData);
+		meshShape->setSimulationFilterData(groundPlaneSimFilterData);
+
+		meshShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, true);
+
+		meshBody3->attachShape(*meshShape); //attach the shape to the body
+		gScene->addActor(*meshBody3); //and add it to the scene
+		triMesh->release(); //clean up
+	}
 }
 
 int VehiclePhysx::getGameStatus() {
@@ -807,20 +882,33 @@ int VehiclePhysx::getGameStatus() {
 }
 
 void VehiclePhysx::checkGameOver() {
-	PxVehicleWheels* vehicles2[2] = { gVehicle4W,gVehicle4W2 };
-	PxBounds3 pxBounds = vehicles2[0]->getRigidDynamicActor()->getWorldBounds();
-	PxTransform pos = vehicles2[0]->getRigidDynamicActor()->getGlobalPose();
-	glm::vec3 cubePos = glm::vec3(pos.p[0], pos.p[1], pos.p[2]);
+	PxBounds3 pxBounds1 = Vehicles[0]->getRigidDynamicActor()->getWorldBounds();
+	PxTransform pos1 = Vehicles[0]->getRigidDynamicActor()->getGlobalPose();
+	glm::vec3 cubePos1 = glm::vec3(pos1.p[0], pos1.p[1], pos1.p[2]);
 
-	PxBounds3 pxBounds2 = vehicles2[1]->getRigidDynamicActor()->getWorldBounds();
-	PxTransform pos2 = vehicles2[1]->getRigidDynamicActor()->getGlobalPose();
+	PxBounds3 pxBounds2 = Vehicles[0]->getRigidDynamicActor()->getWorldBounds();
+	PxTransform pos2 = Vehicles[0]->getRigidDynamicActor()->getGlobalPose();
 	glm::vec3 cubePos2 = glm::vec3(pos2.p[0], pos2.p[1], pos2.p[2]);
 
-	if (cubePos.y < -10) {
+	PxBounds3 pxBounds3 = Vehicles[0]->getRigidDynamicActor()->getWorldBounds();
+	PxTransform pos3 = Vehicles[0]->getRigidDynamicActor()->getGlobalPose();
+	glm::vec3 cubePos3 = glm::vec3(pos3.p[0], pos3.p[1], pos3.p[2]);
+
+	PxBounds3 pxBounds4 = Vehicles[0]->getRigidDynamicActor()->getWorldBounds();
+	PxTransform pos4 = Vehicles[0]->getRigidDynamicActor()->getGlobalPose();
+	glm::vec3 cubePos4 = glm::vec3(pos4.p[0], pos4.p[1], pos4.p[2]);
+
+	/*
+	Playing: 0
+	Game Over: 1
+	You Win: 2
+	*/
+
+	if (cubePos1.y < -10) {
 		GameStatus = 1;
 	}
 
-	if (cubePos2.y < -10 && cubePos.y > 0) {
+	if (((cubePos1.y < -10 && cubePos2.y < -10 && cubePos3.y < -10)||(cubePos1.y > 1000 && cubePos2.y > 1000 && cubePos3.y > 1000)) && cubePos1.y > 0) {
 		GameStatus = 2;
 	}
 }
@@ -830,36 +918,36 @@ void VehiclePhysx::setGameStatus(int status) {
 }
 
 void VehiclePhysx::reset() {
-	gScene->removeActor(*gVehicle4W->getRigidDynamicActor());
-	VehicleDesc vehicleDesc = initVehicleDesc(1000);
-	PxTransform startTransform(PxVec3(0, (vehicleDesc.chassisDims.y * 0.5f + vehicleDesc.wheelRadius + 1.0f), 0), PxQuat(PxIdentity));
-	gVehicle4W->getRigidDynamicActor()->setGlobalPose(startTransform);
-	gVehicle4W->getRigidDynamicActor()->setLinearVelocity(PxVec3(0, 0, 0));
-	gScene->addActor(*gVehicle4W->getRigidDynamicActor());
 	
-	gScene->removeActor(*gVehicle4W2->getRigidDynamicActor());
-	VehicleDesc vehicleDesc2 = initVehicleDesc(1000);
-	PxTransform startTransform2(PxVec3(10.f, (vehicleDesc2.chassisDims.y * 0.5f + vehicleDesc2.wheelRadius + 1.0f), 10), PxQuat(PxIdentity));
-	gVehicle4W2->getRigidDynamicActor()->setGlobalPose(startTransform2);
-	gVehicle4W2->getRigidDynamicActor()->setLinearVelocity(PxVec3(0, 0, 0)); 
-	gScene->addActor(*gVehicle4W2->getRigidDynamicActor());
+	for (int i = 0; i < 4; i++) {
+		gScene->removeActor(*Vehicles[i]->getRigidDynamicActor());
+		VehicleDesc vehicleDesc = initVehicleDesc(1000);
+		Vehicles[i] = createVehicle4W(vehicleDesc, gPhysics, gCooking);
+		PxTransform startTransform(PxVec3(-10.f * i, (vehicleDesc.chassisDims.y * 0.5f + vehicleDesc.wheelRadius + 2.0f), -10.f), PxQuat(PxIdentity));
+		Vehicles[i]->getRigidDynamicActor()->setGlobalPose(startTransform);
+		gScene->addActor(*Vehicles[i]->getRigidDynamicActor());
+	}
 }
 
 void VehiclePhysx::applyForce(PxVec3 force, int index) {
-	if (index == 1) {
-		gVehicle4W->getRigidDynamicActor()->addForce(force);
-	}
-	if (index == 2) {
-		gVehicle4W2->getRigidDynamicActor()->addForce(force);
-	}
+
+	Vehicles[index-1]->getRigidDynamicActor()->addForce(force);
 }
 
 void VehiclePhysx::stopVehicle(int index) {
 	if (index == 1) {
-		gVehicle4W->getRigidDynamicActor()->setLinearVelocity(PxVec3(0.f, 0.f, 0.f));
+		Vehicles[0]->getRigidDynamicActor()->setLinearVelocity(PxVec3(0.f, 0.f, 0.f));
 	}
 	if (index == 2) {
-		gVehicle4W2->getRigidDynamicActor()->setLinearVelocity(PxVec3(0.f, 0.f, 0.f));
+		Vehicles[1]->getRigidDynamicActor()->setLinearVelocity(PxVec3(0.f, 0.f, 0.f));
 		gVehicleInputData2.setAnalogHandbrake(1.f);
+	}
+	if (index == 3) {
+		Vehicles[2]->getRigidDynamicActor()->setLinearVelocity(PxVec3(0.f, 0.f, 0.f));
+		gVehicleInputData3.setAnalogHandbrake(1.f);
+	}
+	if (index == 4) {
+		Vehicles[3]->getRigidDynamicActor()->setLinearVelocity(PxVec3(0.f, 0.f, 0.f));
+		gVehicleInputData4.setAnalogHandbrake(1.f);
 	}
 }
