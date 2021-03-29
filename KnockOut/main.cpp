@@ -83,6 +83,8 @@ AIBehavior beh;
 */
 int st = 0;
 
+float baseVolume = 1.0f;
+
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	if (key == GLFW_KEY_1 && action == GLFW_PRESS && st == 0) {
@@ -174,9 +176,47 @@ int main(int argc, char** argv) {
 
 	//MARK: Init Sounds
 	OpenALEngine wavPlayer = OpenALEngine();
+
 	SoundManager bgm = wavPlayer.createSoundPlayer(0);
-	bgm.setVolume(0.0f);
+	bgm.setVolume(baseVolume * 0.2);
 	bgm.loopSound(true);
+
+	SoundManager crash = wavPlayer.createSoundPlayer(1);
+	crash.setVolume(baseVolume * 0.8);
+	crash.loopSound(true);
+
+	SoundManager powerup = wavPlayer.createSoundPlayer(2);
+	powerup.setVolume(baseVolume * 0.8);
+	powerup.loopSound(true);
+
+	SoundManager victory = wavPlayer.createSoundPlayer(3);
+	victory.setVolume(baseVolume * 0.4);
+	victory.loopSound(true);
+
+	SoundManager gameover = wavPlayer.createSoundPlayer(4);
+	gameover.setVolume(baseVolume * 0.3);
+	gameover.loopSound(false);
+
+	SoundManager pickup = wavPlayer.createSoundPlayer(5);
+	pickup.setVolume(baseVolume * 0.8);
+	pickup.loopSound(true);
+
+	SoundManager invalid = wavPlayer.createSoundPlayer(6);
+	invalid.setVolume(baseVolume * 0.3);
+	invalid.loopSound(true);
+
+	SoundManager activate = wavPlayer.createSoundPlayer(7);
+	activate.setVolume(baseVolume * 0.8);
+	activate.loopSound(true);
+
+	SoundManager reving = wavPlayer.createSoundPlayer(8);
+	reving.setVolume(baseVolume * 0.8);
+	reving.loopSound(true);
+
+	SoundManager engine = wavPlayer.createSoundPlayer(9);
+	engine.setVolume(baseVolume * 0.3);
+	engine.loopSound(true);
+
 
 	//MARK: Init Glfw
 	const char* glsl_version = "#version 130";
@@ -306,14 +346,30 @@ int main(int argc, char** argv) {
 			}
 			
 		}
-		
-
-		if (!bgm.soundPlaying()) {bgm.playSound();}
 
 		//MARK: Frame Start
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
+
+		if (!bgm.soundPlaying()) { bgm.playSound(); }
+		if (!engine.soundPlaying()) { engine.playSound(); }
+
+		if ((glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_UP) == GLFW_REPEAT))
+		{
+			if (!reving.soundPlaying()) { reving.playSound(); }
+		}
+		else
+		{
+			reving.stopSound();
+		}
+
+		if (Physics.getGameStatus() == 3)
+		{
+			wavPlayer.pauseAllActiveSources();
+			if (!gameover.soundPlaying()) { gameover.playSound(); }
+		}
+
 		processInput(window);
 		Physics.stepPhysics();
 		ImGui_ImplOpenGL3_NewFrame();
@@ -324,6 +380,7 @@ int main(int argc, char** argv) {
 			mainCamera.updateCamera(Physics.getAngleAroundY(), Physics.getVehiclePos(1));
 		}
 		else if (Physics.getGameStatus() == 3) {
+
 			//give camera the position of the game over screen
 			mainCamera.updateCamera(0.f, glm::vec3(-26.0f, 6.0f + 1110.f, 10.0f));
 
@@ -491,21 +548,17 @@ void processInput(GLFWwindow* window) {
 			Physics.startAccelerateReverseMode();
 		}
 		if ((glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_REPEAT)) {
-			//std::cout << "DOWN1\n";
 			Physics.setGMimicKeyInputs(true);
 			Physics.startBrakeMode();
 		}
 		if ((glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_REPEAT)) {
-			//std::cout << "LEFT1\n";
 			Physics.setGMimicKeyInputs(true);
 			Physics.startTurnHardRightMode();
 		}
 		if ((glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_REPEAT)) {
-			//std::cout << "RIGHT1\n";
 			Physics.setGMimicKeyInputs(true);
 			Physics.startTurnHardLeftMode();
 		}
-
 	}
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
 		

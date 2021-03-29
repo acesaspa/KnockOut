@@ -1,8 +1,1 @@
-﻿  main.cpp
-C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\Shader.cpp(57,40): warning C4101: 'e': unreferenced local variable
-C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\Utils.h(21,2): warning C4091: 'static ': ignored on left of 'Utils' when no variable is declared
-C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(122,14): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(125,12): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
-C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(126,12): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
-C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(314,22): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  KnockOut.vcxproj -> C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\x64\Debug\KnockOut.exe
+﻿
