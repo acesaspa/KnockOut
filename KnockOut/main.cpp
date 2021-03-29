@@ -69,6 +69,8 @@ int numPow = 0;
 
 auto start = std::chrono::system_clock::now();
 
+auto poweruptimestart = std::chrono::system_clock::now();
+
 Renderer mainRenderer;
 Camera mainCamera;
 VehiclePhysx Physics = VehiclePhysx();
@@ -252,7 +254,8 @@ int main(int argc, char** argv) {
 							//pick up the powerup
 							(*it)->isCollected = true;
 							(*it)->Player = i;
-
+							//sound here
+							poweruptimestart = std::chrono::system_clock::now();
 							break;
 						}
 					}
@@ -265,6 +268,17 @@ int main(int argc, char** argv) {
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
+
+		auto poweruptimeend = std::chrono::system_clock::now();
+		std::chrono::duration<double> elapsed_seconds = poweruptimeend - poweruptimestart;
+		if (elapsed_seconds.count() < 0.65)
+		{
+			if (!pickup.soundPlaying()) { pickup.playSound(); }
+		}
+		else
+		{
+			pickup.stopSound();
+		}
 
 		if (!bgm.soundPlaying()) { bgm.playSound(); }
 		if (!engine.soundPlaying()) { engine.playSound(); }
