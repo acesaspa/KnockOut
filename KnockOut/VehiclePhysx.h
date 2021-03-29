@@ -45,6 +45,10 @@ public:
 	void stopVehicle(int index);
 	void removeGround(std::vector<Mesh*> groundMeshes);
 	void setGameStatus(int status);
+	int getNumCars();
+	void updateNumCars();
+	bool getChanged();
+	void setChanged(bool input);
 
 	PxVehicleDrive4WRawInputData* getVehDat();
 	glm::vec3 getOpponentPos();
@@ -53,7 +57,7 @@ public:
 	PxVehicleDrive4W* getOpponent4W();
 
 private:
-	void cookGroundMesh(Mesh* meshToCook);
+	void cookGroundMesh(Mesh* meshToCook, int i);
 
 };
 

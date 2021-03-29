@@ -48,7 +48,7 @@ void OpenALEngine::initialize()
 	//Add sound files here
 	soundFiles[0] = "./Sounds/bgm.wav";
 	soundFiles[1] = "./Sounds/crash.wav";
-	soundFiles[2] = "./Sounds/powerup.wav";
+	soundFiles[2] = "./Sounds/select.wav";
 	soundFiles[3] = "./Sounds/victory.wav";
 	soundFiles[4] = "./Sounds/gameover.wav";
 	soundFiles[5] = "./Sounds/pickup.wav";

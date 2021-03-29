@@ -43,7 +43,6 @@
 #include "PowerUp.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
-
 #include "Source.h"
 
 using namespace physx;
@@ -52,6 +51,8 @@ using namespace snippetvehicle;
 void processInput(GLFWwindow* window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void keyPress(unsigned char key, const PxTransform& camera);
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+void addPowerUp();
 
 PxReal stackZ = 10.0f;
 float deltaTime = 0.0f;	// time between current frame and last frame
@@ -64,7 +65,6 @@ unsigned int vehicle_texture, cube_texture2, ground_texture;
 bool reset = false;
 std::list<PowerUp*> powerups;
 
-
 int numPow = 0;
 
 auto start = std::chrono::system_clock::now();
@@ -74,7 +74,6 @@ Camera mainCamera;
 VehiclePhysx Physics = VehiclePhysx();
 Source source;
 
-
 AIBehavior beh;
 /*
 0 = PLAY
@@ -83,100 +82,55 @@ AIBehavior beh;
 */
 int st = 0;
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-	if (key == GLFW_KEY_1 && action == GLFW_PRESS && st == 0) {
-		printf("PLAY\n");
-		//set game status to PLAY
-	}
-	else if (key == GLFW_KEY_1 && action == GLFW_PRESS && st == 1) {
-		printf("GAME OVER\n");
-		//set game status to MENU
-		st = 3;
-
-	}
-	else if (key == GLFW_KEY_1 && action == GLFW_PRESS && st == 2) {
-		printf("YOU WIN\n");
-		//set game status to MENU
-		st = 3;
-	}
-	else if (key == GLFW_KEY_1 && action == GLFW_PRESS && st == 3) {
-		printf("MENU\n");
-		//set game status to PLAY
-		st = 0;
-	}
-}
-
-void addPowerUp() {
-
-	
-	if (powerups.size() < 5) {
-
-		auto end = std::chrono::system_clock::now();
-
-		std::chrono::duration<double> elapsed_seconds = end - start;
-
-		if (elapsed_seconds.count() >= 5) { //current time - last time = elapsed point
-			start = std::chrono::system_clock::now();
-			
-			srand(time(NULL));
-
-			int powerChoice = rand() % 3 + 1;
-			float x = rand() % (100 + 100 + 1) - 100;
-			float z = rand() % (100 + 100 + 1) - 100;
-			float y = 5.f;
-
-			std::vector<Mesh*> groundMeshes = mainRenderer.getGroundMeshes(1);
-
-			float minDistance = 1000.f;
-			glm::vec3 height = glm::vec3(0, 0, 0);
-
-			for (int i = 0; i < groundMeshes.size(); i++) {
-				Mesh* meshToCook = groundMeshes[i];
-
-				std::vector<PxVec3> vertices = meshToCook->getActualVertices();
-				std::vector<PxU32> indices = meshToCook->getVertexIndices();
-
-
-
-				for (int j = 0; j < vertices.size(); j++) {
-					glm::vec3 point = glm::vec3(vertices[j].x,vertices[j].y,vertices[j].z);
-					glm::vec3 power = glm::vec3(x, y, z);
-
-					glm::vec3 dif = point - power;
-					float distance = glm::length(dif);
-
-					if (distance < minDistance) {
-						minDistance = distance;
-						height.x = point.x;
-						height.y = point.y;
-						height.z = point.z;
-					}
-					//std::cout << vertices[j].x << " " << vertices[j].y << " " << vertices[j].z << "\n";
-
-				}
-
-			}
-
-			//std::cout << height.x << " " << height.y << " " << height.z << "\n";
-
-			PowerUp *test3 = new PowerUp(height+glm::vec3(0.f,1.f,0.f),powerChoice);
-			powerups.push_back(test3);
-		}
-
-	}
-	
-}
-
+OpenALEngine wavPlayer = OpenALEngine();
+float baseVolume = 1.0f;
+SoundManager activate = wavPlayer.createSoundPlayer(7);
+SoundManager select = wavPlayer.createSoundPlayer(2);
 
 //MARK: Main
 int main(int argc, char** argv) {
 
 	//MARK: Init Sounds
-	OpenALEngine wavPlayer = OpenALEngine();
 	SoundManager bgm = wavPlayer.createSoundPlayer(0);
-	bgm.setVolume(0.0f);
+	bgm.setVolume(baseVolume * 0.2);
 	bgm.loopSound(true);
+
+	SoundManager crash = wavPlayer.createSoundPlayer(1);
+	crash.setVolume(baseVolume * 0.8);
+	crash.loopSound(false);
+
+	SoundManager select = wavPlayer.createSoundPlayer(2);
+	select.setVolume(baseVolume * 0.8);
+	select.loopSound(false);
+
+	SoundManager victory = wavPlayer.createSoundPlayer(3);
+	victory.setVolume(baseVolume * 0.3);
+	victory.loopSound(false);
+
+	SoundManager gameover = wavPlayer.createSoundPlayer(4);
+	gameover.setVolume(baseVolume * 0.3);
+	gameover.loopSound(false);
+
+	SoundManager pickup = wavPlayer.createSoundPlayer(5);
+	pickup.setVolume(baseVolume * 0.5);
+	pickup.loopSound(false);
+
+	SoundManager invalid = wavPlayer.createSoundPlayer(6);
+	invalid.setVolume(baseVolume * 0.5);
+	invalid.loopSound(false);
+
+	SoundManager activate = wavPlayer.createSoundPlayer(7);
+	activate.setVolume(baseVolume * 0.5);
+	activate.loopSound(false);
+
+	SoundManager reving = wavPlayer.createSoundPlayer(8);
+	reving.setVolume(baseVolume * 0.8);
+	reving.loopSound(true);
+
+	SoundManager engine = wavPlayer.createSoundPlayer(9);
+	engine.setVolume(baseVolume * 0.3);
+	engine.loopSound(true);
+
 
 	//MARK: Init Glfw
 	const char* glsl_version = "#version 130";
@@ -213,14 +167,19 @@ int main(int argc, char** argv) {
 	mainRenderer.setUpRendering(mainCamera.getCameraPos(), ourShader, textShader);
 	mainRenderer.prepText(textShader);
 	mainRenderer.prepSkybox(skyboxShader);
-	Physics.initPhysics(mainRenderer.getGroundMeshes(1));	
+	Physics.initPhysics(mainRenderer.getGroundMeshes(0));	
 	beh.levelBB = mainRenderer.getBB();
 	mainRenderer.testLocs = beh.testLocs;
 
 
 
+	glfwSetKeyCallback(window, key_callback);
+	Physics.setGameStatus(0);
+
 	//MARK: RENDER LOOP ---------------------------------------------------------------------------------------------------------------
 	while (!glfwWindowShouldClose(window)) {
+
+		//std::cout << Physics.getGameStatus() << " status \n";
 
 		addPowerUp();
 
@@ -242,6 +201,8 @@ int main(int argc, char** argv) {
 			mainRenderer.setUIBoost(0);
 		}
 		//MARK: GAME OVER CHECK
+
+		/*
 		if (Physics.getGameStatus() == 0) {
 			Physics.checkGameOver();
 		}
@@ -250,11 +211,21 @@ int main(int argc, char** argv) {
 			if (!reset) {
 				reset = true;
 				Physics.reset();
-				Physics.removeGround(mainRenderer.getGroundMeshes(2));
+				Physics.removeGround(mainRenderer.getGroundMeshes(1));
 			}
 		}
-		if (glm::length(Physics.getVehiclePos(1)-glm::vec3(-30.0f, 1.0f, 10.0f)) < 2.f && reset) {
-			glfwSetWindowShouldClose(window, GLFW_TRUE);
+		*/
+		if (Physics.getGameStatus() == 0) {
+			Physics.checkGameOver();
+			Physics.updateNumCars();
+			if (Physics.getChanged() && Physics.getGameStatus()==0) {
+				Physics.setChanged(false);
+				//std::cout << "remove ground\n";
+				powerups.clear();
+				//std::cout << Physics.getNumCars() << "\n";
+				Physics.removeGround(mainRenderer.getGroundMeshes(Physics.getNumCars()));
+			}
+			//Physics.removeGround(mainRenderer.getGroundMeshes(Physics.getNumCars()));
 		}
 
 		//PowerUp Pick Up
@@ -292,14 +263,32 @@ int main(int argc, char** argv) {
 			}
 			
 		}
-		
-
-		if (!bgm.soundPlaying()) {bgm.playSound();}
 
 		//MARK: Frame Start
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
+
+		if (!bgm.soundPlaying()) { bgm.playSound(); }
+		if (!engine.soundPlaying()) { engine.playSound(); }
+
+		if ((glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_UP) == GLFW_REPEAT))
+		{
+			if (!reving.soundPlaying()) { reving.playSound(); }
+		}
+		else
+		{
+			reving.stopSound();
+		}
+
+		if (Physics.getGameStatus() == 3)
+		{
+			bgm.stopSound();
+			engine.stopSound();
+			reving.stopSound();
+			if (!gameover.soundPlaying()) { gameover.playSound(); }
+		}
+
 		processInput(window);
 		Physics.stepPhysics();
 		ImGui_ImplOpenGL3_NewFrame();
@@ -310,6 +299,7 @@ int main(int argc, char** argv) {
 			mainCamera.updateCamera(Physics.getAngleAroundY(), Physics.getVehiclePos(1));
 		}
 		else if (Physics.getGameStatus() == 3) {
+
 			//give camera the position of the game over screen
 			mainCamera.updateCamera(0.f, glm::vec3(-26.0f, 6.0f + 1110.f, 10.0f));
 
@@ -364,15 +354,13 @@ int main(int argc, char** argv) {
 		pxObjects.push_back(Physics.getBoxTrans(3));
 		std::vector<PxMat44> pxOpponents;
 		pxOpponents.push_back(Physics.getVehicleTrans(2));
+		pxOpponents.push_back(Physics.getVehicleTrans(3));
+		pxOpponents.push_back(Physics.getVehicleTrans(4));
 
-		//TODO: skybox
-		
+
 		//TODO: shadows
-		//TODO: objects
-		//TODO: another car
 		//TODO: different behavior for the car
 		//TODO: green segment logic
-		//TODO: power-up indicator
 
 
 		beh.frameUpdate(Physics.getVehDat(), Physics.getOpponentPos(), Physics.getOpponentForVec(), Physics.getVehiclePos(1), Physics.getPlayerForVec(), Physics.getOpponent4W());
@@ -386,12 +374,13 @@ int main(int argc, char** argv) {
 		}
 		//You win
 		else if (Physics.getGameStatus() == 2) {
+			//std::cout << "you win\n";
 			//Camera will go to you win screen
 			st = 2;
 			Physics.setGameStatus(4);
 		}
 		else {
-			mainRenderer.renderGameFrame(Physics.getVehicleTrans(1), Physics.getVehicleTrans(1), pxOpponents, Physics.getGroundPos(), pxObjects, ourShader, textShader, skyboxShader, view, mainCamera.getCameraPos(), Physics.getGameStatus(), powerups);
+			mainRenderer.renderGameFrame(Physics.getVehicleTrans(1), Physics.getVehicleTrans(1), pxOpponents, Physics.getGroundPos(), pxObjects, ourShader, textShader, skyboxShader, view, mainCamera.getCameraPos(), Physics.getNumCars(), powerups);
 		}
 		/*
 		if (Physics.getGameStatus() == 1) {
@@ -479,24 +468,21 @@ void processInput(GLFWwindow* window) {
 			Physics.startAccelerateReverseMode();
 		}
 		if ((glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_REPEAT)) {
-			//std::cout << "DOWN1\n";
 			Physics.setGMimicKeyInputs(true);
 			Physics.startBrakeMode();
 		}
 		if ((glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_REPEAT)) {
-			//std::cout << "LEFT1\n";
 			Physics.setGMimicKeyInputs(true);
 			Physics.startTurnHardRightMode();
 		}
 		if ((glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_REPEAT)) {
-			//std::cout << "RIGHT1\n";
 			Physics.setGMimicKeyInputs(true);
 			Physics.startTurnHardLeftMode();
 		}
-
 	}
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-		
+		activate.setVolume(baseVolume * 0.2);
+		activate.loopSound(false);
 		for (std::list<PowerUp*>::const_iterator it = powerups.begin(); it != powerups.end(); it++) {
 			if ((*it)->isCollected) {
 				switch ((*it)->Type) {
@@ -520,11 +506,40 @@ void processInput(GLFWwindow* window) {
 						}
 					}
 				}
+				if (!activate.soundPlaying()) { activate.playSound(); }
 				powerups.remove(*it);
 				break;
 			}
 		}
 		
+	}
+}
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	select.setVolume(baseVolume * 0.5);
+	select.loopSound(false);
+
+	if (key == GLFW_KEY_1 && action == GLFW_PRESS)
+	{
+		if (st == 1) {
+			printf("GAME OVER\n");
+			//set game status to MENU
+			st = 3;
+			select.playSound();
+		}
+		else if (st == 2) {
+			printf("YOU WIN\n");
+			//set game status to MENU
+			st = 3;
+			select.playSound();
+		}
+		else if (st == 3) {
+			printf("MENU\n");
+			//set game status to PLAY
+			st = 0;
+			select.playSound();
+		}
 	}
 }
 
@@ -538,3 +553,51 @@ void keyPress(unsigned char key, const PxTransform& camera)
 	PX_UNUSED(key);
 }
 
+void addPowerUp() {
+	if (powerups.size() < 5) {
+		auto end = std::chrono::system_clock::now();
+		std::chrono::duration<double> elapsed_seconds = end - start;
+
+		if (elapsed_seconds.count() >= 5) { //current time - last time = elapsed point
+			start = std::chrono::system_clock::now();
+
+			srand(time(NULL));
+
+			int powerChoice = rand() % 3 + 1;
+			float x = rand() % (100 + 100 + 1) - 100;
+			float z = rand() % (100 + 100 + 1) - 100;
+			float y = 5.f;
+
+			std::vector<Mesh*> groundMeshes = mainRenderer.getGroundMeshes(Physics.getNumCars());
+
+			float minDistance = 1000.f;
+			glm::vec3 height = glm::vec3(0, 0, 0);
+
+			for (int i = 0; i < groundMeshes.size(); i++) {
+				Mesh* meshToCook = groundMeshes[i];
+
+				std::vector<PxVec3> vertices = meshToCook->getActualVertices();
+				std::vector<PxU32> indices = meshToCook->getVertexIndices();
+
+				for (int j = 0; j < vertices.size(); j++) {
+					glm::vec3 point = glm::vec3(vertices[j].x, vertices[j].y, vertices[j].z);
+					glm::vec3 power = glm::vec3(x, y, z);
+
+					glm::vec3 dif = point - power;
+					float distance = glm::length(dif);
+
+					if (distance < minDistance) {
+						minDistance = distance;
+						height.x = point.x;
+						height.y = point.y;
+						height.z = point.z;
+					}
+					//std::cout << vertices[j].x << " " << vertices[j].y << " " << vertices[j].z << "\n";
+				}
+			}
+			//std::cout << height.x << " " << height.y << " " << height.z << "\n";
+			PowerUp* test3 = new PowerUp(height + glm::vec3(0.f, 1.f, 0.f), powerChoice);
+			powerups.push_back(test3);
+		}
+	}
+}

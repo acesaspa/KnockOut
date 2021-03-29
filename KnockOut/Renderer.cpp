@@ -418,8 +418,8 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans, //TODO: what are di
 		renderObject(ourShader, &playerMesh, &playerTexture, glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.0f, 1.0f, 0.0f), 180.f, vehicleScale, pxOpponentsTrans[i]);
 
 	//GROUND
-	renderObject(ourShader, &citySurfaceMesh, &cityTexture, worldOrigin, defaultRotation, defaultRotAmountDeg, levelScale);
-	renderObject(ourShader, &grassSurfaceMesh, &grassTexture, worldOrigin, defaultRotation, defaultRotAmountDeg, levelScale);
+	if (status <= 2) { renderObject(ourShader, &citySurfaceMesh, &cityTexture, worldOrigin, defaultRotation, defaultRotAmountDeg, levelScale); }
+	if (status <= 1) { renderObject(ourShader, &grassSurfaceMesh, &grassTexture, worldOrigin, defaultRotation, defaultRotAmountDeg, levelScale); }
 	if (status == 0) { renderObject(ourShader, &desertSurfaceMesh, &desertTexture, worldOrigin, defaultRotation, defaultRotAmountDeg, levelScale); }
 
 	//OBJECTS
@@ -511,17 +511,26 @@ void Renderer::renderSkyBox(Shader skyboxShader, glm::mat4 view) {
 }
 
 std::vector<Mesh*> Renderer::getGroundMeshes(int index) { //returns pointers to all ground meshes, cannot be called before setup
-	if (index == 1) {
+	if (index == 0) {
+		std::cout << "all\n";
 		std::vector<Mesh*> meshes;
 		meshes.push_back(&citySurfaceMesh);
-		meshes.push_back(&grassSurfaceMesh);
+		//meshes.push_back(&grassSurfaceMesh);
 		meshes.push_back(&desertSurfaceMesh);
+		meshes.push_back(&grassSurfaceMesh);
 		return meshes;
 	}
-	if (index == 2) {
+	else if (index == 1) {
+		std::cout << "city grass\n";
 		std::vector<Mesh*> meshes;
 		meshes.push_back(&citySurfaceMesh);
 		meshes.push_back(&grassSurfaceMesh);
+		return meshes;
+	}
+	else if (index == 2) {
+		std::cout << "city\n";
+		std::vector<Mesh*> meshes;
+		meshes.push_back(&citySurfaceMesh);
 		return meshes;
 	}
 }
