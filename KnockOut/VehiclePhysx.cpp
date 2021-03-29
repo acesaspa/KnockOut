@@ -754,23 +754,29 @@ void VehiclePhysx::forceGearChange(int input) {
 
 
 //MARK: AI
-PxVehicleDrive4WRawInputData* VehiclePhysx::getVehDat() {
-	return &gVehicleInputData2;
+PxVehicleDrive4WRawInputData* VehiclePhysx::getVehDat(int i) {
+	if(i == 1) return &gVehicleInputData2;
+	if(i == 2) return &gVehicleInputData3;
+	if(i == 3) return &gVehicleInputData4;
 }
 
-glm::vec3 VehiclePhysx::getOpponentPos() {
-	PxVehicleWheels* vehicles[1] = { Vehicles[1] };
+glm::vec3 VehiclePhysx::getOpponentPos(int i) {
+	PxVehicleWheels* vehicles[1] = { Vehicles[i] };
 	PxBounds3 pxBounds = vehicles[0]->getRigidDynamicActor()->getWorldBounds();
 	PxTransform pos = vehicles[0]->getRigidDynamicActor()->getGlobalPose();
 	glm::vec3 cubePos = glm::vec3(pos.p[0], pos.p[1], pos.p[2]);
 	return cubePos;
 }
 
-glm::vec3 VehiclePhysx::getOpponentForVec() {
-	PxVehicleWheels* vehicles[1] = { Vehicles[1] };
+glm::vec3 VehiclePhysx::getOpponentForVec(int i) {
+	PxVehicleWheels* vehicles[1] = { Vehicles[i] };
 	PxQuat vehicleQuaternion = vehicles[0]->getRigidDynamicActor()->getGlobalPose().q;
 	PxVec3 vDir = vehicleQuaternion.getBasisVector2();
 	return glm::vec3(vDir.x, vDir.y, vDir.z);
+}
+
+PxVehicleDrive4W* VehiclePhysx::getOpponent4W(int i) {
+	return Vehicles[i];
 }
 
 glm::vec3 VehiclePhysx::getPlayerForVec() {
@@ -780,9 +786,7 @@ glm::vec3 VehiclePhysx::getPlayerForVec() {
 	return glm::vec3(vDir.x, vDir.y, vDir.z);
 }
 
-PxVehicleDrive4W* VehiclePhysx::getOpponent4W() {
-	return Vehicles[1];
-}
+
 
 
 

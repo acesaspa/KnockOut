@@ -31,8 +31,10 @@ glm::vec3 mapRightVec = glm::vec3(-1.f, 0.5f, 0.f);
 glm::vec3 mapLeftVec = glm::vec3(1.f, 0.5f, 0.f);
 
 
-AIBehavior::AIBehavior() {
+AIBehavior::AIBehavior(int beh) {
 	initHoleBBs();
+	if (beh == 0) currentState = roaming;
+	if (beh == 1) currentState = attacking;
 	for (int i = 0; i < holeBBs.size(); i++) {
 		testLocs.push_back(holeBBs[i]);
 	}
@@ -139,14 +141,14 @@ void AIBehavior::behave() {
 		}else {
 
 			//ATTACK OPPORTUNITY
-			if (playerPosition.x < -70 || playerPosition.x > 70 || playerPosition.z < -70 || playerPosition.z > 70) {
-				std::cout << "attacking" << std::endl;
-				currentState = attacking;
-			}
-			else {
-				std::cout << "roaming" << std::endl;
-				currentState = roaming;
-			}
+			//if (playerPosition.x < -70 || playerPosition.x > 70 || playerPosition.z < -70 || playerPosition.z > 70) {
+			//	std::cout << "attacking" << std::endl;
+			//	currentState = attacking;
+			//}
+			//else {
+			//	std::cout << "roaming" << std::endl;
+			//	currentState = roaming;
+			//}
 
 
 			//determine defense or roaming
@@ -199,14 +201,14 @@ int AIBehavior::shouldChangeCourse() { //determines whether it's close to & head
 	for (int i = 0; i < levelBB.size(); i = i + 3) {
 
 		if (glm::intersectRayTriangle(carPosition, carForwardVector, levelBB[i], levelBB[i + 1], levelBB[i + 2],intersectionBary, dist) && glm::abs(dist) < edgeDistLimit) {
-			std::cout << "close" << std::endl;
+			//std::cout << "close" << std::endl;
 			return 1;
 		}
 	}
 
 	for (int i = 0; i < holeBBs.size(); i = i + 3) {
 		if (glm::intersectRayTriangle(carPosition, carForwardVector, holeBBs[i], holeBBs[i + 1], holeBBs[i + 2], intersectionBary, dist) && glm::abs(dist) < holeDistLimit) {
-			std::cout << "close"<< std::endl;
+			//std::cout << "close"<< std::endl;
 			return 1;
 		}
 	}

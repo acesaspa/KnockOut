@@ -23,7 +23,7 @@
 
 class AIBehavior {
 public:
-	AIBehavior();
+	AIBehavior(int beh);
 	void frameUpdate(physx::PxVehicleDrive4WRawInputData* carInputData, glm::vec3 carPos, glm::vec3 carForwardVec, glm::vec3 playerPos, glm::vec3 playerForwardVector,
 		physx::PxVehicleDrive4W* opponentVehicle4W);
 

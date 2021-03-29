@@ -50,11 +50,11 @@ public:
 	bool getChanged();
 	void setChanged(bool input);
 
-	PxVehicleDrive4WRawInputData* getVehDat();
-	glm::vec3 getOpponentPos();
-	glm::vec3 getOpponentForVec();
+	PxVehicleDrive4WRawInputData* getVehDat(int i);
+	glm::vec3 getOpponentPos(int i);
+	glm::vec3 getOpponentForVec(int i);
 	glm::vec3 getPlayerForVec();
-	PxVehicleDrive4W* getOpponent4W();
+	PxVehicleDrive4W* getOpponent4W(int i);
 
 private:
 	void cookGroundMesh(Mesh* meshToCook, int i);

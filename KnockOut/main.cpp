@@ -74,7 +74,11 @@ Camera mainCamera;
 VehiclePhysx Physics = VehiclePhysx();
 Source source;
 
-AIBehavior beh;
+AIBehavior ai1 = AIBehavior(0);
+AIBehavior ai2 = AIBehavior(1);
+AIBehavior ai3 = AIBehavior(1);
+
+
 /*
 0 = PLAY
 1 = GAME OVER / YOU WIN SCREEN
@@ -168,8 +172,10 @@ int main(int argc, char** argv) {
 	mainRenderer.prepText(textShader);
 	mainRenderer.prepSkybox(skyboxShader);
 	Physics.initPhysics(mainRenderer.getGroundMeshes(0));	
-	beh.levelBB = mainRenderer.getBB();
-	mainRenderer.testLocs = beh.testLocs;
+	ai1.levelBB = mainRenderer.getBB();
+	ai2.levelBB = mainRenderer.getBB();
+	ai3.levelBB = mainRenderer.getBB();
+	mainRenderer.testLocs = ai1.testLocs;
 
 
 
@@ -363,7 +369,9 @@ int main(int argc, char** argv) {
 		//TODO: green segment logic
 
 
-		beh.frameUpdate(Physics.getVehDat(), Physics.getOpponentPos(), Physics.getOpponentForVec(), Physics.getVehiclePos(1), Physics.getPlayerForVec(), Physics.getOpponent4W());
+		ai1.frameUpdate(Physics.getVehDat(1), Physics.getOpponentPos(1), Physics.getOpponentForVec(1), Physics.getVehiclePos(1), Physics.getPlayerForVec(), Physics.getOpponent4W(1));
+		ai2.frameUpdate(Physics.getVehDat(2), Physics.getOpponentPos(2), Physics.getOpponentForVec(2), Physics.getVehiclePos(2), Physics.getPlayerForVec(), Physics.getOpponent4W(2));
+		ai3.frameUpdate(Physics.getVehDat(3), Physics.getOpponentPos(3), Physics.getOpponentForVec(3), Physics.getVehiclePos(3), Physics.getPlayerForVec(), Physics.getOpponent4W(3));
 		//mainRenderer.testLocs = beh.testLocs;
 
 
