@@ -54,7 +54,7 @@ public:
 	glm::vec3 getOpponentPos(int i);
 	glm::vec3 getOpponentForVec(int i);
 	glm::vec3 getPlayerForVec();
-	PxVehicleDrive4W* getOpponent4W(int i);
+	PxVehicleDrive4W* getVehicle4W(int i);
 
 private:
 	void cookGroundMesh(Mesh* meshToCook, int i);

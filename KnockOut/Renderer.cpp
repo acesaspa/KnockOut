@@ -37,10 +37,17 @@ unsigned int textVAO, textVBO;
 //byskox
 unsigned int cubemapTexture;
 unsigned int skyboxVAO, skyboxVBO;
+unsigned long frameCounter = 0;
+bool flashLevel = false;
+int noCarsRemoved = 0;
 
 
 
 
+
+void Renderer::flashSegment(bool keepFlashing) {
+	flashLevel = keepFlashing;
+}
 
 unsigned int loadCubemap(std::vector<std::string> faces)
 {
@@ -356,9 +363,6 @@ void Renderer::setUpRendering(glm::vec3 cameraPos, Shader ourShader, Shader text
 	desertSurfaceMesh.setIsMostOuterLevel(true); //used to determine the bounding box of the entire level
 	desertTexture.loadTexture("desert_texture.jpg", true);
 
-	//std::cout << "Desert verts: " << citySurfaceMesh.getActualVertices().size() << std::endl;
-	//std::cout << "Desert inds: " <<  citySurfaceMesh.getVertexIndices().size() << std::endl;
-
 	treeMesh.loadOBJ("normalTree.obj");
 	treeTexture.loadTexture("normalTreeTexture.png", true);
 
@@ -385,11 +389,14 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans, //TODO: what are di
 	Shader skyboxShader,
 	glm::mat4 view,
 	glm::vec3 cameraPos,
-	int status,
-	std::list<PowerUp*>& powerups
+	int carsRemoved,
+	std::list<PowerUp*>& powerups,
+	int gameStatus
 	){ //render a single frame of the game
+	frameCounter++;
+	noCarsRemoved = carsRemoved;
 
-	applyShaderValues(ourShader, cameraPos, view);
+	applyShaderValues(ourShader, cameraPos, view, gameStatus);
 
 	//PLAYER
 	glm::mat4 model = glm::mat4(1.0f); //identity matrix
@@ -418,18 +425,37 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans, //TODO: what are di
 		renderObject(ourShader, &playerMesh, &playerTexture, glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.0f, 1.0f, 0.0f), 180.f, vehicleScale, pxOpponentsTrans[i]);
 
 	//GROUND
-	if (status <= 2) { renderObject(ourShader, &citySurfaceMesh, &cityTexture, worldOrigin, defaultRotation, defaultRotAmountDeg, levelScale); }
-	if (status <= 1) { renderObject(ourShader, &grassSurfaceMesh, &grassTexture, worldOrigin, defaultRotation, defaultRotAmountDeg, levelScale); }
-	if (status == 0) { renderObject(ourShader, &desertSurfaceMesh, &desertTexture, worldOrigin, defaultRotation, defaultRotAmountDeg, levelScale); }
+	switch (carsRemoved) {
+	case 0:
+		renderObject(ourShader, &desertSurfaceMesh, &desertTexture, worldOrigin, defaultRotation, defaultRotAmountDeg, levelScale);
+		renderObject(ourShader, &grassSurfaceMesh, &grassTexture, worldOrigin, defaultRotation, defaultRotAmountDeg, levelScale);
+		renderObject(ourShader, &citySurfaceMesh, &cityTexture, worldOrigin, defaultRotation, defaultRotAmountDeg, levelScale);
+		break;
+	case 1:
+		if (flashLevel) {
+			int remainder = frameCounter % 60;
+			if (remainder >= 0 && remainder < 30) renderObject(ourShader, &desertSurfaceMesh, &desertTexture, worldOrigin, defaultRotation, defaultRotAmountDeg, levelScale);
+		}
+		renderObject(ourShader, &grassSurfaceMesh, &grassTexture, worldOrigin, defaultRotation, defaultRotAmountDeg, levelScale);
+		renderObject(ourShader, &citySurfaceMesh, &cityTexture, worldOrigin, defaultRotation, defaultRotAmountDeg, levelScale);
+		break;
+	case 2:
+		if (flashLevel) {
+			int remainder = frameCounter % 60;
+			if(remainder >= 0 && remainder < 30) renderObject(ourShader, &grassSurfaceMesh, &grassTexture, worldOrigin, defaultRotation, defaultRotAmountDeg, levelScale);
+		}
+		renderObject(ourShader, &citySurfaceMesh, &cityTexture, worldOrigin, defaultRotation, defaultRotAmountDeg, levelScale);
+		break;
+	}
 
 	//OBJECTS
 	for (int i = 0; i < pxObjectsTrans.size(); i++)
 		renderObject(ourShader, &objectMeshes[0], &objectTextures[0], worldOrigin, defaultRotation, defaultRotAmountDeg, defaultScale, pxObjectsTrans[i]);
 
 	//TESTING
-	//for (int i = 0; i < testLocs.size(); i++) {
-	//	renderObject(ourShader, &objectMeshes[0], &objectTextures[0], testLocs[i], defaultRotation, defaultRotAmountDeg, defaultScale);
-	//}
+	for (int i = 0; i < testLocs.size(); i++) {
+		renderObject(ourShader, &objectMeshes[0], &objectTextures[0], testLocs[i], defaultRotation, defaultRotAmountDeg, defaultScale);
+	}
 
 	//POWERUPS
 	for (std::list<PowerUp*>::const_iterator it = powerups.begin(); it != powerups.end(); it++) {
@@ -447,11 +473,6 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans, //TODO: what are di
 			}
 		}
 	}
-	
-	//if(jump) renderObject(ourShader, &jmpPowerUpMesh, &JmpPowerUpTexture, glm::vec3(20.0f, 1.0f, 10.0f), defaultRotation, defaultRotAmountDeg, powerUpScale);
-	//if(attack) renderObject(ourShader, &atkPowerUpMesh, &AtkPowerUpTexture, glm::vec3(20.0f, 1.0f, 10.0f), defaultRotation, defaultRotAmountDeg, powerUpScale);
-	//if(defense) renderObject(ourShader, &defPowerUpMesh, &DefPowerUpTexture, glm::vec3(20.0f, 1.0f, 10.0f), defaultRotation, defaultRotAmountDeg, powerUpScale);
-
 
 	//Game Over
 	renderObject(ourShader, &GameOverMesh, &GameOverTexture, glm::vec3(-30.0f, 10.0f + 1110.f, 10.0f), screenRotation, screenRotDeg, screenScale);
@@ -472,7 +493,7 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans, //TODO: what are di
 
 
 
-void Renderer::applyShaderValues(Shader ourShader, glm::vec3 cameraPos, glm::mat4 view) {
+void Renderer::applyShaderValues(Shader ourShader, glm::vec3 cameraPos, glm::mat4 view, int gameStatus) {
 	ourShader.use();
 	ourShader.setVec3("light.direction", -0.2f, -1.0f, -0.3f);
 	ourShader.setVec3("viewPos", cameraPos);
@@ -515,7 +536,6 @@ std::vector<Mesh*> Renderer::getGroundMeshes(int index) { //returns pointers to 
 		std::cout << "all\n";
 		std::vector<Mesh*> meshes;
 		meshes.push_back(&citySurfaceMesh);
-		//meshes.push_back(&grassSurfaceMesh);
 		meshes.push_back(&desertSurfaceMesh);
 		meshes.push_back(&grassSurfaceMesh);
 		return meshes;
@@ -538,6 +558,19 @@ std::vector<Mesh*> Renderer::getGroundMeshes(int index) { //returns pointers to 
 
 
 
-std::vector<glm::vec3> Renderer::getBB() { //TODO: make a bit more streamlined once the segment logic is in
-	return desertSurfaceMesh.getBoundingBoxVertices();
+std::vector<glm::vec3> Renderer::getLevelBB() { //TODO: make a bit more streamlined once the segment logic is in
+	switch (noCarsRemoved) {
+	case 0:
+		return desertSurfaceMesh.getBoundingBoxVertices();
+		break;
+	case 1:
+		return grassSurfaceMesh.getBoundingBoxVertices();
+		break;
+	case 2:
+		return citySurfaceMesh.getBoundingBoxVertices();
+		break;
+	default:
+		return desertSurfaceMesh.getBoundingBoxVertices();
+		break;
+	}
 }

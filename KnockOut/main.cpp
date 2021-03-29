@@ -2,6 +2,7 @@
 #include <stb_image.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <Windows.h>
 #include <..\KnockOut\Dependencies\imgui\imgui.h>
 #include <..\KnockOut\Dependencies\GLFW\include\GLFW\glfw3.h>
 #include <..\KnockOut\Dependencies\imgui\imgui_impl_glfw.h>
@@ -53,6 +54,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void keyPress(unsigned char key, const PxTransform& camera);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void addPowerUp();
+void removeSegment();
 
 PxReal stackZ = 10.0f;
 float deltaTime = 0.0f;	// time between current frame and last frame
@@ -61,13 +63,13 @@ bool vehicleReversing = false;
 bool vehicleAccelerating = false;
 unsigned int CUBE_VBO, GROUND_VBO, CUBE_VAO, GROUND_VAO;
 unsigned int vehicle_texture, cube_texture2, ground_texture;
-
 bool reset = false;
 std::list<PowerUp*> powerups;
-
+bool removingSegment = false;
 int numPow = 0;
 
 auto start = std::chrono::system_clock::now();
+auto segmentRemovalStart = std::chrono::system_clock::now();
 
 auto poweruptimestart = std::chrono::system_clock::now();
 
@@ -76,7 +78,7 @@ Camera mainCamera;
 VehiclePhysx Physics = VehiclePhysx();
 Source source;
 
-AIBehavior ai1 = AIBehavior(0);
+AIBehavior ai1 = AIBehavior(1);
 AIBehavior ai2 = AIBehavior(1);
 AIBehavior ai3 = AIBehavior(1);
 
@@ -89,9 +91,9 @@ AIBehavior ai3 = AIBehavior(1);
 int st = 0;
 
 OpenALEngine wavPlayer = OpenALEngine();
-float baseVolume = 1.0f;
+float baseVolume = 0.0f; //TODO
 SoundManager activate = wavPlayer.createSoundPlayer(7);
-SoundManager select = wavPlayer.createSoundPlayer(2);
+SoundManager soundSelector = wavPlayer.createSoundPlayer(2);
 
 //MARK: Main
 int main(int argc, char** argv) {
@@ -174,21 +176,17 @@ int main(int argc, char** argv) {
 	mainRenderer.prepText(textShader);
 	mainRenderer.prepSkybox(skyboxShader);
 	Physics.initPhysics(mainRenderer.getGroundMeshes(0));	
-	ai1.levelBB = mainRenderer.getBB();
-	ai2.levelBB = mainRenderer.getBB();
-	ai3.levelBB = mainRenderer.getBB();
-	mainRenderer.testLocs = ai1.testLocs;
-
-
+	ai1.updateLevelBB(mainRenderer.getLevelBB());
+	ai2.updateLevelBB(mainRenderer.getLevelBB());
+	ai3.updateLevelBB(mainRenderer.getLevelBB());
 
 	glfwSetKeyCallback(window, key_callback);
 	Physics.setGameStatus(0);
 
+
+
 	//MARK: RENDER LOOP ---------------------------------------------------------------------------------------------------------------
 	while (!glfwWindowShouldClose(window)) {
-
-		//std::cout << Physics.getGameStatus() << " status \n";
-
 		addPowerUp();
 
 		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
@@ -208,39 +206,32 @@ int main(int argc, char** argv) {
 		if (!hasPower) {
 			mainRenderer.setUIBoost(0);
 		}
-		//MARK: GAME OVER CHECK
 
-		/*
-		if (Physics.getGameStatus() == 0) {
-			Physics.checkGameOver();
-		}
-		if (Physics.getGameStatus() != 0) {
 
-			if (!reset) {
-				reset = true;
-				Physics.reset();
-				Physics.removeGround(mainRenderer.getGroundMeshes(1));
-			}
-		}
-		*/
+
+		//MARK: Game Status & Segments
 		if (Physics.getGameStatus() == 0) {
 			Physics.checkGameOver();
 			Physics.updateNumCars();
-			if (Physics.getChanged() && Physics.getGameStatus()==0) {
+			if (Physics.getChanged()) {
+				segmentRemovalStart = std::chrono::system_clock::now();
+				removingSegment = true;
+				mainRenderer.flashSegment(true);
 				Physics.setChanged(false);
-				//std::cout << "remove ground\n";
-				powerups.clear();
-				//std::cout << Physics.getNumCars() << "\n";
-				Physics.removeGround(mainRenderer.getGroundMeshes(Physics.getNumCars()));
+				ai1.updateLevelBB(mainRenderer.getLevelBB());
+				ai2.updateLevelBB(mainRenderer.getLevelBB());
+				ai3.updateLevelBB(mainRenderer.getLevelBB());
+				ai1.startEvac();
+				ai2.startEvac();
+				ai3.startEvac();
 			}
-			//Physics.removeGround(mainRenderer.getGroundMeshes(Physics.getNumCars()));
 		}
+		if (removingSegment) removeSegment();
 
-		//PowerUp Pick Up
 
-		//Loop through powerups
-		for (std::list<PowerUp*>::const_iterator it = powerups.begin(); it != powerups.end(); it++){
-			//std::cout << "test\n";
+
+		//MARK: POWER-UP PICK UP
+		for (std::list<PowerUp*>::const_iterator it = powerups.begin(); it != powerups.end(); it++){ //Loop through powerups
 			
 			//Loop through the cars
 			for (int i = 1; i < 3; i++) {
@@ -270,8 +261,8 @@ int main(int argc, char** argv) {
 					}
 				}
 			}
-			
 		}
+
 
 		//MARK: Frame Start
 		float currentFrame = glfwGetTime();
@@ -386,15 +377,12 @@ int main(int argc, char** argv) {
 		pxOpponents.push_back(Physics.getVehicleTrans(4));
 
 
-		//TODO: shadows
-		//TODO: different behavior for the car
-		//TODO: green segment logic
-
-
-		ai1.frameUpdate(Physics.getVehDat(1), Physics.getOpponentPos(1), Physics.getOpponentForVec(1), Physics.getVehiclePos(1), Physics.getPlayerForVec(), Physics.getOpponent4W(1));
-		ai2.frameUpdate(Physics.getVehDat(2), Physics.getOpponentPos(2), Physics.getOpponentForVec(2), Physics.getVehiclePos(2), Physics.getPlayerForVec(), Physics.getOpponent4W(2));
-		ai3.frameUpdate(Physics.getVehDat(3), Physics.getOpponentPos(3), Physics.getOpponentForVec(3), Physics.getVehiclePos(3), Physics.getPlayerForVec(), Physics.getOpponent4W(3));
-		//mainRenderer.testLocs = beh.testLocs;
+		ai1.frameUpdate(Physics.getVehDat(1), Physics.getOpponentPos(1), Physics.getOpponentForVec(1), Physics.getVehiclePos(1), Physics.getPlayerForVec(), Physics.getVehicle4W(1),
+			Physics.getVehicle4W(0));
+		ai2.frameUpdate(Physics.getVehDat(2), Physics.getOpponentPos(2), Physics.getOpponentForVec(2), Physics.getVehiclePos(2), Physics.getPlayerForVec(), Physics.getVehicle4W(2),
+			Physics.getVehicle4W(0));
+		ai3.frameUpdate(Physics.getVehDat(3), Physics.getOpponentPos(3), Physics.getOpponentForVec(3), Physics.getVehiclePos(3), Physics.getPlayerForVec(), Physics.getVehicle4W(3),
+			Physics.getVehicle4W(0));
 
 
 		if (Physics.getGameStatus() == 1) {
@@ -410,7 +398,7 @@ int main(int argc, char** argv) {
 			Physics.setGameStatus(4);
 		}
 		else {
-			mainRenderer.renderGameFrame(Physics.getVehicleTrans(1), Physics.getVehicleTrans(1), pxOpponents, Physics.getGroundPos(), pxObjects, ourShader, textShader, skyboxShader, view, mainCamera.getCameraPos(), Physics.getNumCars(), powerups);
+			mainRenderer.renderGameFrame(Physics.getVehicleTrans(1), Physics.getVehicleTrans(1), pxOpponents, Physics.getGroundPos(), pxObjects, ourShader, textShader, skyboxShader, view, mainCamera.getCameraPos(), Physics.getNumCars(), powerups, Physics.getGameStatus());
 		}
 		/*
 		if (Physics.getGameStatus() == 1) {
@@ -457,8 +445,27 @@ int main(int argc, char** argv) {
 	return 0;
 }
 
-//MARK: Input Functions
 
+
+
+
+void removeSegment() {
+	auto end = std::chrono::system_clock::now();
+	std::chrono::duration<double> elapsed_seconds = end - segmentRemovalStart;
+
+	if (elapsed_seconds.count() >= 10) { //current time - last time = elapsed point
+		powerups.clear();
+		Physics.removeGround(mainRenderer.getGroundMeshes(Physics.getNumCars()));
+		removingSegment = false;
+		mainRenderer.flashSegment(false);
+		ai1.setAttacking(); //after first segment removal all AIs will attack
+		ai2.setAttacking();
+		ai3.setAttacking();
+	}
+}
+
+
+//MARK: Input Functions
 void processInput(GLFWwindow* window) {
 
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -547,8 +554,8 @@ void processInput(GLFWwindow* window) {
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	select.setVolume(baseVolume * 0.5);
-	select.loopSound(false);
+	soundSelector.setVolume(baseVolume * 0.5);
+	soundSelector.loopSound(false);
 
 	if (key == GLFW_KEY_1 && action == GLFW_PRESS)
 	{
@@ -556,19 +563,19 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 			printf("GAME OVER\n");
 			//set game status to MENU
 			st = 3;
-			select.playSound();
+			soundSelector.playSound();
 		}
 		else if (st == 2) {
 			printf("YOU WIN\n");
 			//set game status to MENU
 			st = 3;
-			select.playSound();
+			soundSelector.playSound();
 		}
 		else if (st == 3) {
 			printf("MENU\n");
 			//set game status to PLAY
 			st = 0;
-			select.playSound();
+			soundSelector.playSound();
 		}
 	}
 }
