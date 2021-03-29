@@ -1,73 +1,44 @@
 #include "AIBehavior.h"
 
-float prevFrameDistance = 0.f;
+
+enum State {roaming, attacking, defending};
+State currentState = roaming;
+
 unsigned int counter = 0;
-unsigned int turnTime = 0;
-bool turningRight = true;
+float prevFrameDistance = 0.f;
 float prevDistanceFromPlayer = 0.f;
 float maxSpeed = 30.f;
 float hitPointDist = 30.f;
-float hitPointRad = 10.f;
 float playerForVecMultiplier = 5.f;
-bool attackingPoint = true; //true = attacking hit point, false = attacking player directly, needs to be set to true when switching to attacking state
 float yMax = 50.f;
+float edgeDistLimit = 40.f;
+float holeDistLimit = 20.f;
+float sideDistanceLimit = 10.f;
+float currentSpeed = 0.7 * maxSpeed;
+float currentTurn = 0.f;
+bool attackingPoint = false;
+int turnTime = 0;
+bool turningRight = false;
+
 
 std::vector<glm::vec3> holeBBs;
+glm::vec3 carRightVec;
+glm::vec3 carLeftVec;
 
 glm::vec3 mapUpVec = glm::vec3(0.f, 0.5f, 1.f);
 glm::vec3 mapDownVec = glm::vec3(0.f, 0.5f, -1.f);
 glm::vec3 mapRightVec = glm::vec3(-1.f, 0.5f, 0.f);
 glm::vec3 mapLeftVec = glm::vec3(1.f, 0.5f, 0.f);
 
-int opponentState = 0; //0 = roaming, 1 = defending, 2 = attacking
-
-
-void initHoleBBs(){
-	for (int i = 0; i < Utils::holesBBDatLen; i = i + 8) {
-		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i], yMax, Utils::holesBoundingBoxData[i + 1]));
-		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i], 0.f, Utils::holesBoundingBoxData[i + 1]));
-		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i+2], 0.f, Utils::holesBoundingBoxData[i + 3]));
-
-		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i+2], yMax, Utils::holesBoundingBoxData[i + 3]));
-		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i+2], 0.f, Utils::holesBoundingBoxData[i + 3]));
-		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i], yMax, Utils::holesBoundingBoxData[i + 1]));
-
-
-
-		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 4], yMax, Utils::holesBoundingBoxData[i + 5]));
-		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 4], 0.f, Utils::holesBoundingBoxData[i + 5]));
-		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 2], 0.f, Utils::holesBoundingBoxData[i + 3]));
-
-		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 2], yMax, Utils::holesBoundingBoxData[i + 3]));
-		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 2], 0.f, Utils::holesBoundingBoxData[i + 3]));
-		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 4], yMax, Utils::holesBoundingBoxData[i + 5]));
-
-
-
-		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 6], yMax, Utils::holesBoundingBoxData[i + 7]));
-		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 6], 0.f, Utils::holesBoundingBoxData[i + 7]));
-		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 4], 0.f, Utils::holesBoundingBoxData[i + 5]));
-
-		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 4], yMax, Utils::holesBoundingBoxData[i + 5]));
-		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 4], 0.f, Utils::holesBoundingBoxData[i + 5]));
-		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 6], yMax, Utils::holesBoundingBoxData[i + 7]));
-
-
-
-		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i], yMax, Utils::holesBoundingBoxData[i + 1]));
-		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i], 0.f, Utils::holesBoundingBoxData[i + 1]));
-		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 6], 0.f, Utils::holesBoundingBoxData[i + 7]));
-
-		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 6], yMax, Utils::holesBoundingBoxData[i + 7]));
-		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 6], 0.f, Utils::holesBoundingBoxData[i + 7]));
-		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i], yMax, Utils::holesBoundingBoxData[i + 1]));
-
-	}
-}
-
 
 AIBehavior::AIBehavior() {
 	initHoleBBs();
+	for (int i = 0; i < holeBBs.size(); i++) {
+		testLocs.push_back(holeBBs[i]);
+	}
+	for (int i = 0; i < levelBB.size(); i++) {
+		testLocs.push_back(levelBB[i]);
+	}
 }
 
 
@@ -80,34 +51,36 @@ void AIBehavior::frameUpdate(physx::PxVehicleDrive4WRawInputData* carInputDat, g
 	playerPosition = playerPos + glm::vec3(playerForwardVector.x * (playerForVecMultiplier/pFVlen), 0.f, playerForwardVector.z * (playerForVecMultiplier / pFVlen));
 	carPosition = carPos;
 	carForwardVector = carForwardVec;
+	carLeftVec = glm::cross(glm::vec3(carPosition.x, 5.f, carPosition.z), carForwardVector);
+	carRightVec = glm::cross(carForwardVector, glm::vec3(carPosition.x, 5.f, carPosition.z));
 	carInputData = carInputDat;
 	carVehicle4W = carVeh4W;
 	counter++;
+
 
 	behave();
 }
 
 
-
 void AIBehavior::behave() {
+	int courseResult = shouldChangeCourse();
 
-	//AVOIDING OBSTACLES
-	if (shouldChangeCourse() == 1) {
-		//carInputData->setAnalogHandbrake(true);
+	//HOLE AVOIDANCE
+	if (courseResult == 1) {
 		carInputData->setAnalogSteer(1.f);
 		setSpeed(maxSpeed * 0.2);
-	}else {
-
+	}
+	else {
 
 		//ATTACKING
-		if (opponentState == 2) { //prioritize attacking state over every other state
+		if (currentState == attacking) { //prioritize attacking state over every other state
 			setSpeed(maxSpeed);
 
 			if (attackingPoint) { //first get close to a "hit point" (point that will allow for an attack vector)
 				float playerDistFromClosestEdge = FLT_MAX;
 				float dist;
 				glm::vec2 intersectionBary;
-				glm::vec3 closestEdgeIntersection = glm::vec3(0.f,0.f,0.f);
+				glm::vec3 closestEdgeIntersection = glm::vec3(0.f, 0.f, 0.f);
 
 				for (int i = 0; i < levelBB.size(); i = i + 3) {
 					if (glm::intersectRayTriangle(playerPosition, mapUpVec, levelBB[i], levelBB[i + 1], levelBB[i + 2], intersectionBary, dist) && dist < playerDistFromClosestEdge && dist > 0.f) {
@@ -159,19 +132,31 @@ void AIBehavior::behave() {
 			else {
 				attackPoint(playerPosition); //hit point already covered -> attack player
 			}
-			
-		
-		
-		//OTHER BEHAVIORS
+
+
+
+		//OTHER BEHAVIORS	
 		}else {
+
+			//ATTACK OPPORTUNITY
+			if (playerPosition.x < -70 || playerPosition.x > 70 || playerPosition.z < -70 || playerPosition.z > 70) {
+				std::cout << "attacking" << std::endl;
+				currentState = attacking;
+			}
+			else {
+				std::cout << "roaming" << std::endl;
+				currentState = roaming;
+			}
+
+
 			//determine defense or roaming
 			float curDistFromPlayer = calculateDistance(playerPosition.z, carPosition.z, playerPosition.x, carPosition.x);
-			if (curDistFromPlayer < 25.f && prevDistanceFromPlayer > curDistFromPlayer) opponentState = 1;
-			else opponentState = 0;
+			if (curDistFromPlayer < 25.f && prevDistanceFromPlayer > curDistFromPlayer) currentState = defending;
+			else currentState = roaming;
 			prevDistanceFromPlayer = curDistFromPlayer;
 
 			//ROAMING
-			if (opponentState == 0) {
+			if (currentState == roaming) {
 				if (counter % 600 && rand() % 2 == 0) { //randomly turn
 					turnTime = counter + rand() % 240 + 120;
 					if (rand() % 2 == 0) turningRight = true; //and if it does turn there's a 50 50 chance it'll turn right or left
@@ -190,7 +175,7 @@ void AIBehavior::behave() {
 
 
 			//DEFENDING
-			if (opponentState == 1) {
+			if (currentState == defending) {
 				setSpeed(maxSpeed);
 				if (pointIsRight(glm::vec3(carPosition.x, 0.f, carPosition.z), glm::vec3(carPosition.x + carForwardVector.x, 0.f, carPosition.z + carForwardVector.z), glm::vec3(playerPosition.x, 0.f, playerPosition.z))) {
 					carInputData->setAnalogSteer(1.f);
@@ -202,6 +187,39 @@ void AIBehavior::behave() {
 		}
 	}
 }
+
+
+
+//OBSTACLE AVOIDANCE
+int AIBehavior::shouldChangeCourse() { //determines whether it's close to & headed toward a hole, an object, or the edge of the map
+	glm::vec2 intersectionBary;
+	float dist = 0.f;
+
+
+	for (int i = 0; i < levelBB.size(); i = i + 3) {
+
+		if (glm::intersectRayTriangle(carPosition, carForwardVector, levelBB[i], levelBB[i + 1], levelBB[i + 2],intersectionBary, dist) && glm::abs(dist) < edgeDistLimit) {
+			std::cout << "close" << std::endl;
+			return 1;
+		}
+	}
+
+	for (int i = 0; i < holeBBs.size(); i = i + 3) {
+		if (glm::intersectRayTriangle(carPosition, carForwardVector, holeBBs[i], holeBBs[i + 1], holeBBs[i + 2], intersectionBary, dist) && glm::abs(dist) < holeDistLimit) {
+			std::cout << "close"<< std::endl;
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+
+
+
+
+
+
 
 
 
@@ -229,38 +247,8 @@ void AIBehavior::attackPoint(glm::vec3 pointToAttack) {
 	prevFrameDistance = curDistance;
 }
 
-
-
-
-
-
-
-int AIBehavior::shouldChangeCourse() { //determines whether it's close to & headed toward a hole, an object, or the edge of the map
-	glm::vec2 intersectionBary;
-	float dist = 0.f;
-
-	for (int i = 0; i < levelBB.size(); i = i + 3) {
-
-		if (glm::intersectRayTriangle(carPosition, carForwardVector, levelBB[i], levelBB[i + 1], levelBB[i + 2],intersectionBary, dist) && dist < 100.f && dist > 0.f) {
-			return 1;
-		}
-	}
-
-	for (int i = 0; i < holeBBs.size(); i = i + 3) {
-		if (glm::intersectRayTriangle(carPosition, carForwardVector, holeBBs[i], holeBBs[i + 1], holeBBs[i + 2], intersectionBary, dist) && dist < 20.f && dist > 0.f) {
-			return 1;
-		}
-	}
-
-	return 0;
-}
-
-
-
-
 void AIBehavior::setSpeed(float target) {
 	float speed = carVehicle4W->computeForwardSpeed();
-	//std::cout << "speed: " << speed << std::endl;
 	if (speed < target) {
 		carVehicle4W->mDriveDynData.forceGearChange(physx::PxVehicleGearsData::eFIRST);
 		carInputData->setAnalogAccel(1.0f);
@@ -270,9 +258,48 @@ void AIBehavior::setSpeed(float target) {
 	}
 }
 
+void AIBehavior::initHoleBBs() {
+	for (int i = 0; i < Utils::holesBBDatLen; i = i + 8) {
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i], yMax, Utils::holesBoundingBoxData[i + 1]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i], 0.f, Utils::holesBoundingBoxData[i + 1]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 2], 0.f, Utils::holesBoundingBoxData[i + 3]));
+
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 2], yMax, Utils::holesBoundingBoxData[i + 3]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 2], 0.f, Utils::holesBoundingBoxData[i + 3]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i], yMax, Utils::holesBoundingBoxData[i + 1]));
 
 
 
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 4], yMax, Utils::holesBoundingBoxData[i + 5]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 4], 0.f, Utils::holesBoundingBoxData[i + 5]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 2], 0.f, Utils::holesBoundingBoxData[i + 3]));
+
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 2], yMax, Utils::holesBoundingBoxData[i + 3]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 2], 0.f, Utils::holesBoundingBoxData[i + 3]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 4], yMax, Utils::holesBoundingBoxData[i + 5]));
+
+
+
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 6], yMax, Utils::holesBoundingBoxData[i + 7]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 6], 0.f, Utils::holesBoundingBoxData[i + 7]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 4], 0.f, Utils::holesBoundingBoxData[i + 5]));
+
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 4], yMax, Utils::holesBoundingBoxData[i + 5]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 4], 0.f, Utils::holesBoundingBoxData[i + 5]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 6], yMax, Utils::holesBoundingBoxData[i + 7]));
+
+
+
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i], yMax, Utils::holesBoundingBoxData[i + 1]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i], 0.f, Utils::holesBoundingBoxData[i + 1]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 6], 0.f, Utils::holesBoundingBoxData[i + 7]));
+
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 6], yMax, Utils::holesBoundingBoxData[i + 7]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i + 6], 0.f, Utils::holesBoundingBoxData[i + 7]));
+		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i], yMax, Utils::holesBoundingBoxData[i + 1]));
+
+	}
+}
 
 bool AIBehavior::pointIsRight(glm::vec3 linePoint1, glm::vec3 linePoint2, glm::vec3 pointToCheck) {
 	return ((linePoint2.x - linePoint1.x) * (pointToCheck.z - linePoint1.z) - (linePoint2.z - linePoint1.z) * (pointToCheck.x - linePoint1.x)) > 0;
@@ -308,3 +335,4 @@ float AIBehavior::calculateSlope(float y2, float y1, float x2, float x1) { //y =
 float AIBehavior::calculateDistance(float y2, float y1, float x2, float x1) { //Pythagorean
 	return glm::sqrt(glm::pow(x2 - x1, 2) + glm::pow(y2 - y1, 2));
 }
+

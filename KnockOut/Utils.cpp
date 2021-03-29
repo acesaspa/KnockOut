@@ -66,18 +66,48 @@ int Utils::planeArrayLen = 48;
 
 
 float Utils::holesBoundingBoxData[] = { //TODO: measure using player pos & imgUI, 4 sided
-	-16.f, 11, //city 1
+	-16.5f, 14, //city 1
 	-15.8f, 29.f,
 	-29.f, 29.f,
 	-27.f, 15.f,
 
-	11.4f, 2.f, //city 2
+	13, 0, //city 2
 	23.f, 4.f,
 	25.f, -11.f,
-	15.5f, -16.f
+	15.5f, -14.f,
+
+	-42, -15, //grass 1
+	-55, -12.5,
+	-50, -27.5,
+	-42, -28,
+
+	15, -36, //grass 2
+	24, -36,
+	29, -49,
+	18.5, -49,
+
+	28, 63, //grass 3
+	34, 52,
+	20, 52,
+	20, 65,
+
+	-54, 61, //sand 1
+	-68, 63,
+	-72, 49,
+	-63, 46,
+
+	68, -13, //sand 2
+	67, 4,
+	76, 5,
+	80, -10,
+
+	9, -72, //sand 3
+	7, -84,
+	-6, -87,
+	-11, -78
 };
 
-int Utils::holesBBDatLen = 16;
+int Utils::holesBBDatLen = 64;
 
 
 

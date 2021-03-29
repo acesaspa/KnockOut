@@ -346,13 +346,13 @@ void Renderer::setUpRendering(glm::vec3 cameraPos, Shader ourShader, Shader text
 	playerMesh.loadOBJ("blueCar.obj");
 	playerTexture.loadTexture("blueCar.png", true, true);
 
-	citySurfaceMesh.loadOBJ("cityLevel2.obj");
+	citySurfaceMesh.loadOBJ("cityLevel2Holes.obj");
 	cityTexture.loadTexture("asphalt.jpg", true);
 
-	grassSurfaceMesh.loadOBJ("test.obj");
+	grassSurfaceMesh.loadOBJ("grassLevel2Holes.obj");
 	grassTexture.loadTexture("grass.jpg", true);
 
-	desertSurfaceMesh.loadOBJ("sandLevel2.obj");
+	desertSurfaceMesh.loadOBJ("test.obj");
 	desertSurfaceMesh.setIsMostOuterLevel(true); //used to determine the bounding box of the entire level
 	desertTexture.loadTexture("desert_texture.jpg", true);
 
@@ -426,8 +426,12 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans, //TODO: what are di
 	for (int i = 0; i < pxObjectsTrans.size(); i++)
 		renderObject(ourShader, &objectMeshes[0], &objectTextures[0], worldOrigin, defaultRotation, defaultRotAmountDeg, defaultScale, pxObjectsTrans[i]);
 
+	//TESTING
+	//for (int i = 0; i < testLocs.size(); i++) {
+	//	renderObject(ourShader, &objectMeshes[0], &objectTextures[0], testLocs[i], defaultRotation, defaultRotAmountDeg, defaultScale);
+	//}
+
 	//POWERUPS
-	
 	for (std::list<PowerUp*>::const_iterator it = powerups.begin(); it != powerups.end(); it++) {
 		//std::cout << (*it)->getLocation().x << "\n";
 		if ((*it)->isCollected==false) {
@@ -463,11 +467,6 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans, //TODO: what are di
 
 	//Byskox
 	renderSkyBox(skyboxShader, view);
-
-
-	//TESTING
-	//for(int i = 0; i < desertSurfaceMesh.getBoundingBoxVertices().size(); i++)
-	//	renderObject(ourShader, &objectMeshes[0], &objectTextures[0], desertSurfaceMesh.getBoundingBoxVertices()[i], defaultRotation, defaultRotAmountDeg, defaultScale);
 }
 
 

@@ -215,6 +215,9 @@ int main(int argc, char** argv) {
 	mainRenderer.prepSkybox(skyboxShader);
 	Physics.initPhysics(mainRenderer.getGroundMeshes(1));	
 	beh.levelBB = mainRenderer.getBB();
+	mainRenderer.testLocs = beh.testLocs;
+
+
 
 	//MARK: RENDER LOOP ---------------------------------------------------------------------------------------------------------------
 	while (!glfwWindowShouldClose(window)) {
@@ -373,6 +376,7 @@ int main(int argc, char** argv) {
 
 
 		beh.frameUpdate(Physics.getVehDat(), Physics.getOpponentPos(), Physics.getOpponentForVec(), Physics.getVehiclePos(1), Physics.getPlayerForVec(), Physics.getOpponent4W());
+		//mainRenderer.testLocs = beh.testLocs;
 
 
 		if (Physics.getGameStatus() == 1) {

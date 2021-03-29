@@ -318,7 +318,7 @@ void VehiclePhysx::initPhysics(std::vector<Mesh*> groundMeshes)
 	gPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, PxTolerancesScale(), true, gPvd);
 
 	PxSceneDesc sceneDesc(gPhysics->getTolerancesScale());
-	sceneDesc.gravity = PxVec3(0.0f, -20.f, 0.0f);
+	sceneDesc.gravity = PxVec3(0.0f, -30.f, 0.0f);
 
 	PxU32 numWorkers = 1;
 	gDispatcher = PxDefaultCpuDispatcherCreate(numWorkers);
@@ -360,13 +360,13 @@ void VehiclePhysx::initPhysics(std::vector<Mesh*> groundMeshes)
 	//Create a vehicle that will drive on the plane.
 	VehicleDesc vehicleDesc = initVehicleDesc(1000);
 	gVehicle4W = createVehicle4W(vehicleDesc, gPhysics, gCooking);
-	PxTransform startTransform(PxVec3(-10.f, (vehicleDesc.chassisDims.y * 0.5f + vehicleDesc.wheelRadius + 2.0f), -10.f), PxQuat(PxIdentity));
+	PxTransform startTransform(PxVec3(-10.f, (vehicleDesc.chassisDims.y * 0.5f + vehicleDesc.wheelRadius + 3.0f), -10.f), PxQuat(PxIdentity));
 	gVehicle4W->getRigidDynamicActor()->setGlobalPose(startTransform);
 	gScene->addActor(*gVehicle4W->getRigidDynamicActor());
 
 	VehicleDesc vehicleDesc2 = initVehicleDesc(1000);
 	gVehicle4W2 = createVehicle4W(vehicleDesc2, gPhysics, gCooking);
-	PxTransform startTransform2(PxVec3(10.f, (vehicleDesc2.chassisDims.y * 0.5f + vehicleDesc2.wheelRadius + 2.0f), 10.f), PxQuat(PxIdentity));
+	PxTransform startTransform2(PxVec3(10.f, (vehicleDesc2.chassisDims.y * 0.5f + vehicleDesc2.wheelRadius + 3.0f), 10.f), PxQuat(PxIdentity));
 	gVehicle4W2->getRigidDynamicActor()->setGlobalPose(startTransform2);
 	gScene->addActor(*gVehicle4W2->getRigidDynamicActor());
 

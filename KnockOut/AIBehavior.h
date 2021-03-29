@@ -29,6 +29,8 @@ public:
 
 	std::vector<glm::vec3> levelBB;
 
+	std::vector<glm::vec3> testLocs;
+
 private:
 	bool pointIsRight(glm::vec3 a, glm::vec3 b, glm::vec3 c);
 	int shouldChangeCourse();
@@ -42,6 +44,7 @@ private:
 	float calculateIntersectionY(float m1, float x, float b1);
 	float calculateIntersectionX(float b2, float b1, float m1, float m2);
 	bool noIntersection(float x, float y, float m1, float b1, float m2, float b2);
+	void initHoleBBs();
 
 	glm::vec3 playerPosition;
 	glm::vec3 playerForwardVector;
