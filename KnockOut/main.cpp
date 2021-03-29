@@ -300,6 +300,14 @@ int main(int argc, char** argv) {
 			if (!gameover.soundPlaying()) { gameover.playSound(); }
 		}
 
+		if (Physics.getGameStatus() == 4)
+		{
+			bgm.stopSound();
+			engine.stopSound();
+			reving.stopSound();
+			if (!victory.soundPlaying()) { victory.playSound(); }
+		}
+
 		processInput(window);
 		Physics.stepPhysics();
 		ImGui_ImplOpenGL3_NewFrame();
