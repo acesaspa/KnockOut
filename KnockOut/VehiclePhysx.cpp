@@ -775,7 +775,7 @@ glm::vec3 VehiclePhysx::getOpponentForVec(int i) {
 	return glm::vec3(vDir.x, vDir.y, vDir.z);
 }
 
-PxVehicleDrive4W* VehiclePhysx::getOpponent4W(int i) {
+PxVehicleDrive4W* VehiclePhysx::getVehicle4W(int i) {
 	return Vehicles[i];
 }
 
@@ -804,8 +804,6 @@ void VehiclePhysx::cookGroundMesh(Mesh* meshToCook,int i) {
 
 	std::vector<PxVec3> vertices = meshToCook->getActualVertices();
 	std::vector<PxU32> indices = meshToCook->getVertexIndices();
-
-	//std::cout << "size " << vertices.size() << "\n";
 
 	meshDesc.points.count = vertices.size(); //total number of vertices
 	meshDesc.points.stride = sizeof(PxVec3);

@@ -45,11 +45,11 @@ public:
 		glm::mat4 view,
 		glm::vec3 cameraPos,
 		int status,
-		std::list<PowerUp*>& powerups);
+		std::list<PowerUp*>& powerups,
+		int gameStatus);
 	std::vector<Mesh*> getGroundMeshes(int index);
-
-
-	std::vector<glm::vec3> getBB();
+	std::vector<glm::vec3> getLevelBB();
+	void flashSegment(bool keepFlashing);
 
 	std::vector<glm::vec3> testLocs;
 
@@ -57,7 +57,7 @@ private:
 	void renderObject(Shader ourShader, Mesh* meshToRender, Texture2D* textureToApply, glm::vec3 translation = glm::vec3(0.f, 0.f, 0.f), glm::vec3 rotationAxis = glm::vec3(0.f, 0.f, 0.f),
 		float rotationAmountDeg = 0.f, glm::vec3 scale = glm::vec3(0.f, 0.f, 0.f), physx::PxMat44 pxTransMat = physx::PxIdentity);
 	void renderSkyBox(Shader skyboxShader, glm::mat4 view);
-	void applyShaderValues(Shader ourShader, glm::vec3 cameraPos, glm::mat4 view);
+	void applyShaderValues(Shader ourShader, glm::vec3 cameraPos, glm::mat4 view, int status);
 
 	std::vector<Mesh> objectMeshes;
 	std::vector<Mesh> aiOpponentMeshes;

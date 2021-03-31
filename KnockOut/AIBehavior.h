@@ -25,10 +25,10 @@ class AIBehavior {
 public:
 	AIBehavior(int beh);
 	void frameUpdate(physx::PxVehicleDrive4WRawInputData* carInputData, glm::vec3 carPos, glm::vec3 carForwardVec, glm::vec3 playerPos, glm::vec3 playerForwardVector,
-		physx::PxVehicleDrive4W* opponentVehicle4W);
-
-	std::vector<glm::vec3> levelBB;
-
+		physx::PxVehicleDrive4W* opponentVehicle4W, physx::PxVehicleDrive4W* playerVeh4W);
+	void updateLevelBB(std::vector<glm::vec3> lvlBB);
+	void startEvac();
+	void setAttacking();
 	std::vector<glm::vec3> testLocs;
 
 private:
@@ -50,8 +50,10 @@ private:
 	glm::vec3 playerForwardVector;
 	glm::vec3 carPosition;
 	glm::vec3 carForwardVector;
+	std::vector<glm::vec3> levelBB;
 	physx::PxVehicleDrive4WRawInputData* carInputData;
 	physx::PxVehicleDrive4W* carVehicle4W;
+	physx::PxVehicleDrive4W* playerVehicle4W;
 
 
 };
