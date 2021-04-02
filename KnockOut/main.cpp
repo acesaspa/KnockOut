@@ -287,6 +287,10 @@ int main(int argc, char** argv) {
 		{
 			if (!reving.soundPlaying()) { reving.playSound(); }
 		}
+		else if ((glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_REPEAT))
+		{
+			if (!reving.soundPlaying()) { reving.playSound(); }
+		}
 		else
 		{
 			reving.stopSound();
