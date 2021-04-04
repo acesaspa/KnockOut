@@ -30,10 +30,7 @@ class Renderer {
 public:
 	int getUIBoost();
 	void setUIBoost(int x);
-	void prepSkybox(Shader shader);
-	void renderText(Shader& shader, std::string text, float x, float y, float scale, glm::vec3 color);
-	void prepText(Shader shader);
-	void setUpRendering(glm::vec3 cameraPos, Shader ourShader, Shader textShader/*, physx::PxPhysics* gPhysics, physx::PxCooking* gCooking, physx::PxScene* gScene*/);
+	void setUpRendering(glm::vec3 cameraPos, Shader ourShader, Shader textShader, Shader skyboxShader, Shader depthShader);
 	void renderGameFrame(physx::PxMat44 pxPlayerTrans,
 		physx::PxMat44 pxUITrans,
 		std::vector<physx::PxMat44> pxOpponentsTrans,
@@ -42,6 +39,7 @@ public:
 		Shader ourShader,
 		Shader textShader,
 		Shader skyboxShader,
+		Shader depthShader,
 		glm::mat4 view,
 		glm::vec3 cameraPos,
 		int status,
@@ -56,8 +54,20 @@ public:
 private:
 	void renderObject(Shader ourShader, Mesh* meshToRender, Texture2D* textureToApply, glm::vec3 translation = glm::vec3(0.f, 0.f, 0.f), glm::vec3 rotationAxis = glm::vec3(0.f, 0.f, 0.f),
 		float rotationAmountDeg = 0.f, glm::vec3 scale = glm::vec3(0.f, 0.f, 0.f), physx::PxMat44 pxTransMat = physx::PxIdentity);
-	void renderSkyBox(Shader skyboxShader, glm::mat4 view);
-	void applyShaderValues(Shader ourShader, glm::vec3 cameraPos, glm::mat4 view, int status);
+	void setMainShader(Shader ourShader, glm::vec3 cameraPos, glm::mat4 view, int status);
+	void renderScene(Shader& shader,
+		physx::PxMat44 pxPlayerTrans,
+		physx::PxMat44 pxUITrans,
+		std::vector<physx::PxMat44> pxOpponentsTrans,
+		glm::vec3 pxLevelPos,
+		std::vector<physx::PxTransform> pxObjectsTrans,
+		glm::mat4 view,
+		glm::vec3 cameraPos,
+		int carsRemoved,
+		std::list<PowerUp*>& powerups,
+		int gameStatus);
+	void prepShadows(Shader depthShader, glm::mat4 projection);
+	void setDepthShader(Shader depthShader, glm::vec3 lightPos);
 
 	std::vector<Mesh> objectMeshes;
 	std::vector<Mesh> aiOpponentMeshes;

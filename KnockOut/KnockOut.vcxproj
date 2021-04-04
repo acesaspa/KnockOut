@@ -24,6 +24,7 @@
     <ClCompile Include="PowerUp.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="SoundManager.cpp" />
     <ClCompile Include="OpenALEngine.cpp" />
     <ClCompile Include="Dependencies\imgui\imgui.cpp" />
@@ -53,6 +54,7 @@
     <ClInclude Include="PowerUp.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Renderer.h" />
+    <ClInclude Include="Skybox.h" />
     <ClInclude Include="SoundManager.h" />
     <ClInclude Include="OpenALEngine.h" />
     <ClInclude Include="Dependencies\imgui\imconfig.h" />

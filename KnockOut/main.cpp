@@ -91,7 +91,7 @@ AIBehavior ai3 = AIBehavior(1);
 int st = 0;
 
 OpenALEngine wavPlayer = OpenALEngine();
-float baseVolume = 0.0f; //TODO
+float baseVolume = 1.0f;
 SoundManager activate = wavPlayer.createSoundPlayer(7);
 SoundManager soundSelector = wavPlayer.createSoundPlayer(2);
 
@@ -155,9 +155,11 @@ int main(int argc, char** argv) {
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetCursorPosCallback(window, mouse_callback);
 
-	Shader ourShader("vertex_shader.vs", "fragment_shader.fs");
+	glEnable(GL_DEPTH_TEST);
+	Shader mainShader("main_vertex_shader.vs", "main_fragment_shader.fs");
 	Shader textShader("text.vs", "text.fs");
 	Shader skyboxShader("skybox.vs", "skybox.fs");
+	Shader depthShader("depth_vertex_shader.vs", "depth_fragment_shader.fs");
 
 	//MARK: Init Imgui
 	IMGUI_CHECKVERSION();
@@ -172,9 +174,7 @@ int main(int argc, char** argv) {
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 	//TODO
-	mainRenderer.setUpRendering(mainCamera.getCameraPos(), ourShader, textShader);
-	mainRenderer.prepText(textShader);
-	mainRenderer.prepSkybox(skyboxShader);
+	mainRenderer.setUpRendering(mainCamera.getCameraPos(), mainShader, textShader, skyboxShader, depthShader);
 	Physics.initPhysics(mainRenderer.getGroundMeshes(0));	
 	ai1.updateLevelBB(mainRenderer.getLevelBB());
 	ai2.updateLevelBB(mainRenderer.getLevelBB());
@@ -381,12 +381,12 @@ int main(int argc, char** argv) {
 		pxOpponents.push_back(Physics.getVehicleTrans(4));
 
 
-		ai1.frameUpdate(Physics.getVehDat(1), Physics.getOpponentPos(1), Physics.getOpponentForVec(1), Physics.getVehiclePos(1), Physics.getPlayerForVec(), Physics.getVehicle4W(1),
-			Physics.getVehicle4W(0));
-		ai2.frameUpdate(Physics.getVehDat(2), Physics.getOpponentPos(2), Physics.getOpponentForVec(2), Physics.getVehiclePos(2), Physics.getPlayerForVec(), Physics.getVehicle4W(2),
-			Physics.getVehicle4W(0));
-		ai3.frameUpdate(Physics.getVehDat(3), Physics.getOpponentPos(3), Physics.getOpponentForVec(3), Physics.getVehiclePos(3), Physics.getPlayerForVec(), Physics.getVehicle4W(3),
-			Physics.getVehicle4W(0));
+		//ai1.frameUpdate(Physics.getVehDat(1), Physics.getOpponentPos(1), Physics.getOpponentForVec(1), Physics.getVehiclePos(1), Physics.getPlayerForVec(), Physics.getVehicle4W(1),
+		//	Physics.getVehicle4W(0));
+		//ai2.frameUpdate(Physics.getVehDat(2), Physics.getOpponentPos(2), Physics.getOpponentForVec(2), Physics.getVehiclePos(2), Physics.getPlayerForVec(), Physics.getVehicle4W(2),
+		//	Physics.getVehicle4W(0));
+		//ai3.frameUpdate(Physics.getVehDat(3), Physics.getOpponentPos(3), Physics.getOpponentForVec(3), Physics.getVehiclePos(3), Physics.getPlayerForVec(), Physics.getVehicle4W(3),
+		//	Physics.getVehicle4W(0));
 
 
 		if (Physics.getGameStatus() == 1) {
@@ -402,7 +402,7 @@ int main(int argc, char** argv) {
 			Physics.setGameStatus(4);
 		}
 		else {
-			mainRenderer.renderGameFrame(Physics.getVehicleTrans(1), Physics.getVehicleTrans(1), pxOpponents, Physics.getGroundPos(), pxObjects, ourShader, textShader, skyboxShader, view, mainCamera.getCameraPos(), Physics.getNumCars(), powerups, Physics.getGameStatus());
+			mainRenderer.renderGameFrame(Physics.getVehicleTrans(1), Physics.getVehicleTrans(1), pxOpponents, Physics.getGroundPos(), pxObjects, mainShader, textShader, skyboxShader, depthShader, view, mainCamera.getCameraPos(), Physics.getNumCars(), powerups, Physics.getGameStatus());
 		}
 		/*
 		if (Physics.getGameStatus() == 1) {
