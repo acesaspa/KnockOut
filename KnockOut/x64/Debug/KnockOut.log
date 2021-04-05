@@ -1,5 +1,8 @@
-﻿  Renderer.cpp
-C:\585\KnockOut\KnockOut\Shader.cpp(57,40): warning C4101: 'e': unreferenced local variable
-C:\585\KnockOut\KnockOut\Utils.h(21,2): warning C4091: 'static ': ignored on left of 'Utils' when no variable is declared
-C:\585\KnockOut\KnockOut\Renderer.cpp(330): warning C4715: 'Renderer::getGroundMeshes': not all control paths return a value
+﻿  VehiclePhysx.cpp
+C:\585\KnockOut\KnockOut\VehiclePhysx.cpp(318,42): warning C4305: 'argument': truncation from 'float' to 'const bool'
+C:\585\KnockOut\KnockOut\VehiclePhysx.cpp(332,42): warning C4305: 'argument': truncation from 'float' to 'const bool'
+C:\585\KnockOut\KnockOut\VehiclePhysx.cpp(827,41): warning C4267: '=': conversion from 'size_t' to 'physx::PxU32', possible loss of data
+C:\585\KnockOut\KnockOut\VehiclePhysx.cpp(831,47): warning C4267: '=': conversion from 'size_t' to 'physx::PxU32', possible loss of data
+C:\585\KnockOut\KnockOut\VehiclePhysx.cpp(747): warning C4715: 'VehiclePhysx::getBoxTrans': not all control paths return a value
+C:\585\KnockOut\KnockOut\VehiclePhysx.cpp(780): warning C4715: 'VehiclePhysx::getVehDat': not all control paths return a value
   KnockOut.vcxproj -> C:\585\KnockOut\x64\Debug\KnockOut.exe

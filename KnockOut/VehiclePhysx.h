@@ -49,6 +49,7 @@ public:
 	void updateNumCars();
 	bool getChanged();
 	void setChanged(bool input);
+	void applyGamepadInput(float leftStickX, float leftStickY, float rightStickX, float rightStickY);
 
 	PxVehicleDrive4WRawInputData* getVehDat(int i);
 	glm::vec3 getOpponentPos(int i);

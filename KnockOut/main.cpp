@@ -498,27 +498,40 @@ void processInput(GLFWwindow* window) {
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) mainCamera.getCameraPos() += glm::normalize(glm::cross(mainCamera.getCameraFront(), mainCamera.getCameraUp())) * cameraSpeed;
 	}
 	else {
-		if ((glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_UP) == GLFW_REPEAT)) {
+
+		//GAMEPAD
+		int present = glfwJoystickPresent(GLFW_JOYSTICK_1);
+		if (present) {
 			Physics.setGMimicKeyInputs(true);
-			Physics.forceGearChange(PxVehicleGearsData::eFIRST);
-			Physics.startAccelerateForwardsMode();
+			int axesCount;
+			const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axesCount);
+			Physics.applyGamepadInput(axes[0], axes[1], axes[2], axes[3]);
 		}
-		if ((glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_REPEAT)) {
-			Physics.setGMimicKeyInputs(true);
-			Physics.forceGearChange(PxVehicleGearsData::eREVERSE);
-			Physics.startAccelerateReverseMode();
-		}
-		if ((glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_REPEAT)) {
-			Physics.setGMimicKeyInputs(true);
-			Physics.startBrakeMode();
-		}
-		if ((glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_REPEAT)) {
-			Physics.setGMimicKeyInputs(true);
-			Physics.startTurnHardRightMode();
-		}
-		if ((glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_REPEAT)) {
-			Physics.setGMimicKeyInputs(true);
-			Physics.startTurnHardLeftMode();
+
+		//KEYBOARD
+		else {
+			if ((glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_UP) == GLFW_REPEAT)) {
+				Physics.setGMimicKeyInputs(true);
+				Physics.forceGearChange(PxVehicleGearsData::eFIRST);
+				Physics.startAccelerateForwardsMode();
+			}
+			if ((glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_REPEAT)) {
+				Physics.setGMimicKeyInputs(true);
+				Physics.forceGearChange(PxVehicleGearsData::eREVERSE);
+				Physics.startAccelerateReverseMode();
+			}
+			if ((glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_REPEAT)) {
+				Physics.setGMimicKeyInputs(true);
+				Physics.startBrakeMode();
+			}
+			if ((glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_REPEAT)) {
+				Physics.setGMimicKeyInputs(true);
+				Physics.startTurnHardRightMode();
+			}
+			if ((glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_REPEAT)) {
+				Physics.setGMimicKeyInputs(true);
+				Physics.startTurnHardLeftMode();
+			}
 		}
 	}
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {

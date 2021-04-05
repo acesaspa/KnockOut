@@ -254,6 +254,25 @@ VehicleDesc VehiclePhysx::initVehicleDesc(PxF32 mass)
 }
 
 
+void VehiclePhysx::applyGamepadInput(float leftStickX, float leftStickY, float rightStickX, float rightStickY) {
+	if (leftStickY < -0.5) {
+		Vehicles[0]->mDriveDynData.forceGearChange(PxVehicleGearsData::eFIRST);
+		gVehicleInputData1.setDigitalAccel(true);
+	}
+	else if (leftStickY > 0.5) {
+		Vehicles[0]->mDriveDynData.forceGearChange(PxVehicleGearsData::eREVERSE);
+		gVehicleInputData1.setDigitalAccel(true);
+	}
+
+	if (rightStickX < -0.5) {
+		gVehicleInputData1.setDigitalSteerRight(true);
+	}
+	else if (rightStickX > 0.5) {
+		gVehicleInputData1.setDigitalSteerLeft(true);
+	}
+}
+
+
 void VehiclePhysx::startAccelerateForwardsMode()
 {
 	if (gMimicKeyInputs)
