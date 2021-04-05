@@ -255,11 +255,14 @@ VehicleDesc VehiclePhysx::initVehicleDesc(PxF32 mass)
 
 
 void VehiclePhysx::applyGamepadInput(float leftStickX, float leftStickY, float rightStickX, float rightStickY) {
-	if (leftStickY < -0.5) {
+
+	if (leftStickY < -0.5) { //accelerating
+		//TODO: play acceleration sound
 		Vehicles[0]->mDriveDynData.forceGearChange(PxVehicleGearsData::eFIRST);
 		gVehicleInputData1.setDigitalAccel(true);
 	}
-	else if (leftStickY > 0.5) {
+	else if (leftStickY > 0.5) { //reversing
+		//TODO: play reversing sound
 		Vehicles[0]->mDriveDynData.forceGearChange(PxVehicleGearsData::eREVERSE);
 		gVehicleInputData1.setDigitalAccel(true);
 	}
