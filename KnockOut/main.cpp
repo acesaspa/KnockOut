@@ -381,12 +381,12 @@ int main(int argc, char** argv) {
 		pxOpponents.push_back(Physics.getVehicleTrans(4));
 
 
-		//ai1.frameUpdate(Physics.getVehDat(1), Physics.getOpponentPos(1), Physics.getOpponentForVec(1), Physics.getVehiclePos(1), Physics.getPlayerForVec(), Physics.getVehicle4W(1),
-		//	Physics.getVehicle4W(0));
-		//ai2.frameUpdate(Physics.getVehDat(2), Physics.getOpponentPos(2), Physics.getOpponentForVec(2), Physics.getVehiclePos(2), Physics.getPlayerForVec(), Physics.getVehicle4W(2),
-		//	Physics.getVehicle4W(0));
-		//ai3.frameUpdate(Physics.getVehDat(3), Physics.getOpponentPos(3), Physics.getOpponentForVec(3), Physics.getVehiclePos(3), Physics.getPlayerForVec(), Physics.getVehicle4W(3),
-		//	Physics.getVehicle4W(0));
+		ai1.frameUpdate(Physics.getVehDat(1), Physics.getOpponentPos(1), Physics.getOpponentForVec(1), Physics.getVehiclePos(1), Physics.getPlayerForVec(), Physics.getVehicle4W(1),
+			Physics.getVehicle4W(0));
+		ai2.frameUpdate(Physics.getVehDat(2), Physics.getOpponentPos(2), Physics.getOpponentForVec(2), Physics.getVehiclePos(2), Physics.getPlayerForVec(), Physics.getVehicle4W(2),
+			Physics.getVehicle4W(0));
+		ai3.frameUpdate(Physics.getVehDat(3), Physics.getOpponentPos(3), Physics.getOpponentForVec(3), Physics.getVehiclePos(3), Physics.getPlayerForVec(), Physics.getVehicle4W(3),
+			Physics.getVehicle4W(0));
 
 
 		if (Physics.getGameStatus() == 1) {

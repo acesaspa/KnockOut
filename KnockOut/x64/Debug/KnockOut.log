@@ -1,8 +1,22 @@
-﻿  VehiclePhysx.cpp
-C:\585\KnockOut\KnockOut\VehiclePhysx.cpp(318,42): warning C4305: 'argument': truncation from 'float' to 'const bool'
-C:\585\KnockOut\KnockOut\VehiclePhysx.cpp(332,42): warning C4305: 'argument': truncation from 'float' to 'const bool'
-C:\585\KnockOut\KnockOut\VehiclePhysx.cpp(827,41): warning C4267: '=': conversion from 'size_t' to 'physx::PxU32', possible loss of data
-C:\585\KnockOut\KnockOut\VehiclePhysx.cpp(831,47): warning C4267: '=': conversion from 'size_t' to 'physx::PxU32', possible loss of data
-C:\585\KnockOut\KnockOut\VehiclePhysx.cpp(747): warning C4715: 'VehiclePhysx::getBoxTrans': not all control paths return a value
-C:\585\KnockOut\KnockOut\VehiclePhysx.cpp(780): warning C4715: 'VehiclePhysx::getVehDat': not all control paths return a value
+﻿  main.cpp
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\minwindef.h(130,1): warning C4005: 'APIENTRY': macro redefinition
+C:\585\KnockOut\KnockOut\Dependencies\GLFW\include\GLFW\glfw3.h(123): message : see previous definition of 'APIENTRY'
+C:\585\KnockOut\KnockOut\Shader.cpp(57,40): warning C4101: 'e': unreferenced local variable
+C:\585\KnockOut\KnockOut\Utils.h(21,2): warning C4091: 'static ': ignored on left of 'Utils' when no variable is declared
+C:\585\KnockOut\KnockOut\main.cpp(103,27): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\585\KnockOut\KnockOut\main.cpp(107,29): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\585\KnockOut\KnockOut\main.cpp(111,30): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\585\KnockOut\KnockOut\main.cpp(115,31): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\585\KnockOut\KnockOut\main.cpp(119,32): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\585\KnockOut\KnockOut\main.cpp(123,30): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\585\KnockOut\KnockOut\main.cpp(127,31): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\585\KnockOut\KnockOut\main.cpp(131,32): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\585\KnockOut\KnockOut\main.cpp(135,30): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\585\KnockOut\KnockOut\main.cpp(139,30): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\585\KnockOut\KnockOut\main.cpp(268,22): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\585\KnockOut\KnockOut\main.cpp(538,33): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\585\KnockOut\KnockOut\main.cpp(574,37): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\585\KnockOut\KnockOut\main.cpp(618,14): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\585\KnockOut\KnockOut\main.cpp(621,12): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\585\KnockOut\KnockOut\main.cpp(622,12): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
   KnockOut.vcxproj -> C:\585\KnockOut\x64\Debug\KnockOut.exe
