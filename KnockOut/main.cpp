@@ -283,11 +283,15 @@ int main(int argc, char** argv) {
 		if (!bgm.soundPlaying()) { bgm.playSound(); }
 		if (!engine.soundPlaying()) { engine.playSound(); }
 
-		if ((glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_UP) == GLFW_REPEAT))
+		int axesCount;
+		const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axesCount);
+		int present = glfwJoystickPresent(GLFW_JOYSTICK_1);
+
+		if ((glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_UP) == GLFW_REPEAT) or (present and axes[1] < -0.5))
 		{
 			if (!reving.soundPlaying()) { reving.playSound(); }
 		}
-		else if ((glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_REPEAT))
+		else if ((glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_REPEAT) or (present and axes[1] > 0.5))
 		{
 			if (!reving.soundPlaying()) { reving.playSound(); }
 		}
