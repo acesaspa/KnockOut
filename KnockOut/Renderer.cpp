@@ -91,12 +91,12 @@ void Renderer::setUpRendering(glm::vec3 cameraPos, Shader ourShader, Shader text
 
 	//Level
 	citySurfaceMesh.loadOBJ("cityLevel3.obj");
-	cityTexture.loadTexture("asphalt.jpg", true);
+	cityTexture.loadTexture("cityLevel3.png", true);
 	grassSurfaceMesh.loadOBJ("grassLevel3.obj");
-	grassTexture.loadTexture("grass.jpg", true);
+	grassTexture.loadTexture("grasslevelUV.png", true);
 	desertSurfaceMesh.loadOBJ("sandLevel3.obj");
 	desertSurfaceMesh.setIsMostOuterLevel(true); //used to determine the bounding box of the entire level
-	desertTexture.loadTexture("desert_texture.jpg", true);
+	desertTexture.loadTexture("sandLevel3.png", true);
 
 	//Objects
 	treeMesh.loadOBJ("normalTree.obj");
