@@ -40,8 +40,14 @@ PxMaterial* gMaterial = NULL;
 PxPvd* gPvd = NULL;
 VehicleSceneQueryData* gVehicleSceneQueryData = NULL;
 PxBatchQuery* gBatchQuery = NULL;
-
 PxVehicleDrivableSurfaceToTireFrictionPairs* gFrictionPairs = NULL;
+
+float vehicleStaticFriction = 0.8;
+float vehicleDynamicFriction = 0.3;
+float vehicleRestitution = 0.8;
+float oneG = -30.f;
+float chasMas = 300.f;
+float whelMas = 10.f;
 
 PxRigidStatic* gGroundPlane = NULL;
 //PxVehicleDrive4W* gVehicle4W1 = NULL;
@@ -211,7 +217,7 @@ VehicleDesc VehiclePhysx::initVehicleDesc(PxF32 mass)
 	//Set up the chassis mass, dimensions, moment of inertia, and center of mass offset.
 	//The moment of inertia is just the moment of inertia of a cuboid but modified for easier steering.
 	//Center of mass offset is 0.65m above the base of the chassis and 0.25m towards the front.
-	const PxF32 chassisMass = 300;
+	const PxF32 chassisMass = chasMas;
 	const PxVec3 chassisDims(2.5f, 1.5f, 5.0f);
 	const PxVec3 chassisMOI
 	((chassisDims.y * chassisDims.y + chassisDims.z * chassisDims.z) * chassisMass / 8.0f,
@@ -221,7 +227,7 @@ VehicleDesc VehiclePhysx::initVehicleDesc(PxF32 mass)
 
 	//Set up the wheel mass, radius, width, moment of inertia, and number of wheels.
 	//Moment of inertia is just the moment of inertia of a cylinder.
-	const PxF32 wheelMass = 10.0f;
+	const PxF32 wheelMass = whelMas;
 	const PxF32 wheelRadius = 1.0f;
 	const PxF32 wheelWidth = 0.2f;
 	const PxF32 wheelMOI = 0.5f * wheelMass * wheelRadius * wheelRadius;
@@ -416,7 +422,7 @@ void VehiclePhysx::initPhysics(std::vector<Mesh*> groundMeshes)
 	gPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, PxTolerancesScale(), true, gPvd);
 
 	PxSceneDesc sceneDesc(gPhysics->getTolerancesScale());
-	sceneDesc.gravity = PxVec3(0.0f, -30.f, 0.0f);
+	sceneDesc.gravity = PxVec3(0.0f, oneG, 0.0f);
 
 	PxU32 numWorkers = 1;
 	gDispatcher = PxDefaultCpuDispatcherCreate(numWorkers);
@@ -821,7 +827,7 @@ void VehiclePhysx::cookGroundMeshes(std::vector<Mesh*> groundMeshes) {
 }
 
 void VehiclePhysx::cookGroundMesh(Mesh* meshToCook,int i) {
-	PxMaterial* gMaterial = gPhysics->createMaterial(0.8f, 0.8f, 0.1f); //create some material
+	PxMaterial* gMaterial = gPhysics->createMaterial(vehicleStaticFriction, vehicleDynamicFriction, vehicleRestitution); //create some material
 	PxTriangleMeshDesc meshDesc; //mesh cooking from a triangle mesh
 
 	std::vector<PxVec3> vertices = meshToCook->getActualVertices();

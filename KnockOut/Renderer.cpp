@@ -85,9 +85,15 @@ void Renderer::setUpRendering(glm::vec3 cameraPos, Shader ourShader, Shader text
 	defPowerUpMesh.loadOBJ("Powerup.obj");
 	DefPowerUpTexture.loadTexture("shieldUV.png", true);
 
-	//Player
+	//Vehicles
 	playerMesh.loadOBJ("blueCar.obj");
-	playerTexture.loadTexture("blueCar.png", true, true);
+	blueVehicleTexture.loadTexture("blueCar.png", true, true);
+	redVehicleTexture.loadTexture("redCar.png", true, true);
+	aiOpponentTextures.push_back(redVehicleTexture);
+	purpleVehicleTexture.loadTexture("purpleCar.png", true, true);
+	aiOpponentTextures.push_back(purpleVehicleTexture);
+	greenVehicleTexture.loadTexture("greenCar.png", true, true);
+	aiOpponentTextures.push_back(greenVehicleTexture);
 
 	//Level
 	citySurfaceMesh.loadOBJ("cityLevel3.obj");
@@ -107,7 +113,7 @@ void Renderer::setUpRendering(glm::vec3 cameraPos, Shader ourShader, Shader text
 	objectTextures.push_back(cubeTexture);
 
 	//Other
-	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)1200 / (float)800, 0.1f, 500.0f); //how to show perspective (fov, aspect ratio)
+	glm::mat4 projection = glm::perspective(glm::radians(50.0f), (float)1200 / (float)800, 0.1f, 500.0f); //how to show perspective (fov, aspect ratio)
 	ourShader.setMat4("projection", projection); //pass the projection matrix to the fragment shader
 	ourShader.setInt("shadowMap", 1);
 	skybox = Skybox(skyboxShader);
@@ -192,7 +198,7 @@ void Renderer::renderScene(Shader &shader,
 	int gameStatus) {
 
 	glm::mat4 model = glm::mat4(1.0f); //identity matrix
-	renderObject(shader, &playerMesh, &playerTexture, glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.0f, 1.0f, 0.0f), 180.f, vehicleScale, pxPlayerTrans);
+	renderObject(shader, &playerMesh, &blueVehicleTexture, glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.0f, 1.0f, 0.0f), 180.f, vehicleScale, pxPlayerTrans);
 
 	switch (uiBoost) { //player power-up UI
 	case(0): renderObject(shader, &NoBoostUI, &NoBoostTxt, UITranslation, UIRot, UIRotDeg, UIScale, pxUITrans); break;
@@ -201,7 +207,9 @@ void Renderer::renderScene(Shader &shader,
 	case(3): renderObject(shader, &DefendUI, &DefendTxt, UITranslation, UIRot, UIRotDeg, UIScale, pxUITrans); break;
 	}
 
-	for (int i = 0; i < pxOpponentsTrans.size(); i++) renderObject(shader, &playerMesh, &playerTexture, glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.0f, 1.0f, 0.0f), 180.f, vehicleScale, pxOpponentsTrans[i]); //opponents
+	for (int i = 0; i < pxOpponentsTrans.size(); i++) {
+		renderObject(shader, &playerMesh, &aiOpponentTextures[i], glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.0f, 1.0f, 0.0f), 180.f, vehicleScale, pxOpponentsTrans[i]); //opponents
+	}
 	for (int i = 0; i < pxObjectsTrans.size(); i++) renderObject(shader, &objectMeshes[0], &objectTextures[0], worldOrigin, defaultRotation, defaultRotAmountDeg, defaultScale, pxObjectsTrans[i]); //objects
 	renderObject(shader, &treeMesh, &treeTexture, worldOrigin, defaultRotation, defaultRotAmountDeg, defaultScale); //tree
 	//for (int i = 0; i < testLocs.size(); i++) 

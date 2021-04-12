@@ -386,12 +386,12 @@ int main(int argc, char** argv) {
 		pxOpponents.push_back(Physics.getVehicleTrans(4));
 
 
-		//ai1.frameUpdate(Physics.getVehDat(1), Physics.getOpponentPos(1), Physics.getOpponentForVec(1), Physics.getVehiclePos(1), Physics.getPlayerForVec(), Physics.getVehicle4W(1),
-		//	Physics.getVehicle4W(0));
-		//ai2.frameUpdate(Physics.getVehDat(2), Physics.getOpponentPos(2), Physics.getOpponentForVec(2), Physics.getVehiclePos(2), Physics.getPlayerForVec(), Physics.getVehicle4W(2),
-		//	Physics.getVehicle4W(0));
-		//ai3.frameUpdate(Physics.getVehDat(3), Physics.getOpponentPos(3), Physics.getOpponentForVec(3), Physics.getVehiclePos(3), Physics.getPlayerForVec(), Physics.getVehicle4W(3),
-		//	Physics.getVehicle4W(0));
+		ai1.frameUpdate(Physics.getVehDat(1), Physics.getOpponentPos(1), Physics.getOpponentForVec(1), Physics.getVehiclePos(1), Physics.getPlayerForVec(), Physics.getVehicle4W(1),
+			Physics.getVehicle4W(0));
+		ai2.frameUpdate(Physics.getVehDat(2), Physics.getOpponentPos(2), Physics.getOpponentForVec(2), Physics.getVehiclePos(2), Physics.getPlayerForVec(), Physics.getVehicle4W(2),
+			Physics.getVehicle4W(0));
+		ai3.frameUpdate(Physics.getVehDat(3), Physics.getOpponentPos(3), Physics.getOpponentForVec(3), Physics.getVehiclePos(3), Physics.getPlayerForVec(), Physics.getVehicle4W(3),
+			Physics.getVehicle4W(0));
 
 
 		if (Physics.getGameStatus() == 1) {
@@ -594,7 +594,8 @@ void addPowerUp() {
 
 			srand(time(NULL));
 
-			int powerChoice = rand() % 3 + 1;
+			//int powerChoice = rand() % 3 + 1;
+			int powerChoice = 2;
 			float x = rand() % (100 + 100 + 1) - 100;
 			float z = rand() % (100 + 100 + 1) - 100;
 			float y = 5.f;
@@ -640,14 +641,14 @@ void usePowerUp() {
 		if ((*it)->isCollected) {
 			switch ((*it)->Type) {
 			case(1):
-				Physics.applyForce(PxVec3(0.f, 700000.f, 0.f), 1);
+				Physics.applyForce(PxVec3(0.f, 800000.f, 0.f), 1);
 				break;
 			case(2): {
 				glm::mat4 rotation = glm::rotate(glm::mat4{ 1.f }, float(-M_PI / 2.f), glm::vec3(0, 1, 0));
 				PxVec3 pre = (Physics.getRotation() + PxVec3(0.f, 0.05f, 0.f));
 				glm::vec4 rot = glm::vec4(pre.x, pre.y, pre.z, 0.f);
 				glm::vec4 rotated = rotation * rot;
-				Physics.applyForce(1000000.f * PxVec3(rotated.x, rotated.y, rotated.z), 1);
+				Physics.applyForce(950000.f * PxVec3(rotated.x, rotated.y, rotated.z), 1);
 			}
 				   break;
 			case(3): {

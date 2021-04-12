@@ -108,7 +108,11 @@ private:
 	Mesh atkPowerUpMesh;
 	Mesh defPowerUpMesh;
 
-	Texture2D playerTexture;
+	Texture2D blueVehicleTexture;
+	Texture2D greenVehicleTexture;
+	Texture2D purpleVehicleTexture;
+	Texture2D redVehicleTexture;
+
 	Texture2D cubeTexture;
 	Texture2D treeTexture;
 	Texture2D JmpPowerUpTexture;
