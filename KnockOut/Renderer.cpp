@@ -90,13 +90,13 @@ void Renderer::setUpRendering(glm::vec3 cameraPos, Shader ourShader, Shader text
 	playerTexture.loadTexture("blueCar.png", true, true);
 
 	//Level
-	citySurfaceMesh.loadOBJ("city.obj");
-	cityTexture.loadTexture("asphalt.jpg", true);
-	grassSurfaceMesh.loadOBJ("grass.obj");
-	grassTexture.loadTexture("grass.jpg", true);
-	desertSurfaceMesh.loadOBJ("sand.obj");
+	citySurfaceMesh.loadOBJ("cityLevel3.obj");
+	cityTexture.loadTexture("cityLevel3.png", true);
+	grassSurfaceMesh.loadOBJ("grassLevel3.obj");
+	grassTexture.loadTexture("grasslevelUV.png", true);
+	desertSurfaceMesh.loadOBJ("sandLevel3.obj");
 	desertSurfaceMesh.setIsMostOuterLevel(true); //used to determine the bounding box of the entire level
-	desertTexture.loadTexture("desert_texture.jpg", true);
+	desertTexture.loadTexture("sandLevel3.png", true);
 
 	//Objects
 	treeMesh.loadOBJ("normalTree.obj");
