@@ -54,6 +54,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void keyPress(unsigned char key, const PxTransform& camera);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void addPowerUp();
+void usePowerUp();
 void removeSegment();
 
 PxReal stackZ = 10.0f;
@@ -381,12 +382,12 @@ int main(int argc, char** argv) {
 		pxOpponents.push_back(Physics.getVehicleTrans(4));
 
 
-		ai1.frameUpdate(Physics.getVehDat(1), Physics.getOpponentPos(1), Physics.getOpponentForVec(1), Physics.getVehiclePos(1), Physics.getPlayerForVec(), Physics.getVehicle4W(1),
-			Physics.getVehicle4W(0));
-		ai2.frameUpdate(Physics.getVehDat(2), Physics.getOpponentPos(2), Physics.getOpponentForVec(2), Physics.getVehiclePos(2), Physics.getPlayerForVec(), Physics.getVehicle4W(2),
-			Physics.getVehicle4W(0));
-		ai3.frameUpdate(Physics.getVehDat(3), Physics.getOpponentPos(3), Physics.getOpponentForVec(3), Physics.getVehiclePos(3), Physics.getPlayerForVec(), Physics.getVehicle4W(3),
-			Physics.getVehicle4W(0));
+		//ai1.frameUpdate(Physics.getVehDat(1), Physics.getOpponentPos(1), Physics.getOpponentForVec(1), Physics.getVehiclePos(1), Physics.getPlayerForVec(), Physics.getVehicle4W(1),
+		//	Physics.getVehicle4W(0));
+		//ai2.frameUpdate(Physics.getVehDat(2), Physics.getOpponentPos(2), Physics.getOpponentForVec(2), Physics.getVehiclePos(2), Physics.getPlayerForVec(), Physics.getVehicle4W(2),
+		//	Physics.getVehicle4W(0));
+		//ai3.frameUpdate(Physics.getVehDat(3), Physics.getOpponentPos(3), Physics.getOpponentForVec(3), Physics.getVehiclePos(3), Physics.getPlayerForVec(), Physics.getVehicle4W(3),
+		//	Physics.getVehicle4W(0));
 
 
 		if (Physics.getGameStatus() == 1) {
@@ -506,6 +507,10 @@ void processInput(GLFWwindow* window) {
 			int axesCount;
 			const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axesCount);
 			Physics.applyGamepadInput(axes[0], axes[1], axes[2], axes[3]);
+
+			int buttonCount;
+			const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &buttonCount);
+			if (GLFW_PRESS == buttons[0]) usePowerUp(); //A button
 		}
 
 		//KEYBOARD
@@ -534,39 +539,7 @@ void processInput(GLFWwindow* window) {
 			}
 		}
 	}
-	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-		activate.setVolume(baseVolume * 0.2);
-		activate.loopSound(false);
-		for (std::list<PowerUp*>::const_iterator it = powerups.begin(); it != powerups.end(); it++) {
-			if ((*it)->isCollected) {
-				switch ((*it)->Type) {
-					case(1):
-						Physics.applyForce(PxVec3(0.f, 700000.f, 0.f), 1);
-						break;
-					case(2): {
-						glm::mat4 rotation = glm::rotate(glm::mat4{ 1.f }, float(-M_PI / 2.f), glm::vec3(0, 1, 0));
-						PxVec3 pre = (Physics.getRotation() + PxVec3(0.f, 0.05f, 0.f));
-						glm::vec4 rot = glm::vec4(pre.x, pre.y, pre.z, 0.f);
-						glm::vec4 rotated = rotation * rot;
-						Physics.applyForce(1000000.f * PxVec3(rotated.x, rotated.y, rotated.z), 1);
-						}
-						break;
-					case(3): {
-						glm::vec3 vehiclePos = Physics.getVehiclePos(1);
-						glm::vec3 enemyPos = Physics.getVehiclePos(2);
-						glm::vec3 direction = enemyPos - vehiclePos;
-						if (glm::length(direction) < 10) {
-							Physics.stopVehicle(2);
-						}
-					}
-				}
-				if (!activate.soundPlaying()) { activate.playSound(); }
-				powerups.remove(*it);
-				break;
-			}
-		}
-		
-	}
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) usePowerUp();
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -652,6 +625,39 @@ void addPowerUp() {
 			//std::cout << height.x << " " << height.y << " " << height.z << "\n";
 			PowerUp* test3 = new PowerUp(height + glm::vec3(0.f, 1.f, 0.f), powerChoice);
 			powerups.push_back(test3);
+		}
+	}
+}
+
+void usePowerUp() {
+	activate.setVolume(baseVolume * 0.2);
+	activate.loopSound(false);
+	for (std::list<PowerUp*>::const_iterator it = powerups.begin(); it != powerups.end(); it++) {
+		if ((*it)->isCollected) {
+			switch ((*it)->Type) {
+			case(1):
+				Physics.applyForce(PxVec3(0.f, 700000.f, 0.f), 1);
+				break;
+			case(2): {
+				glm::mat4 rotation = glm::rotate(glm::mat4{ 1.f }, float(-M_PI / 2.f), glm::vec3(0, 1, 0));
+				PxVec3 pre = (Physics.getRotation() + PxVec3(0.f, 0.05f, 0.f));
+				glm::vec4 rot = glm::vec4(pre.x, pre.y, pre.z, 0.f);
+				glm::vec4 rotated = rotation * rot;
+				Physics.applyForce(1000000.f * PxVec3(rotated.x, rotated.y, rotated.z), 1);
+			}
+				   break;
+			case(3): {
+				glm::vec3 vehiclePos = Physics.getVehiclePos(1);
+				glm::vec3 enemyPos = Physics.getVehiclePos(2);
+				glm::vec3 direction = enemyPos - vehiclePos;
+				if (glm::length(direction) < 10) {
+					Physics.stopVehicle(2);
+				}
+			}
+			}
+			if (!activate.soundPlaying()) { activate.playSound(); }
+			powerups.remove(*it);
+			break;
 		}
 	}
 }
