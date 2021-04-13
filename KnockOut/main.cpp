@@ -111,9 +111,17 @@ int main(int argc, char** argv) {
 	bgm.setVolume(baseVolume * 0.2);
 	bgm.loopSound(true);
 
-	SoundManager crash = wavPlayer.createSoundPlayer(1);
-	crash.setVolume(baseVolume * 0.8);
-	crash.loopSound(false);
+	SoundManager crashes[6];
+
+	for (int i = 0; i < 6; i++) {
+		crashes[i] = wavPlayer.createSoundPlayer(1);
+		crashes[i].setVolume(baseVolume * 0.8);
+		crashes[i].loopSound(false);
+	}
+
+	//SoundManager crash = wavPlayer.createSoundPlayer(1);
+	//crash.setVolume(baseVolume * 0.8);
+	//crash.loopSound(false);
 
 	SoundManager select = wavPlayer.createSoundPlayer(2);
 	select.setVolume(baseVolume * 0.8);
@@ -244,31 +252,44 @@ int main(int argc, char** argv) {
 
 				float dist = glm::length(c1_pos - c2_pos);
 
-				if (dist < 5) {
+				if (dist < 6) {
 					if (i == 1) {
 						std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - last_collision_times[j - 2];
 						if (elapsed_seconds.count() >= 1.5f) {
 							last_collision_times[j - 2] = std::chrono::system_clock::now();
 							std::cout << "COLLISION\n";
-							//PLAY COLLISION SOUND
+							if (!crashes[j-2].soundPlaying()) { crashes[j-2].playSound(); }
+						}
+						else if (elapsed_seconds.count() > 1.25f && elapsed_seconds.count() < 1.5f) {
+							crashes[j-2].stopSound();
 						}
 					}
+					
 					else if (i == 2) {
 						std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - last_collision_times[j];
-						if (elapsed_seconds.count() >= 1.5f) {
+						if (elapsed_seconds.count() >= 1.f) {
 							last_collision_times[j] = std::chrono::system_clock::now();
-							std::cout << "COLLISION\n";
-							//PLAY COLLISION SOUND
+							std::cout << "COLLISION  asdf\n";
+							if (!crashes[j].soundPlaying()) { 
+								float length = glm::length(c1_pos - Physics.getVehiclePos(1));
+								crashes[j].setVolume(baseVolume * 0.8 * 10.f/length);
+								crashes[j].playSound(); 
+							}
 						}
 					}
 					else if (i == 3) {
 						std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - last_collision_times[5];
-						if (elapsed_seconds.count() >= 1.5f) {
+						if (elapsed_seconds.count() >= 1.f) {
 							last_collision_times[5] = std::chrono::system_clock::now();
-							std::cout << "COLLISION\n";
-							//PLAY COLLISION SOUND
+							std::cout << "COLLISION  fdas\n";
+							if (!crashes[5].soundPlaying()) {
+								float length = glm::length(c1_pos - Physics.getVehiclePos(1));
+								crashes[5].setVolume(baseVolume * 0.8 * 10.f / length);
+								crashes[5].playSound();
+							}
 						}
 					}
+					
 				}
 			}
 		}
