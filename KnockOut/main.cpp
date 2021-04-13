@@ -83,6 +83,13 @@ AIBehavior ai1 = AIBehavior(1);
 AIBehavior ai2 = AIBehavior(1);
 AIBehavior ai3 = AIBehavior(1);
 
+std::chrono::system_clock::time_point last_collision_times[6] = { std::chrono::system_clock::now(),
+																std::chrono::system_clock::now(),
+																std::chrono::system_clock::now(),
+																std::chrono::system_clock::now(),
+																std::chrono::system_clock::now(),
+																std::chrono::system_clock::now() };
+
 
 /*
 0 = PLAY
@@ -229,7 +236,42 @@ int main(int argc, char** argv) {
 		}
 		if (removingSegment) removeSegment();
 
+		//MARK: COLLISION SOUNDS
+		for (int i = 1; i < 5; i++) {//1,2,3,4
+			glm::vec3 c1_pos = Physics.getVehiclePos(i);
+			for (int j = i + 1; j < 5; j++) {
+				glm::vec3 c2_pos = Physics.getVehiclePos(j);
 
+				float dist = glm::length(c1_pos - c2_pos);
+
+				if (dist < 5) {
+					if (i == 1) {
+						std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - last_collision_times[j - 2];
+						if (elapsed_seconds.count() >= 1.5f) {
+							last_collision_times[j - 2] = std::chrono::system_clock::now();
+							std::cout << "COLLISION\n";
+							//PLAY COLLISION SOUND
+						}
+					}
+					else if (i == 2) {
+						std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - last_collision_times[j];
+						if (elapsed_seconds.count() >= 1.5f) {
+							last_collision_times[j] = std::chrono::system_clock::now();
+							std::cout << "COLLISION\n";
+							//PLAY COLLISION SOUND
+						}
+					}
+					else if (i == 3) {
+						std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - last_collision_times[5];
+						if (elapsed_seconds.count() >= 1.5f) {
+							last_collision_times[5] = std::chrono::system_clock::now();
+							std::cout << "COLLISION\n";
+							//PLAY COLLISION SOUND
+						}
+					}
+				}
+			}
+		}
 
 		//MARK: POWER-UP PICK UP
 		for (std::list<PowerUp*>::const_iterator it = powerups.begin(); it != powerups.end(); it++){ //Loop through powerups
