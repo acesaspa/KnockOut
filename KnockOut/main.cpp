@@ -671,12 +671,12 @@ void addPowerUp() {
 
 			srand(time(NULL));
 
-			//int powerChoice = rand() % 3 + 1;
-			int powerChoice = 2;
+			int powerChoice = rand() % 3 + 1;
+			//int powerChoice = 2;
 			//40,80,100
 			int size = 0;
 			if (Physics.getNumCars() == 0) {
-				size = 100;
+				size = 80;
 			}
 			if (Physics.getNumCars() == 1) {
 				size = 60;
@@ -729,14 +729,14 @@ void usePowerUp() {
 		if ((*it)->isCollected) {
 			switch ((*it)->Type) {
 			case(1):
-				Physics.applyForce(PxVec3(0.f, 80000.f, 0.f), 1);
+				Physics.applyForce(PxVec3(0.f, 280000.f, 0.f), 1);
 				break;
 			case(2): {
 				glm::mat4 rotation = glm::rotate(glm::mat4{ 1.f }, float(-M_PI / 2.f), glm::vec3(0, 1, 0));
 				PxVec3 pre = (Physics.getRotation() + PxVec3(0.f, 0.05f, 0.f));
 				glm::vec4 rot = glm::vec4(pre.x, pre.y, pre.z, 0.f);
 				glm::vec4 rotated = rotation * rot;
-				Physics.applyForce(950000.f * PxVec3(rotated.x, rotated.y, rotated.z), 1);
+				Physics.applyForce(900000.f * PxVec3(rotated.x, rotated.y, rotated.z), 1);
 			}
 				   break;
 			case(3): {
