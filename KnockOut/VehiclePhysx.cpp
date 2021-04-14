@@ -57,9 +57,9 @@ PxRigidStatic* gGroundPlane = NULL;
 int NumCars = 0;
 PxVehicleDrive4W* Vehicles[4] = {NULL,NULL, NULL, NULL};
 int GameStatus = 0;
-PxRigidDynamic* gBox = NULL;
-PxRigidDynamic* gBox2 = NULL;
-PxRigidDynamic* gBox3 = NULL;
+//PxRigidDynamic* gBox = NULL;
+//PxRigidDynamic* gBox2 = NULL;
+//PxRigidDynamic* gBox3 = NULL;
 PxRigidStatic* meshBody1 = NULL;
 PxRigidStatic* meshBody2 = NULL;
 PxRigidStatic* meshBody3 = NULL;
@@ -470,7 +470,7 @@ void VehiclePhysx::initPhysics(std::vector<Mesh*> groundMeshes)
 		gScene->addActor(*Vehicles[i]->getRigidDynamicActor());
 	}
 
-
+	/*
 	//Create a box for the vehicle to collide with
 	PxTransform localTm(PxVec3(0, 20.0f, 0.0f));
 	gBox = gPhysics->createRigidDynamic(localTm);
@@ -504,7 +504,7 @@ void VehiclePhysx::initPhysics(std::vector<Mesh*> groundMeshes)
 	gBox3->attachShape(*shape3);
 	gBox3->setMass(50.f);
 	gScene->addActor(*gBox3);
-
+	*/
 	//Set the vehicle to rest in first gear.
 	//Set the vehicle to use auto-gears.
 	for (int i = 0; i < 4; i++) {
@@ -670,7 +670,7 @@ void VehiclePhysx::cleanupPhysics()
 		Vehicles[i]->getRigidDynamicActor()->release();
 		Vehicles[i]->free();
 	}
-	PX_RELEASE(gBox);
+	//PX_RELEASE(gBox);
 	PX_RELEASE(gGroundPlane);
 	PX_RELEASE(gBatchQuery);
 	gVehicleSceneQueryData->free(gAllocator);
@@ -725,6 +725,7 @@ glm::vec3 VehiclePhysx::getGroundPos() {
 	return groundPos;
 }
 
+/*
 glm::vec3 VehiclePhysx::getBoxPos(int index) {
 	glm::vec3 boxPos = glm::vec3(0,0,0);
 	if (index == 1) {
@@ -754,7 +755,7 @@ PxTransform VehiclePhysx::getBoxTrans(int index) {
 		return gBox3->getGlobalPose();
 	}
 }
-
+*/
 PxPhysics* VehiclePhysx::getPhysx() {
 	return gPhysics;
 }

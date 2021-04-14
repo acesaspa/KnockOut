@@ -440,21 +440,21 @@ int main(int argc, char** argv) {
 		glClearColor(0.53f, 0.81f, 0.92f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		std::vector<PxTransform> pxObjects; //ideally this "arrayization" should be done in PhysX
-		pxObjects.push_back(Physics.getBoxTrans(1));
-		pxObjects.push_back(Physics.getBoxTrans(2));
-		pxObjects.push_back(Physics.getBoxTrans(3));
+		//pxObjects.push_back(Physics.getBoxTrans(1));
+		//pxObjects.push_back(Physics.getBoxTrans(2));
+		//pxObjects.push_back(Physics.getBoxTrans(3));
 		std::vector<PxMat44> pxOpponents;
 		pxOpponents.push_back(Physics.getVehicleTrans(2));
 		pxOpponents.push_back(Physics.getVehicleTrans(3));
 		pxOpponents.push_back(Physics.getVehicleTrans(4));
 
 
-		ai1.frameUpdate(Physics.getVehDat(1), Physics.getOpponentPos(1), Physics.getOpponentForVec(1), Physics.getVehiclePos(1), Physics.getPlayerForVec(), Physics.getVehicle4W(1),
-			Physics.getVehicle4W(0));
-		ai2.frameUpdate(Physics.getVehDat(2), Physics.getOpponentPos(2), Physics.getOpponentForVec(2), Physics.getVehiclePos(2), Physics.getPlayerForVec(), Physics.getVehicle4W(2),
-			Physics.getVehicle4W(0));
-		ai3.frameUpdate(Physics.getVehDat(3), Physics.getOpponentPos(3), Physics.getOpponentForVec(3), Physics.getVehiclePos(3), Physics.getPlayerForVec(), Physics.getVehicle4W(3),
-			Physics.getVehicle4W(0));
+		//ai1.frameUpdate(Physics.getVehDat(1), Physics.getOpponentPos(1), Physics.getOpponentForVec(1), Physics.getVehiclePos(1), Physics.getPlayerForVec(), Physics.getVehicle4W(1),
+		//	Physics.getVehicle4W(0));
+		//ai2.frameUpdate(Physics.getVehDat(2), Physics.getOpponentPos(2), Physics.getOpponentForVec(2), Physics.getVehiclePos(2), Physics.getPlayerForVec(), Physics.getVehicle4W(2),
+		//	Physics.getVehicle4W(0));
+		//ai3.frameUpdate(Physics.getVehDat(3), Physics.getOpponentPos(3), Physics.getOpponentForVec(3), Physics.getVehiclePos(3), Physics.getPlayerForVec(), Physics.getVehicle4W(3),
+		//	Physics.getVehicle4W(0));
 
 
 		if (Physics.getGameStatus() == 1) {
@@ -526,7 +526,21 @@ void removeSegment() {
 	std::chrono::duration<double> elapsed_seconds = end - segmentRemovalStart;
 
 	if (elapsed_seconds.count() >= 10) { //current time - last time = elapsed point
+		//powerups.clear();
+		PowerUp* temp = new PowerUp(glm::vec3(0.f, 1.f, 0.f), 1);
+		for (std::list<PowerUp*>::const_iterator it = powerups.begin(); it != powerups.end(); it++) { //Loop through powerups
+			if ((*it)->Player != 0) {
+				temp->isCollected = (*it)->isCollected;
+				temp->Location = (*it)->Location;
+				temp->Player = (*it)->Player;
+				temp->Type = (*it)->Type;
+			} 
+		}
 		powerups.clear();
+		powerups.push_back(temp);
+
+
+		//powerups.push_back(temp);
 		Physics.removeGround(mainRenderer.getGroundMeshes(Physics.getNumCars()));
 		removingSegment = false;
 		mainRenderer.flashSegment(false);
@@ -652,15 +666,26 @@ void addPowerUp() {
 		auto end = std::chrono::system_clock::now();
 		std::chrono::duration<double> elapsed_seconds = end - start;
 
-		if (elapsed_seconds.count() >= 5) { //current time - last time = elapsed point
+		if (elapsed_seconds.count() >= 1) { //current time - last time = elapsed point
 			start = std::chrono::system_clock::now();
 
 			srand(time(NULL));
 
 			//int powerChoice = rand() % 3 + 1;
 			int powerChoice = 2;
-			float x = rand() % (100 + 100 + 1) - 100;
-			float z = rand() % (100 + 100 + 1) - 100;
+			//40,80,100
+			int size = 0;
+			if (Physics.getNumCars() == 0) {
+				size = 100;
+			}
+			if (Physics.getNumCars() == 1) {
+				size = 60;
+			}
+			if (Physics.getNumCars() == 2) {
+				size = 40;
+			}
+			float x = rand() % (size+size + 1) - size;
+			float z = rand() % (size+size + 1) - size;
 			float y = 5.f;
 
 			std::vector<Mesh*> groundMeshes = mainRenderer.getGroundMeshes(Physics.getNumCars());
@@ -704,7 +729,7 @@ void usePowerUp() {
 		if ((*it)->isCollected) {
 			switch ((*it)->Type) {
 			case(1):
-				Physics.applyForce(PxVec3(0.f, 800000.f, 0.f), 1);
+				Physics.applyForce(PxVec3(0.f, 80000.f, 0.f), 1);
 				break;
 			case(2): {
 				glm::mat4 rotation = glm::rotate(glm::mat4{ 1.f }, float(-M_PI / 2.f), glm::vec3(0, 1, 0));

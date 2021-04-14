@@ -16,9 +16,9 @@ C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(155,30): warn
 C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(275,53): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
 C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(287,54): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
 C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(332,22): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(614,37): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(658,14): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(662,12): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
-C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(663,12): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
-C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(701,32): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(628,37): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(672,14): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(687,12): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(688,12): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(726,32): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
   KnockOut.vcxproj -> C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\x64\Debug\KnockOut.exe
