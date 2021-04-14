@@ -132,7 +132,7 @@ int main(int argc, char** argv) {
 	victory.loopSound(false);
 
 	SoundManager gameover = wavPlayer.createSoundPlayer(4);
-	gameover.setVolume(baseVolume * 0.3);
+	gameover.setVolume(baseVolume * 0.5);
 	gameover.loopSound(false);
 
 	SoundManager pickup = wavPlayer.createSoundPlayer(5);
@@ -252,7 +252,7 @@ int main(int argc, char** argv) {
 
 				float dist = glm::length(c1_pos - c2_pos);
 
-				if (dist < 6) {
+				if (dist < 5.5) {
 					if (i == 1) {
 						std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - last_collision_times[j - 2];
 						if (elapsed_seconds.count() >= 1.5f) {
@@ -460,6 +460,7 @@ int main(int argc, char** argv) {
 		if (Physics.getGameStatus() == 1) {
 			//Camera will go to game over screen
 			st = 1;
+			powerups.clear();
 			Physics.setGameStatus(3);
 		}
 		//You win
@@ -467,6 +468,7 @@ int main(int argc, char** argv) {
 			//std::cout << "you win\n";
 			//Camera will go to you win screen
 			st = 2;
+			powerups.clear();
 			Physics.setGameStatus(4);
 		}
 		else {
@@ -723,13 +725,14 @@ void addPowerUp() {
 }
 
 void usePowerUp() {
+
 	activate.setVolume(baseVolume * 0.2);
 	activate.loopSound(false);
 	for (std::list<PowerUp*>::const_iterator it = powerups.begin(); it != powerups.end(); it++) {
 		if ((*it)->isCollected) {
 			switch ((*it)->Type) {
 			case(1):
-				Physics.applyForce(PxVec3(0.f, 280000.f, 0.f), 1);
+				Physics.applyForce(PxVec3(0.f, 300000.f, 0.f), 1);
 				break;
 			case(2): {
 				glm::mat4 rotation = glm::rotate(glm::mat4{ 1.f }, float(-M_PI / 2.f), glm::vec3(0, 1, 0));
