@@ -81,6 +81,13 @@ Source source;
 
 std::vector<Opponent> aiOpponents;
 
+std::chrono::system_clock::time_point last_collision_times[6] = { std::chrono::system_clock::now(),
+																std::chrono::system_clock::now(),
+																std::chrono::system_clock::now(),
+																std::chrono::system_clock::now(),
+																std::chrono::system_clock::now(),
+																std::chrono::system_clock::now() };
+
 
 /*
 0 = PLAY
@@ -102,9 +109,17 @@ int main(int argc, char** argv) {
 	bgm.setVolume(baseVolume * 0.2);
 	bgm.loopSound(true);
 
-	SoundManager crash = wavPlayer.createSoundPlayer(1);
-	crash.setVolume(baseVolume * 0.8);
-	crash.loopSound(false);
+	SoundManager crashes[6];
+
+	for (int i = 0; i < 6; i++) {
+		crashes[i] = wavPlayer.createSoundPlayer(1);
+		crashes[i].setVolume(baseVolume * 0.8);
+		crashes[i].loopSound(false);
+	}
+
+	//SoundManager crash = wavPlayer.createSoundPlayer(1);
+	//crash.setVolume(baseVolume * 0.8);
+	//crash.loopSound(false);
 
 	SoundManager select = wavPlayer.createSoundPlayer(2);
 	select.setVolume(baseVolume * 0.8);
@@ -227,7 +242,55 @@ int main(int argc, char** argv) {
 		}
 		if (removingSegment) removeSegment();
 
+		//MARK: COLLISION SOUNDS
+		for (int i = 1; i < 5; i++) {//1,2,3,4
+			glm::vec3 c1_pos = Physics.getVehiclePos(i);
+			for (int j = i + 1; j < 5; j++) {
+				glm::vec3 c2_pos = Physics.getVehiclePos(j);
 
+				float dist = glm::length(c1_pos - c2_pos);
+
+				if (dist < 6) {
+					if (i == 1) {
+						std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - last_collision_times[j - 2];
+						if (elapsed_seconds.count() >= 1.5f) {
+							last_collision_times[j - 2] = std::chrono::system_clock::now();
+							std::cout << "COLLISION\n";
+							if (!crashes[j-2].soundPlaying()) { crashes[j-2].playSound(); }
+						}
+						else if (elapsed_seconds.count() > 1.25f && elapsed_seconds.count() < 1.5f) {
+							crashes[j-2].stopSound();
+						}
+					}
+					
+					else if (i == 2) {
+						std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - last_collision_times[j];
+						if (elapsed_seconds.count() >= 1.f) {
+							last_collision_times[j] = std::chrono::system_clock::now();
+							std::cout << "COLLISION  asdf\n";
+							if (!crashes[j].soundPlaying()) { 
+								float length = glm::length(c1_pos - Physics.getVehiclePos(1));
+								crashes[j].setVolume(baseVolume * 0.8 * 10.f/length);
+								crashes[j].playSound(); 
+							}
+						}
+					}
+					else if (i == 3) {
+						std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - last_collision_times[5];
+						if (elapsed_seconds.count() >= 1.f) {
+							last_collision_times[5] = std::chrono::system_clock::now();
+							std::cout << "COLLISION  fdas\n";
+							if (!crashes[5].soundPlaying()) {
+								float length = glm::length(c1_pos - Physics.getVehiclePos(1));
+								crashes[5].setVolume(baseVolume * 0.8 * 10.f / length);
+								crashes[5].playSound();
+							}
+						}
+					}
+					
+				}
+			}
+		}
 
 		//MARK: POWER-UP PICK UP
 		for (std::list<PowerUp*>::const_iterator it = powerups.begin(); it != powerups.end(); it++){ //Loop through powerups
@@ -375,9 +438,9 @@ int main(int argc, char** argv) {
 		glClearColor(0.53f, 0.81f, 0.92f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		std::vector<PxTransform> pxObjects; //ideally this "arrayization" should be done in PhysX
-		pxObjects.push_back(Physics.getBoxTrans(1));
-		pxObjects.push_back(Physics.getBoxTrans(2));
-		pxObjects.push_back(Physics.getBoxTrans(3));
+		//pxObjects.push_back(Physics.getBoxTrans(1));
+		//pxObjects.push_back(Physics.getBoxTrans(2));
+		//pxObjects.push_back(Physics.getBoxTrans(3));
 		std::vector<PxMat44> pxOpponents;
 		pxOpponents.push_back(Physics.getVehicleTrans(2));
 		pxOpponents.push_back(Physics.getVehicleTrans(3));
@@ -467,7 +530,21 @@ void removeSegment() {
 	std::chrono::duration<double> elapsed_seconds = end - segmentRemovalStart;
 
 	if (elapsed_seconds.count() >= 10) { //current time - last time = elapsed point
+		//powerups.clear();
+		PowerUp* temp = new PowerUp(glm::vec3(0.f, 1.f, 0.f), 1);
+		for (std::list<PowerUp*>::const_iterator it = powerups.begin(); it != powerups.end(); it++) { //Loop through powerups
+			if ((*it)->Player != 0) {
+				temp->isCollected = (*it)->isCollected;
+				temp->Location = (*it)->Location;
+				temp->Player = (*it)->Player;
+				temp->Type = (*it)->Type;
+			} 
+		}
 		powerups.clear();
+		powerups.push_back(temp);
+
+
+		//powerups.push_back(temp);
 		Physics.removeGround(mainRenderer.getGroundMeshes(Physics.getNumCars()));
 		removingSegment = false;
 		mainRenderer.flashSegment(false);
@@ -590,15 +667,26 @@ void addPowerUp() {
 		auto end = std::chrono::system_clock::now();
 		std::chrono::duration<double> elapsed_seconds = end - start;
 
-		if (elapsed_seconds.count() >= 3) { //current time - last time = elapsed point
+		if (elapsed_seconds.count() >= 1) { //current time - last time = elapsed point
 			start = std::chrono::system_clock::now();
 
 			srand(time(NULL));
 
-			//int powerChoice = rand() % 3 + 1;
-			int powerChoice = 2;
-			float x = rand() % (100 + 100 + 1) - 100;
-			float z = rand() % (100 + 100 + 1) - 100;
+			int powerChoice = rand() % 3 + 1;
+			//int powerChoice = 2;
+			//40,80,100
+			int size = 0;
+			if (Physics.getNumCars() == 0) {
+				size = 80;
+			}
+			if (Physics.getNumCars() == 1) {
+				size = 60;
+			}
+			if (Physics.getNumCars() == 2) {
+				size = 40;
+			}
+			float x = rand() % (size+size + 1) - size;
+			float z = rand() % (size+size + 1) - size;
 			float y = 5.f;
 
 			std::vector<Mesh*> groundMeshes = mainRenderer.getGroundMeshes(Physics.getNumCars());
@@ -642,14 +730,14 @@ void usePowerUp() {
 		if ((*it)->isCollected) {
 			switch ((*it)->Type) {
 			case(1):
-				Physics.applyForce(PxVec3(0.f, 800000.f, 0.f), 1);
+				Physics.applyForce(PxVec3(0.f, 280000.f, 0.f), 1);
 				break;
 			case(2): {
 				glm::mat4 rotation = glm::rotate(glm::mat4{ 1.f }, float(-M_PI / 2.f), glm::vec3(0, 1, 0));
 				PxVec3 pre = (Physics.getRotation() + PxVec3(0.f, 0.02f, 0.f));
 				glm::vec4 rot = glm::vec4(pre.x, pre.y, pre.z, 0.f);
 				glm::vec4 rotated = rotation * rot;
-				Physics.applyForce(950000.f * PxVec3(rotated.x, rotated.y, rotated.z), 1);
+				Physics.applyForce(900000.f * PxVec3(rotated.x, rotated.y, rotated.z), 1);
 			}
 				   break;
 			case(3): {

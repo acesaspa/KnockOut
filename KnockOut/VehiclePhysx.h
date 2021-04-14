@@ -29,8 +29,8 @@ public:
 	float getAngleAroundY();
 	glm::vec3 getVehiclePos(int index);
 	glm::vec3 getGroundPos();
-	glm::vec3 getBoxPos(int index);
-	PxTransform getBoxTrans(int index);
+	//glm::vec3 getBoxPos(int index);
+	//PxTransform getBoxTrans(int index);
 	PxPhysics* getPhysx();
 	PxScene* getScene();
 	PxCooking* getCooking();

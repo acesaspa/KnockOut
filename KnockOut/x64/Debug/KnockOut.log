@@ -1,5 +1,24 @@
-﻿  Renderer.cpp
-C:\Users\Sarcgasm\Desktop\KnockoutDev\KnockOut\KnockOut\Shader.cpp(57,40): warning C4101: 'e': unreferenced local variable
-C:\Users\Sarcgasm\Desktop\KnockoutDev\KnockOut\KnockOut\Utils.h(21,2): warning C4091: 'static ': ignored on left of 'Utils' when no variable is declared
-C:\Users\Sarcgasm\Desktop\KnockoutDev\KnockOut\KnockOut\Renderer.cpp(330): warning C4715: 'Renderer::getGroundMeshes': not all control paths return a value
-  KnockOut.vcxproj -> C:\Users\Sarcgasm\Desktop\KnockoutDev\KnockOut\x64\Debug\KnockOut.exe
+﻿  main.cpp
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\shared\minwindef.h(130,1): warning C4005: 'APIENTRY': macro redefinition
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\Dependencies\GLFW\include\GLFW\glfw3.h(123): message : see previous definition of 'APIENTRY'
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\Shader.cpp(57,40): warning C4101: 'e': unreferenced local variable
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\Utils.h(21,2): warning C4091: 'static ': ignored on left of 'Utils' when no variable is declared
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(111,27): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(118,35): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(127,30): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(131,31): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(135,32): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(139,30): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(143,31): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(147,32): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(151,30): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(155,30): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(275,53): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(287,54): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(332,22): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(628,37): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(672,14): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(687,12): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(688,12): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\KnockOut\main.cpp(726,32): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+  KnockOut.vcxproj -> C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\x64\Debug\KnockOut.exe
