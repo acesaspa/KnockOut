@@ -105,8 +105,6 @@ void Renderer::setUpRendering(glm::vec3 cameraPos, Shader ourShader, Shader text
 	desertTexture.loadTexture("sandLevel3.png", true);
 
 	//Objects
-	treeMesh.loadOBJ("normalTree.obj");
-	treeTexture.loadTexture("normalTreeTexture.png", true);
 	cubeMesh.loadVertexData(Utils::cubeVertexData, Utils::cubeArrayLen);
 	objectMeshes.push_back(cubeMesh);
 	cubeTexture.loadTexture("container_texture.jpg", true);
@@ -117,8 +115,6 @@ void Renderer::setUpRendering(glm::vec3 cameraPos, Shader ourShader, Shader text
 	ourShader.setMat4("projection", projection); //pass the projection matrix to the fragment shader
 	ourShader.setInt("shadowMap", 1);
 	skybox = Skybox(skyboxShader);
-	
-	
 	
 	prepShadows(depthShader, projection);
 }
@@ -211,9 +207,7 @@ void Renderer::renderScene(Shader &shader,
 		renderObject(shader, &playerMesh, &aiOpponentTextures[i], glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.0f, 1.0f, 0.0f), 180.f, vehicleScale, pxOpponentsTrans[i]); //opponents
 	}
 	for (int i = 0; i < pxObjectsTrans.size(); i++) renderObject(shader, &objectMeshes[0], &objectTextures[0], worldOrigin, defaultRotation, defaultRotAmountDeg, defaultScale, pxObjectsTrans[i]); //objects
-	renderObject(shader, &treeMesh, &treeTexture, worldOrigin, defaultRotation, defaultRotAmountDeg, defaultScale); //tree
-	//for (int i = 0; i < testLocs.size(); i++) 
-		renderObject(shader, &objectMeshes[0], &objectTextures[0], lightPos, defaultRotation, defaultRotAmountDeg, defaultScale); //testing
+	for (int i = 0; i < testLocs.size(); i++) renderObject(shader, &objectMeshes[0], &objectTextures[0], testLocs[i], defaultRotation, defaultRotAmountDeg, defaultScale); //testing
 
 	switch (carsRemoved) { //level segments
 	case 0:
@@ -352,6 +346,11 @@ std::vector<glm::vec3> Renderer::getLevelBB() { //TODO: make a bit more streamli
 		return desertSurfaceMesh.getBoundingBoxVertices();
 		break;
 	}
+}
+
+bool Renderer::isLastSegment() {
+	if (noCarsRemoved == 2) return true; //we're down to the last map segment
+	else return false;
 }
 
 void Renderer::flashSegment(bool keepFlashing) {

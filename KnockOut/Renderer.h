@@ -48,6 +48,7 @@ public:
 	std::vector<Mesh*> getGroundMeshes(int index);
 	std::vector<glm::vec3> getLevelBB();
 	void flashSegment(bool keepFlashing);
+	bool isLastSegment();
 
 	std::vector<glm::vec3> testLocs;
 

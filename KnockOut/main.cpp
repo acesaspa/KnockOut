@@ -79,9 +79,7 @@ Camera mainCamera;
 VehiclePhysx Physics = VehiclePhysx();
 Source source;
 
-AIBehavior ai1 = AIBehavior(1);
-AIBehavior ai2 = AIBehavior(1);
-AIBehavior ai3 = AIBehavior(1);
+std::vector<Opponent> aiOpponents;
 
 
 /*
@@ -174,13 +172,13 @@ int main(int argc, char** argv) {
 	bool show_another_window = false;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-	//TODO
 	mainRenderer.setUpRendering(mainCamera.getCameraPos(), mainShader, textShader, skyboxShader, depthShader);
-	Physics.initPhysics(mainRenderer.getGroundMeshes(0));	
-	ai1.updateLevelBB(mainRenderer.getLevelBB());
-	ai2.updateLevelBB(mainRenderer.getLevelBB());
-	ai3.updateLevelBB(mainRenderer.getLevelBB());
+	Physics.initPhysics(mainRenderer.getGroundMeshes(0));
 
+	for (int i = 0; i < Utils::opponentCount; i++) {
+		aiOpponents.push_back(Opponent());
+		aiOpponents[aiOpponents.size() - 1].updateLevelBB(mainRenderer.getLevelBB(), false);
+	}
 	glfwSetKeyCallback(window, key_callback);
 	Physics.setGameStatus(0);
 
@@ -194,6 +192,7 @@ int main(int argc, char** argv) {
 			Physics.setGameStatus(0);
 			Physics.reset();
 		}
+
 
 		bool hasPower = false;
 		for (std::list<PowerUp*>::const_iterator it = powerups.begin(); it != powerups.end(); it++) {
@@ -219,12 +218,11 @@ int main(int argc, char** argv) {
 				removingSegment = true;
 				mainRenderer.flashSegment(true);
 				Physics.setChanged(false);
-				ai1.updateLevelBB(mainRenderer.getLevelBB());
-				ai2.updateLevelBB(mainRenderer.getLevelBB());
-				ai3.updateLevelBB(mainRenderer.getLevelBB());
-				ai1.startEvac();
-				ai2.startEvac();
-				ai3.startEvac();
+
+				for (int i = 0; i < Utils::opponentCount; i++) {
+					aiOpponents[i].updateLevelBB(mainRenderer.getLevelBB(), mainRenderer.isLastSegment());
+					aiOpponents[i].startEvac();
+				}
 			}
 		}
 		if (removingSegment) removeSegment();
@@ -386,12 +384,18 @@ int main(int argc, char** argv) {
 		pxOpponents.push_back(Physics.getVehicleTrans(4));
 
 
-		ai1.frameUpdate(Physics.getVehDat(1), Physics.getOpponentPos(1), Physics.getOpponentForVec(1), Physics.getVehiclePos(1), Physics.getPlayerForVec(), Physics.getVehicle4W(1),
-			Physics.getVehicle4W(0));
-		ai2.frameUpdate(Physics.getVehDat(2), Physics.getOpponentPos(2), Physics.getOpponentForVec(2), Physics.getVehiclePos(2), Physics.getPlayerForVec(), Physics.getVehicle4W(2),
-			Physics.getVehicle4W(0));
-		ai3.frameUpdate(Physics.getVehDat(3), Physics.getOpponentPos(3), Physics.getOpponentForVec(3), Physics.getVehiclePos(3), Physics.getPlayerForVec(), Physics.getVehicle4W(3),
-			Physics.getVehicle4W(0));
+
+		//AI OPPONENTs FRAME UPDATE
+		for (int i = 0; i < Utils::opponentCount; i++) {
+			aiOpponents[i].frameUpdate(
+				Physics.getVehDat(i+1),
+				Physics.getOpponentPos(i + 1),
+				Physics.getOpponentForVec(i + 1),
+				Physics.getVehiclePos(i + 1),
+				Physics.getPlayerForVec(),
+				Physics.getVehicle4W(i + 1),
+				Physics.getVehicle4W(0));
+		}
 
 
 		if (Physics.getGameStatus() == 1) {
@@ -467,9 +471,6 @@ void removeSegment() {
 		Physics.removeGround(mainRenderer.getGroundMeshes(Physics.getNumCars()));
 		removingSegment = false;
 		mainRenderer.flashSegment(false);
-		ai1.setAttacking(); //after first segment removal all AIs will attack
-		ai2.setAttacking();
-		ai3.setAttacking();
 	}
 }
 
@@ -585,11 +586,11 @@ void keyPress(unsigned char key, const PxTransform& camera)
 }
 
 void addPowerUp() {
-	if (powerups.size() < 5) {
+	if (powerups.size() < 30) {
 		auto end = std::chrono::system_clock::now();
 		std::chrono::duration<double> elapsed_seconds = end - start;
 
-		if (elapsed_seconds.count() >= 5) { //current time - last time = elapsed point
+		if (elapsed_seconds.count() >= 3) { //current time - last time = elapsed point
 			start = std::chrono::system_clock::now();
 
 			srand(time(NULL));
@@ -645,7 +646,7 @@ void usePowerUp() {
 				break;
 			case(2): {
 				glm::mat4 rotation = glm::rotate(glm::mat4{ 1.f }, float(-M_PI / 2.f), glm::vec3(0, 1, 0));
-				PxVec3 pre = (Physics.getRotation() + PxVec3(0.f, 0.05f, 0.f));
+				PxVec3 pre = (Physics.getRotation() + PxVec3(0.f, 0.02f, 0.f));
 				glm::vec4 rot = glm::vec4(pre.x, pre.y, pre.z, 0.f);
 				glm::vec4 rotated = rotation * rot;
 				Physics.applyForce(950000.f * PxVec3(rotated.x, rotated.y, rotated.z), 1);

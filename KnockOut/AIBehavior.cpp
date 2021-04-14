@@ -1,59 +1,16 @@
 #include "AIBehavior.h"
 
-
-enum State {none, roaming, attacking, defending, evac};
-State currentState = roaming;
-State returnState = none;
-
-unsigned int counter = 0;
-float prevFrameDistance = 0.f;
-float prevDistanceFromPlayer = 0.f;
-float maxSpeed = 30.f;
-float hitPointDist = 30.f;
-float evacCenterDist = 20.f;
-float playerForVecMultiplier = 5.f;
-float yMax = 50.f;
-float edgeDistLimit = 40.f;
-float holeDistLimit = 20.f;
-float sideDistanceLimit = 10.f;
-float currentSpeed = 0.7 * maxSpeed;
-float currentTurn = 0.f;
-bool attackingPoint = false;
-int turnTime = 0;
-bool turningRight = false;
-
-std::vector<glm::vec3> holeBBs;
-glm::vec3 carRightVec;
-glm::vec3 carLeftVec;
-
-glm::vec3 mapUpVec = glm::vec3(0.f, 0.5f, 1.f);
-glm::vec3 mapDownVec = glm::vec3(0.f, 0.5f, -1.f);
-glm::vec3 mapRightVec = glm::vec3(-1.f, 0.5f, 0.f);
-glm::vec3 mapLeftVec = glm::vec3(1.f, 0.5f, 0.f);
-
-
-AIBehavior::AIBehavior(int beh) {
+Opponent::Opponent() {
 	initHoleBBs();
-	if (beh == 0) currentState = roaming;
-	if (beh == 1) currentState = attacking;
-	testLocs.push_back(glm::vec3(0.f, 0.f, 0.f));
+	//testLocs.push_back(glm::vec3(0.f,0.f,0.f));
 }
 
-void AIBehavior::updateLevelBB(std::vector<glm::vec3> lvlBB) {
-	levelBB = lvlBB;
-}
-
-void AIBehavior::startEvac() {
-	returnState = currentState;
-	currentState = evac;
-}
-
-void AIBehavior::setAttacking() {
+void Opponent::setAttacking() {
 	currentState = attacking;
 }
 
 
-void AIBehavior::frameUpdate(physx::PxVehicleDrive4WRawInputData* carInputDat, glm::vec3 carPos, glm::vec3 carForwardVec, glm::vec3 playerPos, glm::vec3 playerForwardVec,
+void Opponent::frameUpdate(physx::PxVehicleDrive4WRawInputData* carInputDat, glm::vec3 carPos, glm::vec3 carForwardVec, glm::vec3 playerPos, glm::vec3 playerForwardVec,
 	physx::PxVehicleDrive4W* carVeh4W,
 	physx::PxVehicleDrive4W* playerVeh4W) {
 
@@ -72,93 +29,125 @@ void AIBehavior::frameUpdate(physx::PxVehicleDrive4WRawInputData* carInputDat, g
 }
 
 
-void AIBehavior::behave() {
-	int courseResult = shouldChangeCourse();
-
-	//AVOIDANCE
-	if (courseResult == 1) {
-		carInputData->setAnalogSteer(1.f);
-		setSpeed(maxSpeed * 0.2);
-	}
-	else {
-
-		//ATTACKING
-		if (currentState == attacking) { //prioritize attacking state over every other state
-			setSpeed(maxSpeed);
-			attackPoint(playerPosition);
-
-
-		//EVAC
-		}else if(currentState == evac){
-			setSpeed(0.8 * maxSpeed);
-			attackPoint(glm::vec3(0.f, 0.f, 0.f));
-			if (glm::distance(carPosition, glm::vec3(0.f, 0.f, 0.f)) < evacCenterDist) currentState = returnState;
-
-
-		//ROAMING & DEFENSE
-		}else {
-			//determine defense or roaming
-			float curDistFromPlayer = calculateDistance(playerPosition.z, carPosition.z, playerPosition.x, carPosition.x);
-			if (curDistFromPlayer < 25.f && prevDistanceFromPlayer > curDistFromPlayer) currentState = defending;
-			else currentState = roaming;
-			prevDistanceFromPlayer = curDistFromPlayer;
-
-			//ROAMING
-			if (currentState == roaming) {
-				if (counter % 600 && rand() % 2 == 0) { //randomly turn
-					turnTime = counter + rand() % 240 + 120;
-					if (rand() % 2 == 0) turningRight = true; //and if it does turn there's a 50 50 chance it'll turn right or left
-					else turningRight = false;
-				}
-
-				if (counter < turnTime) { //keep turning for up to 6 seconds (2 guaranteed + extra 0-240 frames extra)
-					if (turningRight) carInputData->setAnalogSteer(-1.f);
-					else carInputData->setAnalogSteer(1.f);
-				}
-				else carInputData->setAnalogSteer(0.f);
-
-				carVehicle4W->mDriveDynData.forceGearChange(physx::PxVehicleGearsData::eFIRST); //by default just go straight
-				setSpeed(maxSpeed * 0.7);
-			}
-
-			//DEFENDING
-			if (currentState == defending) {
-				setSpeed(maxSpeed);
-				if (pointIsRight(glm::vec3(carPosition.x, 0.f, carPosition.z), glm::vec3(carPosition.x + carForwardVector.x, 0.f, carPosition.z + carForwardVector.z), glm::vec3(playerPosition.x, 0.f, playerPosition.z))) {
-					carInputData->setAnalogSteer(1.f);
-				}
-				else {
-					carInputData->setAnalogSteer(-1.f);
-				}
-			}
-		}
-	}
+void Opponent::behave() {
+	adjustCourse();
 }
+
 
 
 
 //OBSTACLE AVOIDANCE
-int AIBehavior::shouldChangeCourse() { //determines whether it's close to & headed toward a hole, an object, or the edge of the map
+void Opponent::adjustCourse() { //finds the closest
 	glm::vec2 intersectionBary;
+	glm::vec3 intersectionWorld;
 	float dist = 0.f;
+	float closestDist = FLT_MAX;
+	int turnDir = 0; //0 = don't, 1 = right, 2 = left
+	bool holesInPath = false;
+
+	if (lockCount < 1) { //if our behavior not locked
+		for (int i = 0; i < levelBB.size(); i = i + 3) { //CLOSE TO THE EDGE OF THE CURRENT SEGMENT
+			if (glm::intersectRayTriangle(carPosition, carForwardVector, levelBB[i], levelBB[i + 1], levelBB[i + 2], intersectionBary, dist) && dist < holeDistLimit && dist > 0.f) {
+
+				if (dist < closestDist && dist > 0.f) {
+					closestDist = dist;
+					float w = 1 - (intersectionBary.x + intersectionBary.y);
+					intersectionWorld = glm::vec3( //convert barycentric to world coord
+						intersectionBary.x * levelBB[i].x + intersectionBary.y * levelBB[i + 1].x + w * levelBB[i + 2].x,
+						intersectionBary.x * levelBB[i].y + intersectionBary.y * levelBB[i + 1].y + w * levelBB[i + 2].y,
+						intersectionBary.x * levelBB[i].z + intersectionBary.y * levelBB[i + 1].z + w * levelBB[i + 2].z);
+					float p12 = calculateDistance(intersectionWorld.z, levelBB[i].z, intersectionWorld.x, levelBB[i].x);
+					float p13 = calculateDistance(intersectionWorld.z, carPosition.z, intersectionWorld.x, carPosition.x);
+					float p23 = calculateDistance(levelBB[i].z, carPosition.z, levelBB[i].x, carPosition.x);
+					float angle = glm::acos(glm::pow(p12, 2) + glm::pow(p13, 2) - glm::pow(p23, 2)) / (2 * p12 * p13);
+
+					if (pointIsRight(carPosition, intersectionWorld, levelBB[i])) {
+						if (angle < 90.f) turnDir = 2; //turn left
+						else turnDir = 1; //turn right
+					}
+					else {
+						if (angle < 90.f) turnDir = 1; //turn right
+						else turnDir = 2; //turn left
+					}
+				}
+			}
+		}
+
+		for (int i = 0; i < holeBBs.size(); i = i + 3) { //CLOSE TO AN EDGE OF A HOLE
+			if (glm::intersectRayTriangle(carPosition, carForwardVector, holeBBs[i], holeBBs[i + 1], holeBBs[i + 2], intersectionBary, dist) && dist < holeDistLimit && dist > 0.f) {
+
+				if (dist < closestDist && dist > 0.f) {
+					closestDist = dist;
+					float w = 1 - (intersectionBary.x + intersectionBary.y);
+					intersectionWorld = glm::vec3( //convert barycentric to world coord
+						intersectionBary.x * holeBBs[i].x + intersectionBary.y * holeBBs[i + 1].x + w * holeBBs[i + 2].x,
+						intersectionBary.x * holeBBs[i].y + intersectionBary.y * holeBBs[i + 1].y + w * holeBBs[i + 2].y,
+						intersectionBary.x * holeBBs[i].z + intersectionBary.y * holeBBs[i + 1].z + w * holeBBs[i + 2].z);
+					float p12 = calculateDistance(intersectionWorld.z, holeBBs[i].z, intersectionWorld.x, holeBBs[i].x);
+					float p13 = calculateDistance(intersectionWorld.z, carPosition.z, intersectionWorld.x, carPosition.x);
+					float p23 = calculateDistance(holeBBs[i].z, carPosition.z, holeBBs[i].x, carPosition.x);
+					float angle = glm::acos(glm::pow(p12, 2) + glm::pow(p13, 2) - glm::pow(p23, 2)) / (2 * p12 * p13);
+
+					if (pointIsRight(carPosition, intersectionWorld, holeBBs[i])) {
+						if (angle < 90.f) turnDir = 2; //turn left
+						else turnDir = 1; //turn right
+					}
+					else {
+						if (angle < 90.f) turnDir = 1; //turn right
+						else turnDir = 2; //turn left
+					}
+				}
+			}
+		}
+
+		for (int i = 0; i < holeBBs.size(); i = i + 3) { //HOLES between the car and the waypoint
+			if (glm::intersectRayTriangle(carPosition, glm::vec3(currentWayPoint.x, 0.f, currentWayPoint.y), holeBBs[i], holeBBs[i + 1], holeBBs[i + 2], intersectionBary, dist) && glm::abs(dist) < holeDistLimit) {
+				float w = 1 - (intersectionBary.x + intersectionBary.y);
+				intersectionWorld = glm::vec3( //convert barycentric to world coord
+					intersectionBary.x * holeBBs[i].x + intersectionBary.y * holeBBs[i + 1].x + w * holeBBs[i + 2].x,
+					intersectionBary.x * holeBBs[i].y + intersectionBary.y * holeBBs[i + 1].y + w * holeBBs[i + 2].y,
+					intersectionBary.x * holeBBs[i].z + intersectionBary.y * holeBBs[i + 1].z + w * holeBBs[i + 2].z);
+
+				float wayPointDist = calculateDistance(carPosition.z, currentWayPoint.y, carPosition.x, currentWayPoint.x);
+				if (calculateDistance(intersectionWorld.z, carPosition.z, intersectionWorld.x, carPosition.x) < wayPointDist &&
+					calculateDistance(intersectionWorld.z, currentWayPoint.y, intersectionWorld.x, currentWayPoint.x) < wayPointDist) {
+					holesInPath = true;
+					break;
+				}
+			}
+		}
 
 
-	for (int i = 0; i < levelBB.size(); i = i + 3) {
-
-		if (glm::intersectRayTriangle(carPosition, carForwardVector, levelBB[i], levelBB[i + 1], levelBB[i + 2],intersectionBary, dist) && glm::abs(dist) < edgeDistLimit) {
-			//std::cout << "close" << std::endl;
-			return 1;
+		if (closestDist < 10.f) { //SUPER CLOSE, BACK OFF
+			lockCount = 45;
+			currentSpeedMultiplier = -1.f;
+			currentAnalogSteer = -1.f;
+			setSpeed(currentSpeedMultiplier * maxSpeed);
+			carInputData->setAnalogSteer(currentAnalogSteer);
+		}
+		else if (closestDist < 20.f) { //SOMEWHAT CLOSE, SLOW DOWN & TURN
+			currentSpeedMultiplier = 0.5;
+			if (turnDir == 1) currentAnalogSteer = -1.f;
+			else if (turnDir == 2) currentAnalogSteer = 1.f;
+			setSpeed(currentSpeedMultiplier * maxSpeed);
+			carInputData->setAnalogSteer(currentAnalogSteer);
+		}
+		else if (holesInPath) { //NO EDGES OR HOLES CLOSE BUT HOLES BETWEEN THE CAR AND THE CURRENT WAYPOINT
+			currentSpeedMultiplier = 0.5;
+			currentAnalogSteer = -0.3f;
+			setSpeed(currentSpeedMultiplier * maxSpeed);
+			carInputData->setAnalogSteer(currentAnalogSteer);
+		}
+		else { //CLEAR PATH & NOTHING CLOSE
+			if(currentPowerUp == none) pursueCurrentWayPoint();
+			else if (currentPowerUp == attack) attackPlayer();
 		}
 	}
-
-	for (int i = 0; i < holeBBs.size(); i = i + 3) {
-		if (glm::intersectRayTriangle(carPosition, carForwardVector, holeBBs[i], holeBBs[i + 1], holeBBs[i + 2], intersectionBary, dist) && glm::abs(dist) < holeDistLimit) {
-			//std::cout << "close"<< std::endl;
-			return 1;
-		}
+	else { //BEHAVIOR LOCKDOWN (just keep going with the currently locked behavior)
+		setSpeed(currentSpeedMultiplier * maxSpeed);
+		carInputData->setAnalogSteer(currentAnalogSteer);
+		lockCount--;
 	}
-
-	return 0;
 }
 
 
@@ -170,29 +159,98 @@ int AIBehavior::shouldChangeCourse() { //determines whether it's close to & head
 
 
 
-void AIBehavior::attackPoint(glm::vec3 pointToAttack) {
 
-	float curDistance = calculateDistance(pointToAttack.z, carPosition.z, pointToAttack.x, carPosition.x);
+void Opponent::attackPlayer() {
+	float curDistance = calculateDistance(playerPosition.z, carPosition.z, playerPosition.x, carPosition.x);
+	glm::vec2 intersection = getIntersection(playerPosition, playerPosition+playerForwardVector, carPosition, carPosition+carForwardVector);
+	float interCarPosDist = calculateDistance(intersection.y, playerPosition.z, intersection.x, playerPosition.x);
 
-	if (curDistance < 15.f && carVehicle4W->computeForwardSpeed() < 7.5f && curDistance > prevFrameDistance) { //opponent too slow & too close & player not exploiting this
+	if (curDistance < 10.f && interCarPosDist < 1.6f) {
+		lockCount = 30;
+		useAttack();
+		currentPowerUp = none;
+	}
+	else if (curDistance < 15.f && carVehicle4W->computeForwardSpeed() < 7.5f && curDistance > prevFrameDistance) { //opponent too slow & too close & player not exploiting this
 		setSpeed(-maxSpeed);
 		carInputData->setAnalogSteer(0.f);
 	}
 	else {
 		carVehicle4W->mDriveDynData.forceGearChange(physx::PxVehicleGearsData::eFIRST);
 		setSpeed(maxSpeed);
-		if (pointIsRight(glm::vec3(carPosition.x, 0.f, carPosition.z), glm::vec3(carPosition.x + carForwardVector.x, 0.f, carPosition.z + carForwardVector.z), glm::vec3(pointToAttack.x, 0.f, pointToAttack.z))) {
-			carInputData->setAnalogSteer(-0.7f);
+		if (pointIsRight(glm::vec3(carPosition.x, 0.f, carPosition.z), glm::vec3(carPosition.x + carForwardVector.x, 0.f, carPosition.z + carForwardVector.z), glm::vec3(playerPosition.x, 0.f, playerPosition.z))) {
+			carInputData->setAnalogSteer(-0.7f); //turn right
 		}
 		else {
-			carInputData->setAnalogSteer(0.7f);
+			carInputData->setAnalogSteer(0.7f); //turn left
 		}
 	}
 
 	prevFrameDistance = curDistance;
 }
 
-void AIBehavior::setSpeed(float target) {
+void Opponent::setPowerUp(int pUp) {
+	switch (pUp) {
+	case 1:
+		break;
+	case 2:
+		currentPowerUp = attack;
+		break;
+	case 3:
+		break;
+	}
+}
+
+void Opponent::useAttack() {
+	currentPowerUp = none;
+	glm::mat4 rotation = glm::rotate(glm::mat4{ 1.f }, float(-M_PI / 2.f), glm::vec3(0, 1, 0));
+	physx::PxVec3 pre = (carVehicle4W->getRigidDynamicActor()->getGlobalPose().q.getBasisVector0() + physx::PxVec3(0.f, 0.02f, 0.f));
+	glm::vec4 rot = glm::vec4(pre.x, pre.y, pre.z, 0.f);
+	glm::vec4 rotated = rotation * rot;
+	carVehicle4W->getRigidDynamicActor()->addForce(950000 * physx::PxVec3(rotated.x, rotated.y, rotated.z));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//MARK: DONE & GONE
+
+void Opponent::setNextWayPoint() {
+	if(oneSegmentLeft) currentWayPoint = Utils::aiPoints[rand() % 13]; //only use the city waypoints if we're down to the last car
+	else currentWayPoint = Utils::aiPoints[rand() % Utils::aiPoints.size()];
+}
+
+void Opponent::pursueCurrentWayPoint() {
+	float curDistance = calculateDistance(currentWayPoint.y, carPosition.z, currentWayPoint.x, carPosition.x);
+
+	if (curDistance < 15.f) { //way point reached, set a new one
+		setNextWayPoint();
+	}
+	else {
+		carVehicle4W->mDriveDynData.forceGearChange(physx::PxVehicleGearsData::eFIRST);
+		setSpeed(0.8 * maxSpeed);
+		if (pointIsRight(glm::vec3(carPosition.x, 0.f, carPosition.z), glm::vec3(carPosition.x + carForwardVector.x, 0.f, carPosition.z + carForwardVector.z), glm::vec3(currentWayPoint.x, 0.f, currentWayPoint.y))) {
+			carInputData->setAnalogSteer(-0.7f); //turn right
+		}
+		else {
+			carInputData->setAnalogSteer(0.7f); //turn left
+		}
+	}
+
+	prevFrameDistance = curDistance;
+}
+
+void Opponent::setSpeed(float target) {
 	float speed = carVehicle4W->computeForwardSpeed();
 	if (speed < target) {
 		carVehicle4W->mDriveDynData.forceGearChange(physx::PxVehicleGearsData::eFIRST);
@@ -203,7 +261,7 @@ void AIBehavior::setSpeed(float target) {
 	}
 }
 
-void AIBehavior::initHoleBBs() {
+void Opponent::initHoleBBs() {
 	for (int i = 0; i < Utils::holesBBDatLen; i = i + 8) {
 		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i], yMax, Utils::holesBoundingBoxData[i + 1]));
 		holeBBs.push_back(glm::vec3(Utils::holesBoundingBoxData[i], 0.f, Utils::holesBoundingBoxData[i + 1]));
@@ -246,101 +304,64 @@ void AIBehavior::initHoleBBs() {
 	}
 }
 
-bool AIBehavior::pointIsRight(glm::vec3 linePoint1, glm::vec3 linePoint2, glm::vec3 pointToCheck) {
+void Opponent::updateLevelBB(std::vector<glm::vec3> lvlBB, bool lastSegment) {
+	levelBB = lvlBB;
+	oneSegmentLeft = lastSegment;
+}
+
+void Opponent::startEvac() {
+	returnState = currentState;
+	currentState = evac;
+	currentWayPoint = glm::vec3(0.f, 0.f, 0.f);
+}
+
+bool Opponent::pointIsRight(glm::vec3 linePoint1, glm::vec3 linePoint2, glm::vec3 pointToCheck) {
 	return ((linePoint2.x - linePoint1.x) * (pointToCheck.z - linePoint1.z) - (linePoint2.z - linePoint1.z) * (pointToCheck.x - linePoint1.x)) > 0;
 }
 
-float AIBehavior::calculateAngleBetweenLines(float m2, float m1) {
+float Opponent::calculateAngleBetweenLines(float m2, float m1) {
 	float degs = glm::degrees(glm::abs((m2 - m1) / (1 + m2 * m1)));
 	//return fmod(degs, 360.f);
 	return degs;
 }
 
-bool AIBehavior::noIntersection(float x, float y, float m1, float b1, float m2, float b2) {
+bool Opponent::noIntersection(float x, float y, float m1, float b1, float m2, float b2) {
 	if ((m1 * x) + b1 != (m2 * x) + b2) return true;
 	else return false;
 }
 
-float AIBehavior::calculateIntersectionX(float b2, float b1, float m1, float m2) {
+glm::vec2 Opponent::getIntersection(glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3 p3) {
+
+	float A1 = p1.z - p0.z;
+	float B1 = p0.x - p1.x;
+	float C1 = A1 * p0.x + B1 * p0.z;
+	float A2 = p3.z - p2.z;
+	float B2 = p2.x - p3.x;
+	float C2 = A2 * p2.x + B2 * p2.z;
+	float denominator = A1 * B2 - A2 * B1;
+
+	return glm::vec2((B2 * C1 - B1 * C2) / denominator, (A1 * C2 - A2 * C1) / denominator);
+}
+
+float Opponent::calculateIntersectionX(float b2, float b1, float m1, float m2) {
 	return (b2 - b1) / (m1 - m2);
 }
 
-float AIBehavior::calculateIntersectionY(float m1, float x, float b1) {
+float Opponent::calculateIntersectionY(float m1, float x, float b1) {
 	return m1 * x + b1;
 }
 
-float AIBehavior::calculateLinearComp(float x, float y, float m) { //y = mx + B
+float Opponent::calculateLinearComp(float x, float y, float m) { //y = mx + B
 	return y - (m * x);
 }
 
-float AIBehavior::calculateSlope(float y2, float y1, float x2, float x1) { //y = Mx + b
+float Opponent::calculateSlope(float y2, float y1, float x2, float x1) { //y = Mx + b
 	return (y2 - y1) / (x2 - x1);
 }
 
-float AIBehavior::calculateDistance(float y2, float y1, float x2, float x1) { //Pythagorean
+float Opponent::calculateDistance(float y2, float y1, float x2, float x1) { //Pythagorean
 	return glm::sqrt(glm::pow(x2 - x1, 2) + glm::pow(y2 - y1, 2));
 }
-
-
-
-
-
-//if (attackingPoint) { //first get close to a "hit point" (point that will allow for an attack vector)
-//	float playerDistFromClosestEdge = FLT_MAX;
-//	float dist;
-//	glm::vec2 intersectionBary;
-//	glm::vec3 closestEdgeIntersection = glm::vec3(0.f, 0.f, 0.f);
-//
-//	for (int i = 0; i < levelBB.size(); i = i + 3) {
-//		if (glm::intersectRayTriangle(playerPosition, mapUpVec, levelBB[i], levelBB[i + 1], levelBB[i + 2], intersectionBary, dist) && dist < playerDistFromClosestEdge && dist > 0.f) {
-//			playerDistFromClosestEdge = dist;
-//			float w = 1 - (intersectionBary.x + intersectionBary.y);
-//			closestEdgeIntersection = glm::vec3( //convert barycentric to world coord
-//				intersectionBary.x * levelBB[i].x + intersectionBary.y * levelBB[i + 1].x + w * levelBB[i + 2].x,
-//				intersectionBary.x * levelBB[i].y + intersectionBary.y * levelBB[i + 1].y + w * levelBB[i + 2].y,
-//				intersectionBary.x * levelBB[i].z + intersectionBary.y * levelBB[i + 1].z + w * levelBB[i + 2].z);
-//		}
-//
-//		if (glm::intersectRayTriangle(playerPosition, mapDownVec, levelBB[i], levelBB[i + 1], levelBB[i + 2], intersectionBary, dist) && dist < playerDistFromClosestEdge && dist > 0.f) {
-//			playerDistFromClosestEdge = dist;
-//			float w = 1 - (intersectionBary.x + intersectionBary.y);
-//			closestEdgeIntersection = glm::vec3( //convert barycentric to world coord
-//				intersectionBary.x * levelBB[i].x + intersectionBary.y * levelBB[i + 1].x + w * levelBB[i + 2].x,
-//				intersectionBary.x * levelBB[i].y + intersectionBary.y * levelBB[i + 1].y + w * levelBB[i + 2].y,
-//				intersectionBary.x * levelBB[i].z + intersectionBary.y * levelBB[i + 1].z + w * levelBB[i + 2].z);
-//		}
-//
-//		if (glm::intersectRayTriangle(playerPosition, mapLeftVec, levelBB[i], levelBB[i + 1], levelBB[i + 2], intersectionBary, dist) && dist < playerDistFromClosestEdge && dist > 0.f) {
-//			playerDistFromClosestEdge = dist;
-//			float w = 1 - (intersectionBary.x + intersectionBary.y);
-//			closestEdgeIntersection = glm::vec3( //convert barycentric to world coord
-//				intersectionBary.x * levelBB[i].x + intersectionBary.y * levelBB[i + 1].x + w * levelBB[i + 2].x,
-//				intersectionBary.x * levelBB[i].y + intersectionBary.y * levelBB[i + 1].y + w * levelBB[i + 2].y,
-//				intersectionBary.x * levelBB[i].z + intersectionBary.y * levelBB[i + 1].z + w * levelBB[i + 2].z);
-//		}
-//
-//		if (glm::intersectRayTriangle(playerPosition, mapRightVec, levelBB[i], levelBB[i + 1], levelBB[i + 2], intersectionBary, dist) && dist < playerDistFromClosestEdge && dist > 0.f) {
-//			playerDistFromClosestEdge = dist;
-//			float w = 1 - (intersectionBary.x + intersectionBary.y);
-//			closestEdgeIntersection = glm::vec3( //convert barycentric to world coord
-//				intersectionBary.x * levelBB[i].x + intersectionBary.y * levelBB[i + 1].x + w * levelBB[i + 2].x,
-//				intersectionBary.x * levelBB[i].y + intersectionBary.y * levelBB[i + 1].y + w * levelBB[i + 2].y,
-//				intersectionBary.x * levelBB[i].z + intersectionBary.y * levelBB[i + 1].z + w * levelBB[i + 2].z);
-//		}
-//	}
-//
-//
-//	glm::vec3 ipVector = glm::vec3(playerPosition.x - closestEdgeIntersection.x + playerPosition.x, 0.f, playerPosition.z - closestEdgeIntersection.z + playerPosition.z); //project hit point on the other side of the player at the hitPointDist
-//	glm::vec3 hitPointVec = glm::vec3(ipVector.x * (hitPointDist / glm::length(ipVector)), 0.f, ipVector.z * (hitPointDist / glm::length(ipVector)));
-//	glm::vec3 hitPoint = glm::vec3(glm::sqrt(glm::pow(hitPointDist, 2) - glm::pow(hitPointVec.z, 2)), 0.f, glm::sqrt(glm::pow(hitPointDist, 2) - glm::pow(hitPointVec.x, 2)));
-//
-//	attackPoint(hitPoint);
-//
-//	if (calculateDistance(hitPoint.z, carPosition.z, hitPoint.x, carPosition.x) < hitPointDist) attackingPoint = false;
-//}
-//else {
-//	attackPoint(playerPosition); //hit point already covered -> attack player
-//}
 
 
 //HIT PREDICTION

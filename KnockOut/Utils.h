@@ -18,6 +18,8 @@ public:
 	static glm::vec3 getRigidDynamicPos(physx::PxRigidDynamic* pxRigid);
 	static bool getFreeCamMode();
 	static std::vector<float> getBBcords(float cornerCoords[]);
+	static std::vector<glm::vec2> aiPoints;
+	static int opponentCount;
 };
 
 #endif

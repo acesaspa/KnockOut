@@ -109,6 +109,77 @@ float Utils::holesBoundingBoxData[] = { //TODO: measure using player pos & imgUI
 
 int Utils::holesBBDatLen = 64;
 
+std::vector<glm::vec2> Utils::aiPoints = {
+	glm::vec2(27, 22), //city
+	glm::vec2(9, 19),
+	glm::vec2(-6, 15),
+	glm::vec2(-19, 3),
+	glm::vec2(0, 0),
+	glm::vec2(10, 4),
+	glm::vec2(29, 1),
+	glm::vec2(28, -13),
+	glm::vec2(25, -26),
+	glm::vec2(11, -24),
+	glm::vec2(-13, -24),
+	glm::vec2(-20, -13),
+	glm::vec2(-16, -25), //13th
+
+	glm::vec2(27, -58), //graeuss (grass in French)
+	glm::vec2(36, -65),
+	glm::vec2(50, -44),
+	glm::vec2(60, -20),
+	glm::vec2(50, 2),
+	glm::vec2(44, 10),
+	glm::vec2(52, 72),
+	glm::vec2(43, 30),
+	glm::vec2(48, 40),
+	glm::vec2(47, 64),
+	glm::vec2(53, 67),
+	glm::vec2(26, 72),
+	glm::vec2(7, 65),
+	glm::vec2(-5, 50),
+	glm::vec2(-17, 62),
+	glm::vec2(-31, 45),
+	glm::vec2(-35, 36),
+	glm::vec2(-57, 28),
+	glm::vec2(-59, 13),
+	glm::vec2(-43, 12),
+	glm::vec2(-54, 0),
+	glm::vec2(-49, -7),
+	glm::vec2(-43, -10),
+	glm::vec2(-28, -27),
+	glm::vec2(-57, -41),
+	glm::vec2(-33, -42),
+	glm::vec2(-19, -57),
+	glm::vec2(-13, -75),
+	glm::vec2(7, -60), //42nd
+
+	//glm::vec2(77, 11), //sand
+	//glm::vec2(85, 25),
+	//glm::vec2(82, 49),
+	//glm::vec2(79, 71),
+	//glm::vec2(70, 85),
+	//glm::vec2(45, 87),
+	//glm::vec2(17, 90),
+	//glm::vec2(-19, 90),
+	//glm::vec2(-50, 81),
+	//glm::vec2(-77, 67),
+	//glm::vec2(-84, 39),
+	//glm::vec2(-76, 3),
+	//glm::vec2(-83, -24),
+	//glm::vec2(-80, -53),
+	//glm::vec2(-79, -80),
+	//glm::vec2(-40, -85),
+	//glm::vec2(14, -89),
+	//glm::vec2(29, -88),
+	//glm::vec2(50, -87),
+	//glm::vec2(77, -83),
+	//glm::vec2(85, -60),
+	//glm::vec2(80, -25)
+};
+
+int Utils::opponentCount = 3;
+
 
 
 

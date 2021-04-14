@@ -42,6 +42,8 @@ VehicleSceneQueryData* gVehicleSceneQueryData = NULL;
 PxBatchQuery* gBatchQuery = NULL;
 PxVehicleDrivableSurfaceToTireFrictionPairs* gFrictionPairs = NULL;
 
+
+//MARK: Driving Model Variables
 float vehicleStaticFriction = 0.8;
 float vehicleDynamicFriction = 0.3;
 float vehicleRestitution = 0.8;
@@ -49,11 +51,8 @@ float oneG = -30.f;
 float chasMas = 300.f;
 float whelMas = 10.f;
 
+
 PxRigidStatic* gGroundPlane = NULL;
-//PxVehicleDrive4W* gVehicle4W1 = NULL;
-//PxVehicleDrive4W* gVehicle4W2 = NULL;
-//PxVehicleDrive4W* gVehicle4W3 = NULL;
-//PxVehicleDrive4W* gVehicle4W4 = NULL;
 int NumCars = 0;
 PxVehicleDrive4W* Vehicles[4] = {NULL,NULL, NULL, NULL};
 int GameStatus = 0;
@@ -218,7 +217,7 @@ VehicleDesc VehiclePhysx::initVehicleDesc(PxF32 mass)
 	//The moment of inertia is just the moment of inertia of a cuboid but modified for easier steering.
 	//Center of mass offset is 0.65m above the base of the chassis and 0.25m towards the front.
 	const PxF32 chassisMass = chasMas;
-	const PxVec3 chassisDims(2.5f, 1.5f, 5.0f);
+	const PxVec3 chassisDims(2.f, 1.5f, 4.0f);
 	const PxVec3 chassisMOI
 	((chassisDims.y * chassisDims.y + chassisDims.z * chassisDims.z) * chassisMass / 8.0f,
 		(chassisDims.x * chassisDims.x + chassisDims.z * chassisDims.z) * 0.8f * chassisMass / 8.0f,
