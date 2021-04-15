@@ -313,33 +313,43 @@ int main(int argc, char** argv) {
 			pickup.stopSound();
 		}
 
-		if (Physics.getGameStatus() == -1) {
+		// play menu sound when in main menu
+		if (Physics.getGameStatus() == -1) 
+		{
 			if (!menuMusic.soundPlaying()) { menuMusic.playSound(); }
-		}
-		else if (Physics.getGameStatus() == 0) {
-			if (!bgm.soundPlaying()) { bgm.playSound(); }
-			if (!engine.soundPlaying()) { engine.playSound(); }
-			menuMusic.stopSound();
-		}
-
-		int axesCount;
-		const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axesCount);
-		int present = glfwJoystickPresent(GLFW_JOYSTICK_1);
-
-		if ((glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_UP) == GLFW_REPEAT) or (present and axes[1] < -0.5))
-		{
-			if (!reving.soundPlaying()) { reving.playSound(); }
-		}
-		else if ((glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_REPEAT) or (present and axes[1] > 0.5))
-		{
-			if (!reving.soundPlaying()) { reving.playSound(); }
 		}
 		else
 		{
-			reving.stopSound();
+			menuMusic.stopSound();
 		}
 
-		if (Physics.getGameStatus() == 3)
+		// play engine and reving sounds when in game
+		if (Physics.getGameStatus() == 0) 
+		{
+			if (!bgm.soundPlaying()) { bgm.playSound(); }
+			if (!engine.soundPlaying()) { engine.playSound(); }
+
+			// sounds for controller input
+			int axesCount;
+			const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axesCount);
+			int present = glfwJoystickPresent(GLFW_JOYSTICK_1);
+
+			if ((glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_UP) == GLFW_REPEAT) or (present and axes[1] < -0.5))
+			{
+				if (!reving.soundPlaying()) { reving.playSound(); }
+			}
+			else if ((glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_REPEAT) or (present and axes[1] > 0.5))
+			{
+				if (!reving.soundPlaying()) { reving.playSound(); }
+			}
+			else
+			{
+				reving.stopSound();
+			}
+		}
+
+		// stop game sounds when game is over
+		if (Physics.getGameStatus() == 3 or Physics.getGameStatus() == 4)
 		{
 			bgm.stopSound();
 			engine.stopSound();
@@ -347,18 +357,13 @@ int main(int argc, char** argv) {
 			for (int i = 0; i < 6; i++) {
 				crashes[i].stopSound();
 			}
-			if (!gameover.soundPlaying()) { gameover.playSound(); }
-		}
-
-		if (Physics.getGameStatus() == 4)
-		{
-			bgm.stopSound();
-			engine.stopSound();
-			reving.stopSound();
-			for (int i = 0; i < 6; i++) {
-				crashes[i].stopSound();
+			// play win/loss sounds on their respective menus
+			if (Physics.getGameStatus() == 3) {
+				if (!gameover.soundPlaying()) { gameover.playSound(); }
 			}
-			if (!victory.soundPlaying()) { victory.playSound(); }
+			else if (Physics.getGameStatus() == 4) {
+				if (!victory.soundPlaying()) { victory.playSound(); }
+			}
 		}
 
 		processInput(window);
