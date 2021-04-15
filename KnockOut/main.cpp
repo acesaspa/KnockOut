@@ -453,7 +453,7 @@ int main(int argc, char** argv) {
 		if (Physics.getGameStatus() == 1) {
 			//Camera will go to game over screen
 			st = 1;
-			powerups.clear();
+			powerUps.clear();
 			Physics.setGameStatus(3);
 		}
 		//You win
@@ -461,7 +461,7 @@ int main(int argc, char** argv) {
 			//std::cout << "you win\n";
 			//Camera will go to you win screen
 			st = 2;
-			powerups.clear();
+			powerUps.clear();
 			Physics.setGameStatus(4);
 		}
 		else {
