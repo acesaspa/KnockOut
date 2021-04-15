@@ -95,12 +95,12 @@ void Skybox::prepSkybox(Shader shader) {
 
 	std::vector<std::string> faces
 	{
-		"right2.jpg",
-		"left2.jpg",
-		"top2.jpg",
-		"bottom2.jpg",
-		"front2.jpg",
-		"back2.jpg"
+		"right3.jpg",
+		"left3.jpg",
+		"top3.jpg",
+		"bottom3.jpg",
+		"front3.jpg",
+		"back3.jpg"
 	};
 	cubemapTexture = loadCubemap(faces);
 

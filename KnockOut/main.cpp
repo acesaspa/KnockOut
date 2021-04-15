@@ -96,7 +96,7 @@ std::chrono::system_clock::time_point last_collision_times[6] = { std::chrono::s
 1 = GAME OVER / YOU WIN SCREEN
 2 = MAIN MENU SCREEN
 */
-int st = 0;
+int st = 2;
 
 OpenALEngine wavPlayer = OpenALEngine();
 float baseVolume = 1.0f;
@@ -197,9 +197,8 @@ int main(int argc, char** argv) {
 	ai3.updateLevelBB(mainRenderer.getLevelBB());
 
 	glfwSetKeyCallback(window, key_callback);
-	Physics.setGameStatus(0);
 
-
+	Physics.setGameStatus(-1);
 
 	//MARK: RENDER LOOP ---------------------------------------------------------------------------------------------------------------
 	while (!glfwWindowShouldClose(window)) {
@@ -392,7 +391,7 @@ int main(int argc, char** argv) {
 		else if (Physics.getGameStatus() == 3) {
 
 			//give camera the position of the game over screen
-			mainCamera.updateCamera(0.f, glm::vec3(-26.0f, 6.0f + 1110.f, 10.0f));
+			mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1110.f, 10.0f));
 
 			//Press 1 to go to main menu
 			if (st == 3) {
@@ -405,7 +404,7 @@ int main(int argc, char** argv) {
 		}
 		else if (Physics.getGameStatus() == 4) {
 			//give camera the position of the you win screen
-			mainCamera.updateCamera(0.f, glm::vec3(-26.0f, 6.0f + 1120.f, 10.0f));
+			mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1120.f, 10.0f));
 
 			//Press 1 to go to main menu
 			if (st == 3) {
@@ -418,7 +417,7 @@ int main(int argc, char** argv) {
 		}
 		else if (Physics.getGameStatus() == -1) {
 			//give camera the position of the main menu screen
-			mainCamera.updateCamera(0.f, glm::vec3(-26.0f, 6.0f + 1130.f, 10.0f));
+			mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1129.8f, 10.0f));
 			//Press 1 to play
 			if (st == 0) {
 				reset = true;
