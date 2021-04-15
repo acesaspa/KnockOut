@@ -1,5 +1,1 @@
-﻿  Renderer.cpp
-C:\Users\Sarcgasm\Desktop\KnockoutDev\KnockOut\KnockOut\Shader.cpp(57,40): warning C4101: 'e': unreferenced local variable
-C:\Users\Sarcgasm\Desktop\KnockoutDev\KnockOut\KnockOut\Utils.h(21,2): warning C4091: 'static ': ignored on left of 'Utils' when no variable is declared
-C:\Users\Sarcgasm\Desktop\KnockoutDev\KnockOut\KnockOut\Renderer.cpp(338): warning C4715: 'Renderer::getGroundMeshes': not all control paths return a value
-  KnockOut.vcxproj -> C:\Users\Sarcgasm\Desktop\KnockoutDev\KnockOut\x64\Debug\KnockOut.exe
+﻿  KnockOut.vcxproj -> C:\Users\Noah Bensler\Documents\CPSC585\KnockOut\x64\Debug\KnockOut.exe

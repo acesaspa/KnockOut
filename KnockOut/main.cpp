@@ -412,6 +412,8 @@ int main(int argc, char** argv) {
 				Physics.reset();
 				printf("reset\n");
 				Physics.setGameStatus(0);
+				Physics.updateNumCars();
+				Physics.removeGround(mainRenderer.getGroundMeshes(Physics.getNumCars()));
 			}
 			//Press 2 to exit
 			else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
