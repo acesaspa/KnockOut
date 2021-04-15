@@ -9,6 +9,7 @@ class PowerUp
 {
 public:
 	PowerUp(glm::vec3 location, int type);
+	void foo();
 	int Type;
 	glm::vec3 Location;
 	bool isCollected;
