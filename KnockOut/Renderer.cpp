@@ -158,7 +158,7 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans,
 	glm::mat4 view,
 	glm::vec3 cameraPos,
 	int carsRemoved,
-	std::vector<PowerUp*>& powerups,
+	std::vector<PowerUp> powerUps,
 	int gameStatus
 	){ //render a single frame of the game
 
@@ -169,7 +169,7 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans,
 
 	//RENDERING
 	setDepthShader(depthShader, lightPos);
-	renderScene(depthShader, pxPlayerTrans, pxUITrans, pxOpponentsTrans, pxLevelPos, pxObjectsTrans, view, cameraPos, carsRemoved, powerups, gameStatus);
+	renderScene(depthShader, pxPlayerTrans, pxUITrans, pxOpponentsTrans, pxLevelPos, pxObjectsTrans, view, cameraPos, carsRemoved, powerUps, gameStatus);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, 1200, 800); //reset viewport
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -177,7 +177,7 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans,
 	setMainShader(mainShader, cameraPos, view, gameStatus);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, depthMap);
-	renderScene(mainShader, pxPlayerTrans, pxUITrans, pxOpponentsTrans, pxLevelPos, pxObjectsTrans, view, cameraPos, carsRemoved, powerups, gameStatus);
+	renderScene(mainShader, pxPlayerTrans, pxUITrans, pxOpponentsTrans, pxLevelPos, pxObjectsTrans, view, cameraPos, carsRemoved, powerUps, gameStatus);
 	skybox.renderSkybox(skyboxShader, view); //skybox
 }
 
@@ -190,7 +190,7 @@ void Renderer::renderScene(Shader &shader,
 	glm::mat4 view,
 	glm::vec3 cameraPos,
 	int carsRemoved,
-	std::vector<PowerUp*>& powerUps,
+	std::vector<PowerUp> powerUps,
 	int gameStatus) {
 
 	glm::mat4 model = glm::mat4(1.0f); //identity matrix
@@ -233,12 +233,11 @@ void Renderer::renderScene(Shader &shader,
 	}
 
 	for (int i = 0; i < powerUps.size(); i++) {
-		if (powerUps[i]->isPlayerCollected == false) {
-			switch (powerUps[i]->Type) {
-			case(1): renderObject(shader, &jmpPowerUpMesh, &JmpPowerUpTexture, powerUps[i]->Location, defaultRotation, defaultRotAmountDeg, powerUpScale); break;
-			case(2): renderObject(shader, &atkPowerUpMesh, &AtkPowerUpTexture, powerUps[i]->Location, defaultRotation, defaultRotAmountDeg, powerUpScale); break;
-			case(3): renderObject(shader, &defPowerUpMesh, &DefPowerUpTexture, powerUps[i]->Location, defaultRotation, defaultRotAmountDeg, powerUpScale); break;
-			}
+		//std::cout << "rendering at " << powerUps->at(i).Location.x << " " << powerUps->at(i).Location.z << std::endl;
+		switch (powerUps[i].Type) {
+		case(1): renderObject(shader, &jmpPowerUpMesh, &JmpPowerUpTexture, powerUps[i].Location, defaultRotation, defaultRotAmountDeg, powerUpScale); break;
+		case(2): renderObject(shader, &atkPowerUpMesh, &AtkPowerUpTexture, powerUps[i].Location, defaultRotation, defaultRotAmountDeg, powerUpScale); break;
+		case(3): renderObject(shader, &defPowerUpMesh, &DefPowerUpTexture, powerUps[i].Location, defaultRotation, defaultRotAmountDeg, powerUpScale); break;
 		}
 	}
 
