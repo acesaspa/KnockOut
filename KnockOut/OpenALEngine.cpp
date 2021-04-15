@@ -56,6 +56,7 @@ void OpenALEngine::initialize()
 	soundFiles[7] = "./Sounds/activate.wav";
 	soundFiles[8] = "./Sounds/reving.wav";
 	soundFiles[9] = "./Sounds/engine.wav";
+	soundFiles[10] = "./Sounds/menu.wav";
 }
 void OpenALEngine::updateListenerPosition(float x, float y, float z) 
 {
