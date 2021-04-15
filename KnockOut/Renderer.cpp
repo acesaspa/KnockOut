@@ -115,7 +115,7 @@ void Renderer::setUpRendering(glm::vec3 cameraPos, Shader ourShader, Shader text
 	ourShader.setMat4("projection", projection); //pass the projection matrix to the fragment shader
 	ourShader.setInt("shadowMap", 1);
 	skybox = Skybox(skyboxShader);
-	
+
 	prepShadows(depthShader, projection);
 }
 
@@ -158,18 +158,18 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans,
 	glm::mat4 view,
 	glm::vec3 cameraPos,
 	int carsRemoved,
-	std::vector<PowerUp*>& powerups,
+	std::vector<PowerUp> powerUps,
 	int gameStatus
-	){ //render a single frame of the game
+) { //render a single frame of the game
 
-	//PREP
+//PREP
 	frameCounter++;
 	noCarsRemoved = carsRemoved;
 
 
 	//RENDERING
 	setDepthShader(depthShader, lightPos);
-	renderScene(depthShader, pxPlayerTrans, pxUITrans, pxOpponentsTrans, pxLevelPos, pxObjectsTrans, view, cameraPos, carsRemoved, powerups, gameStatus);
+	renderScene(depthShader, pxPlayerTrans, pxUITrans, pxOpponentsTrans, pxLevelPos, pxObjectsTrans, view, cameraPos, carsRemoved, powerUps, gameStatus);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, 1200, 800); //reset viewport
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -177,11 +177,11 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans,
 	setMainShader(mainShader, cameraPos, view, gameStatus);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, depthMap);
-	renderScene(mainShader, pxPlayerTrans, pxUITrans, pxOpponentsTrans, pxLevelPos, pxObjectsTrans, view, cameraPos, carsRemoved, powerups, gameStatus);
+	renderScene(mainShader, pxPlayerTrans, pxUITrans, pxOpponentsTrans, pxLevelPos, pxObjectsTrans, view, cameraPos, carsRemoved, powerUps, gameStatus);
 	skybox.renderSkybox(skyboxShader, view); //skybox
 }
 
-void Renderer::renderScene(Shader &shader,
+void Renderer::renderScene(Shader& shader,
 	physx::PxMat44 pxPlayerTrans,
 	physx::PxMat44 pxUITrans,
 	std::vector<physx::PxMat44> pxOpponentsTrans,
@@ -190,7 +190,7 @@ void Renderer::renderScene(Shader &shader,
 	glm::mat4 view,
 	glm::vec3 cameraPos,
 	int carsRemoved,
-	std::vector<PowerUp*>& powerUps,
+	std::vector<PowerUp> powerUps,
 	int gameStatus) {
 
 	glm::mat4 model = glm::mat4(1.0f); //identity matrix
@@ -233,12 +233,11 @@ void Renderer::renderScene(Shader &shader,
 	}
 
 	for (int i = 0; i < powerUps.size(); i++) {
-		if (powerUps[i]->isPlayerCollected == false) {
-			switch (powerUps[i]->Type) {
-			case(1): renderObject(shader, &jmpPowerUpMesh, &JmpPowerUpTexture, powerUps[i]->Location, defaultRotation, defaultRotAmountDeg, powerUpScale); break;
-			case(2): renderObject(shader, &atkPowerUpMesh, &AtkPowerUpTexture, powerUps[i]->Location, defaultRotation, defaultRotAmountDeg, powerUpScale); break;
-			case(3): renderObject(shader, &defPowerUpMesh, &DefPowerUpTexture, powerUps[i]->Location, defaultRotation, defaultRotAmountDeg, powerUpScale); break;
-			}
+		//std::cout << "rendering at " << powerUps->at(i).Location.x << " " << powerUps->at(i).Location.z << std::endl;
+		switch (powerUps[i].Type) {
+		case(1): renderObject(shader, &jmpPowerUpMesh, &JmpPowerUpTexture, powerUps[i].Location, defaultRotation, defaultRotAmountDeg, powerUpScale); break;
+		case(2): renderObject(shader, &atkPowerUpMesh, &AtkPowerUpTexture, powerUps[i].Location, defaultRotation, defaultRotAmountDeg, powerUpScale); break;
+		case(3): renderObject(shader, &defPowerUpMesh, &DefPowerUpTexture, powerUps[i].Location, defaultRotation, defaultRotAmountDeg, powerUpScale); break;
 		}
 	}
 
@@ -285,7 +284,7 @@ void Renderer::setMainShader(Shader mainShader, glm::vec3 cameraPos, glm::mat4 v
 	mainShader.setVec3("lightPos", lightPos);
 	mainShader.setVec3("light.direction", -0.2f, -1.0f, -0.3f);
 	mainShader.setVec3("viewPos", cameraPos);
-	if(gameStatus != 0) mainShader.setVec3("light.ambient", 1.f, 1.f, 1.f);
+	if (gameStatus != 0) mainShader.setVec3("light.ambient", 1.f, 1.f, 1.f);
 	else mainShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
 	mainShader.setVec3("light.diffuse", 0.6f, 0.6f, 0.6f);
 	mainShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
