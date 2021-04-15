@@ -43,7 +43,7 @@ public:
 		glm::mat4 view,
 		glm::vec3 cameraPos,
 		int status,
-		std::vector<PowerUp> powerUps,
+		std::vector<PowerUp*>& powerups,
 		int gameStatus);
 	std::vector<Mesh*> getGroundMeshes(int index);
 	std::vector<glm::vec3> getLevelBB();
@@ -65,7 +65,7 @@ private:
 		glm::mat4 view,
 		glm::vec3 cameraPos,
 		int carsRemoved,
-		std::vector<PowerUp> powerUps,
+		std::vector<PowerUp*>& powerups,
 		int gameStatus);
 	void prepShadows(Shader depthShader, glm::mat4 projection);
 	void setDepthShader(Shader depthShader, glm::vec3 lightPos);
