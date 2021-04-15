@@ -158,7 +158,7 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans,
 	glm::mat4 view,
 	glm::vec3 cameraPos,
 	int carsRemoved,
-	std::list<PowerUp*>& powerups,
+	std::vector<PowerUp*>& powerups,
 	int gameStatus
 	){ //render a single frame of the game
 
@@ -190,7 +190,7 @@ void Renderer::renderScene(Shader &shader,
 	glm::mat4 view,
 	glm::vec3 cameraPos,
 	int carsRemoved,
-	std::list<PowerUp*>& powerups,
+	std::vector<PowerUp*>& powerUps,
 	int gameStatus) {
 
 	glm::mat4 model = glm::mat4(1.0f); //identity matrix
@@ -232,12 +232,12 @@ void Renderer::renderScene(Shader &shader,
 		break;
 	}
 
-	for (std::list<PowerUp*>::const_iterator it = powerups.begin(); it != powerups.end(); it++) { //power-ups on the map
-		if ((*it)->isCollected == false) {
-			switch ((*it)->Type) {
-			case(1): renderObject(shader, &jmpPowerUpMesh, &JmpPowerUpTexture, (*it)->Location, defaultRotation, defaultRotAmountDeg, powerUpScale); break;
-			case(2): renderObject(shader, &atkPowerUpMesh, &AtkPowerUpTexture, (*it)->Location, defaultRotation, defaultRotAmountDeg, powerUpScale); break;
-			case(3): renderObject(shader, &defPowerUpMesh, &DefPowerUpTexture, (*it)->Location, defaultRotation, defaultRotAmountDeg, powerUpScale);
+	for (int i = 0; i < powerUps.size(); i++) {
+		if (powerUps[i]->isPlayerCollected == false) {
+			switch (powerUps[i]->Type) {
+			case(1): renderObject(shader, &jmpPowerUpMesh, &JmpPowerUpTexture, powerUps[i]->Location, defaultRotation, defaultRotAmountDeg, powerUpScale); break;
+			case(2): renderObject(shader, &atkPowerUpMesh, &AtkPowerUpTexture, powerUps[i]->Location, defaultRotation, defaultRotAmountDeg, powerUpScale); break;
+			case(3): renderObject(shader, &defPowerUpMesh, &DefPowerUpTexture, powerUps[i]->Location, defaultRotation, defaultRotAmountDeg, powerUpScale); break;
 			}
 		}
 	}
@@ -309,7 +309,6 @@ void Renderer::renderObject(Shader shader, Mesh* meshToRender, Texture2D* textur
 
 std::vector<Mesh*> Renderer::getGroundMeshes(int index) { //returns pointers to all ground meshes, cannot be called before setup
 	if (index == 0) {
-		std::cout << "all\n";
 		std::vector<Mesh*> meshes;
 		meshes.push_back(&citySurfaceMesh);
 		meshes.push_back(&desertSurfaceMesh);
@@ -317,14 +316,12 @@ std::vector<Mesh*> Renderer::getGroundMeshes(int index) { //returns pointers to 
 		return meshes;
 	}
 	else if (index == 1) {
-		std::cout << "city grass\n";
 		std::vector<Mesh*> meshes;
 		meshes.push_back(&citySurfaceMesh);
 		meshes.push_back(&grassSurfaceMesh);
 		return meshes;
 	}
 	else if (index == 2) {
-		std::cout << "city\n";
 		std::vector<Mesh*> meshes;
 		meshes.push_back(&citySurfaceMesh);
 		return meshes;

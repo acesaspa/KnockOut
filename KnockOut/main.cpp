@@ -54,7 +54,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void keyPress(unsigned char key, const PxTransform& camera);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void addPowerUp();
-void usePowerUp();
+void playerUsePowerUp();
 void removeSegment();
 
 PxReal stackZ = 10.0f;
@@ -65,7 +65,7 @@ bool vehicleAccelerating = false;
 unsigned int CUBE_VBO, GROUND_VBO, CUBE_VAO, GROUND_VAO;
 unsigned int vehicle_texture, cube_texture2, ground_texture;
 bool reset = false;
-std::list<PowerUp*> powerups;
+std::vector<PowerUp*> powerUps;
 bool removingSegment = false;
 int numPow = 0;
 
@@ -209,20 +209,6 @@ int main(int argc, char** argv) {
 		}
 
 
-		bool hasPower = false;
-		for (std::list<PowerUp*>::const_iterator it = powerups.begin(); it != powerups.end(); it++) {
-			if ((*it)->isCollected) {
-				if ((*it)->Player == 1) {
-					hasPower = true;
-					mainRenderer.setUIBoost((*it)->Type);
-				}
-			}
-		}
-		if (!hasPower) {
-			mainRenderer.setUIBoost(0);
-		}
-
-
 
 		//MARK: Game Status & Segments
 		if (Physics.getGameStatus() == 0) {
@@ -255,7 +241,6 @@ int main(int argc, char** argv) {
 						std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - last_collision_times[j - 2];
 						if (elapsed_seconds.count() >= 1.5f) {
 							last_collision_times[j - 2] = std::chrono::system_clock::now();
-							std::cout << "COLLISION\n";
 							if (!crashes[j-2].soundPlaying()) { crashes[j-2].playSound(); }
 						}
 						else if (elapsed_seconds.count() > 1.25f && elapsed_seconds.count() < 1.5f) {
@@ -267,7 +252,6 @@ int main(int argc, char** argv) {
 						std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - last_collision_times[j];
 						if (elapsed_seconds.count() >= 1.f) {
 							last_collision_times[j] = std::chrono::system_clock::now();
-							std::cout << "COLLISION  asdf\n";
 							if (!crashes[j].soundPlaying()) { 
 								float length = glm::length(c1_pos - Physics.getVehiclePos(1));
 								crashes[j].setVolume(baseVolume * 0.8 * 10.f/length);
@@ -279,7 +263,6 @@ int main(int argc, char** argv) {
 						std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - last_collision_times[5];
 						if (elapsed_seconds.count() >= 1.f) {
 							last_collision_times[5] = std::chrono::system_clock::now();
-							std::cout << "COLLISION  fdas\n";
 							if (!crashes[5].soundPlaying()) {
 								float length = glm::length(c1_pos - Physics.getVehiclePos(1));
 								crashes[5].setVolume(baseVolume * 0.8 * 10.f / length);
@@ -292,38 +275,45 @@ int main(int argc, char** argv) {
 			}
 		}
 
-		//MARK: POWER-UP PICK UP
-		for (std::list<PowerUp*>::const_iterator it = powerups.begin(); it != powerups.end(); it++){ //Loop through powerups
-			
-			//Loop through the cars
-			for (int i = 1; i < 3; i++) {
 
-				bool hasPowerUp = false;
-				for (std::list<PowerUp*>::const_iterator it2 = powerups.begin(); it2 != powerups.end(); it2++) {
-					if ((*it2)->Player == i) {
-						hasPowerUp = true;
+
+
+		//PLAYER POWER-UP UI
+		bool playerHasPowerUp = false;
+		for (int i = 0; i < powerUps.size(); i++) { //if player has a power-up -> show UI icon on the car
+			if (powerUps[i]->isPlayerCollected) {
+				playerHasPowerUp = true;
+				mainRenderer.setUIBoost(powerUps[i]->Type);
+				break;
+			}
+		}
+		if (!playerHasPowerUp) mainRenderer.setUIBoost(0); //no power-up -> no icon
+
+
+
+		//POWER-UP PICK UP LOGIC (all cars)
+		for (int i = 1; i < 5; i++) { //for all cars (player = 1, AIs = 2-4)
+			int posToRemove = -1;
+			for (int j = 0; j < powerUps.size(); j++) { //every power-up picked up by the player or still on the map
+
+				if (!powerUps[j]->isPlayerCollected && glm::length(Physics.getVehiclePos(i) - powerUps[j]->Location) < 2.f) { //if not picked up yet & being picked up
+					if (i == 1) {
+						if (playerHasPowerUp) break;
+						powerUps[j]->isPlayerCollected = true; //if the player is picking it up, mark it accordingly
 					}
-				}
-
-				//Only pick up a powerup if you don't already have one
-				if (!hasPowerUp) {
-					//If the car is at the position of a powerup
-					if (glm::length(Physics.getVehiclePos(i) - (*it)->Location) < 2.f) {
-
-						//if the powerup isn't collected
-						if (!(*it)->isCollected) {
-
-							//pick up the powerup
-							(*it)->isCollected = true;
-							(*it)->Player = i;
-							//sound here
-							poweruptimestart = std::chrono::system_clock::now();
-							break;
-						}
+					else { //an AI is picking it up - it's deleted right away and only the given AI object remembers it
+						if (aiOpponents[i - 2].hasPowerUp()) break;
+						aiOpponents[i - 2].setPowerUp(powerUps[j]->Type);
+						//aiOpponents[i - 2].setPowerUp(2);
+						posToRemove = j;
 					}
+					if (posToRemove != -1) powerUps.erase(powerUps.begin() + posToRemove);
+					poweruptimestart = std::chrono::system_clock::now();
+					break;
 				}
 			}
 		}
+
 
 
 		//MARK: Frame Start
@@ -474,7 +464,7 @@ int main(int argc, char** argv) {
 			Physics.setGameStatus(4);
 		}
 		else {
-			mainRenderer.renderGameFrame(Physics.getVehicleTrans(1), Physics.getVehicleTrans(1), pxOpponents, Physics.getGroundPos(), pxObjects, mainShader, textShader, skyboxShader, depthShader, view, mainCamera.getCameraPos(), Physics.getNumCars(), powerups, Physics.getGameStatus());
+			mainRenderer.renderGameFrame(Physics.getVehicleTrans(1), Physics.getVehicleTrans(1), pxOpponents, Physics.getGroundPos(), pxObjects, mainShader, textShader, skyboxShader, depthShader, view, mainCamera.getCameraPos(), Physics.getNumCars(), powerUps, Physics.getGameStatus());
 		}
 		/*
 		if (Physics.getGameStatus() == 1) {
@@ -530,21 +520,19 @@ void removeSegment() {
 	std::chrono::duration<double> elapsed_seconds = end - segmentRemovalStart;
 
 	if (elapsed_seconds.count() >= 10) { //current time - last time = elapsed point
-		//powerups.clear();
 		PowerUp* temp = new PowerUp(glm::vec3(0.f, 1.f, 0.f), 1);
-		for (std::list<PowerUp*>::const_iterator it = powerups.begin(); it != powerups.end(); it++) { //Loop through powerups
-			if ((*it)->Player != 0) {
-				temp->isCollected = (*it)->isCollected;
-				temp->Location = (*it)->Location;
-				temp->Player = (*it)->Player;
-				temp->Type = (*it)->Type;
-			} 
+		for (int i = 0; i < powerUps.size(); i++) { //if the player has a power-up -> remember it
+			if (powerUps[i]->isPlayerCollected) {
+				temp->isPlayerCollected = true;
+				temp->Location = powerUps[i]->Location;
+				temp->Player = powerUps[i]->Player;
+				temp->Type = powerUps[i]->Type;
+				break;
+			}
 		}
-		powerups.clear();
-		powerups.push_back(temp);
+		powerUps.clear();
+		powerUps.push_back(temp);
 
-
-		//powerups.push_back(temp);
 		Physics.removeGround(mainRenderer.getGroundMeshes(Physics.getNumCars()));
 		removingSegment = false;
 		mainRenderer.flashSegment(false);
@@ -592,7 +580,7 @@ void processInput(GLFWwindow* window) {
 
 			int buttonCount;
 			const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &buttonCount);
-			if (GLFW_PRESS == buttons[0]) usePowerUp(); //A button
+			if (GLFW_PRESS == buttons[0]) playerUsePowerUp(); //A button
 		}
 
 		//KEYBOARD
@@ -621,7 +609,7 @@ void processInput(GLFWwindow* window) {
 			}
 		}
 	}
-	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) usePowerUp();
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) playerUsePowerUp();
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -663,17 +651,17 @@ void keyPress(unsigned char key, const PxTransform& camera)
 }
 
 void addPowerUp() {
-	if (powerups.size() < 30) {
+	if (powerUps.size() < 50) {
 		auto end = std::chrono::system_clock::now();
 		std::chrono::duration<double> elapsed_seconds = end - start;
 
-		if (elapsed_seconds.count() >= 1) { //current time - last time = elapsed point
+		if (elapsed_seconds.count() >= 0.5) { //current time - last time = elapsed point
 			start = std::chrono::system_clock::now();
-
+			std::cout<<std::endl;
 			srand(time(NULL));
 
-			int powerChoice = rand() % 3 + 1;
-			//int powerChoice = 2;
+			//int powerChoice = rand() % 3 + 1;
+			int powerChoice = 2;
 			//40,80,100
 			int size = 0;
 			if (Physics.getNumCars() == 0) {
@@ -697,11 +685,10 @@ void addPowerUp() {
 			for (int i = 0; i < groundMeshes.size(); i++) {
 				Mesh* meshToCook = groundMeshes[i];
 
-				std::vector<PxVec3> vertices = meshToCook->getActualVertices();
-				std::vector<PxU32> indices = meshToCook->getVertexIndices();
+				std::vector<PxVec3>* vertices = meshToCook->getActualVertices();
 
-				for (int j = 0; j < vertices.size(); j++) {
-					glm::vec3 point = glm::vec3(vertices[j].x, vertices[j].y, vertices[j].z);
+				for (int j = 0; j < vertices->size(); j = j + 50) {					
+					glm::vec3 point = glm::vec3(vertices->at(j).x, vertices->at(j).y, vertices->at(j).z);
 					glm::vec3 power = glm::vec3(x, y, z);
 
 					glm::vec3 dif = point - power;
@@ -716,19 +703,21 @@ void addPowerUp() {
 					//std::cout << vertices[j].x << " " << vertices[j].y << " " << vertices[j].z << "\n";
 				}
 			}
+
 			//std::cout << height.x << " " << height.y << " " << height.z << "\n";
 			PowerUp* test3 = new PowerUp(height + glm::vec3(0.f, 1.f, 0.f), powerChoice);
-			powerups.push_back(test3);
+			powerUps.push_back(test3);
 		}
 	}
 }
 
-void usePowerUp() {
+void playerUsePowerUp() {
 	activate.setVolume(baseVolume * 0.2);
 	activate.loopSound(false);
-	for (std::list<PowerUp*>::const_iterator it = powerups.begin(); it != powerups.end(); it++) {
-		if ((*it)->isCollected) {
-			switch ((*it)->Type) {
+
+	for (int i = 0; i < powerUps.size(); i++) {
+		if (powerUps[i]->isPlayerCollected) {
+			switch (powerUps[i]->Type) {
 			case(1):
 				Physics.applyForce(PxVec3(0.f, 280000.f, 0.f), 1);
 				break;
@@ -738,8 +727,8 @@ void usePowerUp() {
 				glm::vec4 rot = glm::vec4(pre.x, pre.y, pre.z, 0.f);
 				glm::vec4 rotated = rotation * rot;
 				Physics.applyForce(900000.f * PxVec3(rotated.x, rotated.y, rotated.z), 1);
+				break;
 			}
-				   break;
 			case(3): {
 				glm::vec3 vehiclePos = Physics.getVehiclePos(1);
 				glm::vec3 enemyPos = Physics.getVehiclePos(2);
@@ -747,10 +736,11 @@ void usePowerUp() {
 				if (glm::length(direction) < 10) {
 					Physics.stopVehicle(2);
 				}
+				break;
 			}
 			}
 			if (!activate.soundPlaying()) { activate.playSound(); }
-			powerups.remove(*it);
+			powerUps.erase(powerUps.begin() + i);
 			break;
 		}
 	}

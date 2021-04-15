@@ -32,6 +32,7 @@ public:
 	void startEvac();
 	void setAttacking();
 	void setPowerUp(int pUp);
+	bool hasPowerUp();
 	std::vector<glm::vec3> testLocs;
 
 private:

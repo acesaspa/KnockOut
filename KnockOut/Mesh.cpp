@@ -98,8 +98,17 @@ bool Mesh::loadOBJ(const std::string& filename)
 			mVertices.push_back(meshVertex);
 		}
 
-		//generateBoundingBox();
-		//TODO
+
+		adjustedVertices.push_back(physx::PxVec3(0.0, 0.0, 0.0)); //actual vertices in PxVec3 format and zero adjusted
+		for (int i = 0; i < actualVertices.size(); i++) {
+			physx::PxVec3 newVertex;
+			newVertex.x = actualVertices[i].x;
+			newVertex.y = actualVertices[i].y;
+			newVertex.z = actualVertices[i].z;
+			adjustedVertices.push_back(newVertex);
+		}
+		generateBoundingBox();
+
 		initBuffers();
 		return (mLoaded = true);
 	}
@@ -172,29 +181,16 @@ void Mesh::loadVertexData(float vertexData[], int arraySize) { //stride size 8 -
 	mLoaded = true;
 }
 
-std::vector<physx::PxVec3> Mesh::getActualVertices() {
-	std::vector<physx::PxVec3> adjustedVertices;
-	adjustedVertices.push_back(physx::PxVec3(0.0, 0.0, 0.0)); //fix index offset
-	for (int i = 0; i < actualVertices.size(); i++) {
-		physx::PxVec3 newVertex;
-		newVertex.x = actualVertices[i].x;
-		newVertex.y = actualVertices[i].y;
-		newVertex.z = actualVertices[i].z;
-		adjustedVertices.push_back(newVertex);
-	}
-	return adjustedVertices;
+std::vector<physx::PxVec3>* Mesh::getActualVertices() {
+	return &adjustedVertices;
 }
 
-std::vector<physx::PxU32> Mesh::getVertexIndices() {
-	std::vector<physx::PxU32> indices;
-	for (int i = 0; i < vertexIndices.size(); i++) {
-		indices.push_back(vertexIndices[i]);
-	}
-	return indices;
+std::vector<physx::PxU32>* Mesh::getVertexIndices() {
+	return &vertexIndices;
 }
 
 std::vector<glm::vec3> Mesh::getBoundingBoxVertices() {
-	if(boundingBox.size() < 1) generateBoundingBox();
+	//if(boundingBox.size() < 1) generateBoundingBox();
 	return boundingBox;
 }
 
@@ -241,39 +237,6 @@ void Mesh::generateBoundingBox() { //populates the boundingBox vector with bound
 		yMin = 0.f;
 	}
 
-	//combine coordinates for all 4 surrounding faces (8 triangles)
-	//boundingBox.push_back(glm::vec3(xMin, yMin, actualVertices[xMinIndex].z)); //1
-	//boundingBox.push_back(glm::vec3(xMin, yMax, actualVertices[xMinIndex].z));
-	//boundingBox.push_back(glm::vec3(actualVertices[zMinIndex].x, yMin, zMin));
-
-	//boundingBox.push_back(glm::vec3(actualVertices[zMinIndex].x, yMax, zMin)); //2
-	//boundingBox.push_back(glm::vec3(actualVertices[zMinIndex].x, yMin, zMin));
-	//boundingBox.push_back(glm::vec3(xMin, yMax, actualVertices[xMinIndex].z));
-
-	//boundingBox.push_back(glm::vec3(actualVertices[zMinIndex].x, yMax, zMin)); //3
-	//boundingBox.push_back(glm::vec3(actualVertices[zMinIndex].x, yMin, zMin));
-	//boundingBox.push_back(glm::vec3(xMax, yMin, actualVertices[xMaxIndex].z));
-
-	//boundingBox.push_back(glm::vec3(xMax, yMax, actualVertices[xMaxIndex].z)); //4
-	//boundingBox.push_back(glm::vec3(xMax, yMin, actualVertices[xMaxIndex].z));
-	//boundingBox.push_back(glm::vec3(actualVertices[zMinIndex].x, yMax, zMin));
-
-	//boundingBox.push_back(glm::vec3(xMax, yMax, actualVertices[xMaxIndex].z)); //5
-	//boundingBox.push_back(glm::vec3(xMax, yMin, actualVertices[xMaxIndex].z));
-	//boundingBox.push_back(glm::vec3(actualVertices[zMaxIndex].x, yMin, zMax));
-
-	//boundingBox.push_back(glm::vec3(actualVertices[zMaxIndex].x, yMin, zMax)); //6
-	//boundingBox.push_back(glm::vec3(actualVertices[zMaxIndex].x, yMax, zMax));
-	//boundingBox.push_back(glm::vec3(xMax, yMax, actualVertices[xMaxIndex].z));
-
-	//boundingBox.push_back(glm::vec3(actualVertices[zMaxIndex].x, yMin, zMax)); //7
-	//boundingBox.push_back(glm::vec3(actualVertices[zMaxIndex].x, yMax, zMax));
-	//boundingBox.push_back(glm::vec3(xMin, yMin, actualVertices[xMinIndex].z));
-
-	//boundingBox.push_back(glm::vec3(xMin, yMax, actualVertices[xMinIndex].z)); //8
-	//boundingBox.push_back(glm::vec3(xMin, yMin, actualVertices[xMinIndex].z));
-	//boundingBox.push_back(glm::vec3(actualVertices[zMaxIndex].x, yMax, zMax));
-
 	boundingBox.push_back(glm::vec3(xMin, yMin, zMin)); //1
 	boundingBox.push_back(glm::vec3(xMin, yMax, zMin));
 	boundingBox.push_back(glm::vec3(xMax, yMin, zMin));
@@ -305,12 +268,6 @@ void Mesh::generateBoundingBox() { //populates the boundingBox vector with bound
 	boundingBox.push_back(glm::vec3(xMin, yMax, zMin)); //8
 	boundingBox.push_back(glm::vec3(xMin, yMin, zMin));
 	boundingBox.push_back(glm::vec3(xMin, yMax, zMax));
-
-
-	//for (int i = 0; i < boundingBox.size(); i++) {
-	//	std::cout << boundingBox[i].x << " " << boundingBox[i].y << " " << boundingBox[i].z << std::endl;
-	//	if ((i+1) % 3 == 0) std::cout << std::endl;
-	//}
 }
 
 

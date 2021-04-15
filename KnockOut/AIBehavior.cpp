@@ -33,6 +33,8 @@ void Opponent::behave() {
 	adjustCourse();
 }
 
+//TODO: make sure the AI can't pick up another one
+
 
 
 
@@ -164,8 +166,11 @@ void Opponent::attackPlayer() {
 	float curDistance = calculateDistance(playerPosition.z, carPosition.z, playerPosition.x, carPosition.x);
 	glm::vec2 intersection = getIntersection(playerPosition, playerPosition+playerForwardVector, carPosition, carPosition+carForwardVector);
 	float interCarPosDist = calculateDistance(intersection.y, playerPosition.z, intersection.x, playerPosition.x);
+	float carVecPlayerPosDist = calculateDistance(carPosition.z + carForwardVector.z, playerPosition.z, carPosition.x + carForwardVector.x, playerPosition.x);
 
-	if (curDistance < 10.f && interCarPosDist < 1.6f) {
+	if (curDistance < 10.f && //gotta be close
+		interCarPosDist < 2.f && //have to be aimed at player's car
+		carVecPlayerPosDist < curDistance) { //and have to be aimed at it in front of the car, not behind
 		lockCount = 30;
 		useAttack();
 		currentPowerUp = none;
@@ -201,12 +206,16 @@ void Opponent::setPowerUp(int pUp) {
 }
 
 void Opponent::useAttack() {
-	currentPowerUp = none;
 	glm::mat4 rotation = glm::rotate(glm::mat4{ 1.f }, float(-M_PI / 2.f), glm::vec3(0, 1, 0));
 	physx::PxVec3 pre = (carVehicle4W->getRigidDynamicActor()->getGlobalPose().q.getBasisVector0() + physx::PxVec3(0.f, 0.02f, 0.f));
 	glm::vec4 rot = glm::vec4(pre.x, pre.y, pre.z, 0.f);
 	glm::vec4 rotated = rotation * rot;
 	carVehicle4W->getRigidDynamicActor()->addForce(950000 * physx::PxVec3(rotated.x, rotated.y, rotated.z));
+}
+
+bool Opponent::hasPowerUp() {
+	if (currentPowerUp == none) return false;
+	else return true;
 }
 
 

@@ -26,8 +26,8 @@ public:
 	void loadVertexData(float vertexData[], int arraySize);
 	void draw();
 
-	std::vector<physx::PxU32> getVertexIndices();
-	std::vector<physx::PxVec3> getActualVertices();
+	std::vector<physx::PxU32>* getVertexIndices();
+	std::vector<physx::PxVec3>* getActualVertices();
 	std::vector<glm::vec3> getBoundingBoxVertices();
 	void setIsMostOuterLevel(bool isOuter);
 
@@ -41,5 +41,7 @@ private:
 	GLuint mVBO, mVAO;
 	std::vector<unsigned int> vertexIndices, uvIndices, normalIndices;
 	std::vector<glm::vec3> boundingBox;
+
+	std::vector<physx::PxVec3> adjustedVertices;
 };
 #endif 

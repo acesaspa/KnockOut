@@ -11,9 +11,7 @@ PowerUp::PowerUp(glm::vec3 location, int type) {
     Location.z = location.z;
 
     Type = type;
-
-    Player = 0;
-    isCollected = false;
+    isPlayerCollected = false;
 }
 
 void PowerUp::foo()

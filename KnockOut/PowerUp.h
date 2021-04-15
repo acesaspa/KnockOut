@@ -13,7 +13,7 @@ public:
 	int Type;
 	glm::vec3 Location;
 	int Player;
-	bool isCollected;
+	bool isPlayerCollected;
 };
 
 #endif 

@@ -54,11 +54,8 @@ float whelMas = 10.f;
 
 PxRigidStatic* gGroundPlane = NULL;
 int NumCars = 0;
-PxVehicleDrive4W* Vehicles[4] = {NULL,NULL, NULL, NULL};
+PxVehicleDrive4W* Vehicles[7] = {NULL,NULL, NULL, NULL, NULL, NULL, NULL};
 int GameStatus = 0;
-//PxRigidDynamic* gBox = NULL;
-//PxRigidDynamic* gBox2 = NULL;
-//PxRigidDynamic* gBox3 = NULL;
 PxRigidStatic* meshBody1 = NULL;
 PxRigidStatic* meshBody2 = NULL;
 PxRigidStatic* meshBody3 = NULL;
@@ -155,7 +152,7 @@ PxU32					gVehicleOrderProgress = 0;
 bool					gVehicleOrderComplete = false;
 bool					gMimicKeyInputs = false;
 
-void VehiclePhysx::updateNumCars() {
+void VehiclePhysx::updateNumCars() { //TODO
 	PxBounds3 pxBounds2 = Vehicles[1]->getRigidDynamicActor()->getWorldBounds();
 	PxTransform pos2 = Vehicles[1]->getRigidDynamicActor()->getGlobalPose();
 	glm::vec3 cubePos2 = glm::vec3(pos2.p[0], pos2.p[1], pos2.p[2]);
@@ -830,16 +827,16 @@ void VehiclePhysx::cookGroundMesh(Mesh* meshToCook,int i) {
 	PxMaterial* gMaterial = gPhysics->createMaterial(vehicleStaticFriction, vehicleDynamicFriction, vehicleRestitution); //create some material
 	PxTriangleMeshDesc meshDesc; //mesh cooking from a triangle mesh
 
-	std::vector<PxVec3> vertices = meshToCook->getActualVertices();
-	std::vector<PxU32> indices = meshToCook->getVertexIndices();
+	std::vector<PxVec3>* vertices = meshToCook->getActualVertices();
+	std::vector<PxU32>* indices = meshToCook->getVertexIndices();
 
-	meshDesc.points.count = vertices.size(); //total number of vertices
+	meshDesc.points.count = vertices->size(); //total number of vertices
 	meshDesc.points.stride = sizeof(PxVec3);
-	meshDesc.points.data = reinterpret_cast<const void*>(vertices.data());
+	meshDesc.points.data = reinterpret_cast<const void*>(vertices->data());
 
-	meshDesc.triangles.count = indices.size() / 3; //total number of triangles (each index = 1 vertex, so divide by 3 to get the num of triangles)
+	meshDesc.triangles.count = indices->size() / 3; //total number of triangles (each index = 1 vertex, so divide by 3 to get the num of triangles)
 	meshDesc.triangles.stride = 3 * sizeof(PxU32);
-	meshDesc.triangles.data = reinterpret_cast<const void*>(indices.data());
+	meshDesc.triangles.data = reinterpret_cast<const void*>(indices->data());
 
 	//std::cout << "actual verts: " << meshDesc.points.count << std::endl;
 	//std::cout << "actual inds: " << meshDesc.triangles.count * 3 << std::endl;
