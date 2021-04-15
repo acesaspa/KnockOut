@@ -65,9 +65,11 @@ bool vehicleAccelerating = false;
 unsigned int CUBE_VBO, GROUND_VBO, CUBE_VAO, GROUND_VAO;
 unsigned int vehicle_texture, cube_texture2, ground_texture;
 bool reset = false;
-std::vector<PowerUp*> powerUps;
+std::vector<PowerUp> powerUps;
 bool removingSegment = false;
 int numPow = 0;
+int playerPowerUp = 0; //0 = none
+
 
 auto start = std::chrono::system_clock::now();
 auto segmentRemovalStart = std::chrono::system_clock::now();
@@ -276,42 +278,28 @@ int main(int argc, char** argv) {
 
 
 
-
-		//PLAYER POWER-UP UI
-		bool playerHasPowerUp = false;
-		for (int i = 0; i < powerUps.size(); i++) { //if player has a power-up -> show UI icon on the car
-			if (powerUps[i]->isPlayerCollected) {
-				playerHasPowerUp = true;
-				mainRenderer.setUIBoost(powerUps[i]->Type);
-				break;
-			}
-		}
-		if (!playerHasPowerUp) mainRenderer.setUIBoost(0); //no power-up -> no icon
-
-
-
-		//POWER-UP PICK UP LOGIC (all cars)
+		//POWER-UP UP LOGIC (all cars)
 		for (int i = 1; i < 5; i++) { //for all cars (player = 1, AIs = 2-4)
-			int posToRemove = -1;
-			for (int j = 0; j < powerUps.size(); j++) { //every power-up picked up by the player or still on the map
-
-				if (!powerUps[j]->isPlayerCollected && glm::length(Physics.getVehiclePos(i) - powerUps[j]->Location) < 2.f) { //if not picked up yet & being picked up
+			for (int j = 0; j < powerUps.size(); j++) { //every power-up still on the map
+				if (glm::length(Physics.getVehiclePos(i) - powerUps[j].Location) < 2.f) { //if close enough for pick up
 					if (i == 1) {
-						if (playerHasPowerUp) break;
-						powerUps[j]->isPlayerCollected = true; //if the player is picking it up, mark it accordingly
+						if (playerPowerUp != 0) break;
+						playerPowerUp = powerUps[j].Type;
+						powerUps.erase(powerUps.begin() + j);
+						poweruptimestart = std::chrono::system_clock::now();
 					}
-					else { //an AI is picking it up - it's deleted right away and only the given AI object remembers it
+					else { //an AI is picking it up
 						if (aiOpponents[i - 2].hasPowerUp()) break;
-						aiOpponents[i - 2].setPowerUp(powerUps[j]->Type);
-						//aiOpponents[i - 2].setPowerUp(2);
-						posToRemove = j;
+						aiOpponents[i - 2].setPowerUp(powerUps[j].Type);
+						powerUps.erase(powerUps.begin() + j);
+						poweruptimestart = std::chrono::system_clock::now();
 					}
-					if (posToRemove != -1) powerUps.erase(powerUps.begin() + posToRemove);
-					poweruptimestart = std::chrono::system_clock::now();
+					//std::cout << powerUps[j].Location.x<<" "<< powerUps[j].Location.z << " IS COLLECTED" << std::endl;
 					break;
 				}
 			}
 		}
+		mainRenderer.setUIBoost(playerPowerUp);
 
 
 
@@ -410,10 +398,10 @@ int main(int argc, char** argv) {
 			if (st == 0) {
 				reset = true;
 				Physics.reset();
-				printf("reset\n");
 				Physics.setGameStatus(0);
 				Physics.updateNumCars();
 				Physics.removeGround(mainRenderer.getGroundMeshes(Physics.getNumCars()));
+				playerPowerUp = 0;
 			}
 			//Press 2 to exit
 			else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
@@ -469,7 +457,20 @@ int main(int argc, char** argv) {
 			Physics.setGameStatus(4);
 		}
 		else {
-			mainRenderer.renderGameFrame(Physics.getVehicleTrans(1), Physics.getVehicleTrans(1), pxOpponents, Physics.getGroundPos(), pxObjects, mainShader, textShader, skyboxShader, depthShader, view, mainCamera.getCameraPos(), Physics.getNumCars(), powerUps, Physics.getGameStatus());
+			mainRenderer.renderGameFrame(Physics.getVehicleTrans(1),
+				Physics.getVehicleTrans(1),
+				pxOpponents,
+				Physics.getGroundPos(),
+				pxObjects,
+				mainShader,
+				textShader,
+				skyboxShader,
+				depthShader,
+				view,
+				mainCamera.getCameraPos(),
+				Physics.getNumCars(),
+				powerUps,
+				Physics.getGameStatus());
 		}
 		/*
 		if (Physics.getGameStatus() == 1) {
@@ -525,19 +526,6 @@ void removeSegment() {
 	std::chrono::duration<double> elapsed_seconds = end - segmentRemovalStart;
 
 	if (elapsed_seconds.count() >= 10) { //current time - last time = elapsed point
-		PowerUp* temp = new PowerUp(glm::vec3(0.f, 1.f, 0.f), 1);
-		for (int i = 0; i < powerUps.size(); i++) { //if the player has a power-up -> remember it
-			if (powerUps[i]->isPlayerCollected) {
-				temp->isPlayerCollected = true;
-				temp->Location = powerUps[i]->Location;
-				temp->Player = powerUps[i]->Player;
-				temp->Type = powerUps[i]->Type;
-				break;
-			}
-		}
-		powerUps.clear();
-		powerUps.push_back(temp);
-
 		Physics.removeGround(mainRenderer.getGroundMeshes(Physics.getNumCars()));
 		removingSegment = false;
 		mainRenderer.flashSegment(false);
@@ -660,9 +648,8 @@ void addPowerUp() {
 		auto end = std::chrono::system_clock::now();
 		std::chrono::duration<double> elapsed_seconds = end - start;
 
-		if (elapsed_seconds.count() >= 0.5) { //current time - last time = elapsed point
+		if (elapsed_seconds.count() >= 1) { //current time - last time = elapsed point
 			start = std::chrono::system_clock::now();
-			std::cout<<std::endl;
 			srand(time(NULL));
 
 			//int powerChoice = rand() % 3 + 1;
@@ -710,7 +697,7 @@ void addPowerUp() {
 			}
 
 			//std::cout << height.x << " " << height.y << " " << height.z << "\n";
-			PowerUp* test3 = new PowerUp(height + glm::vec3(0.f, 1.f, 0.f), powerChoice);
+			PowerUp test3 = PowerUp(height + glm::vec3(0.f, 1.f, 0.f), powerChoice);
 			powerUps.push_back(test3);
 		}
 	}
@@ -720,33 +707,31 @@ void playerUsePowerUp() {
 	activate.setVolume(baseVolume * 0.2);
 	activate.loopSound(false);
 
-	for (int i = 0; i < powerUps.size(); i++) {
-		if (powerUps[i]->isPlayerCollected) {
-			switch (powerUps[i]->Type) {
-			case(1):
-				Physics.applyForce(PxVec3(0.f, 300000.f, 0.f), 1);
-				break;
-			case(2): {
-				glm::mat4 rotation = glm::rotate(glm::mat4{ 1.f }, float(-M_PI / 2.f), glm::vec3(0, 1, 0));
-				PxVec3 pre = (Physics.getRotation() + PxVec3(0.f, 0.02f, 0.f));
-				glm::vec4 rot = glm::vec4(pre.x, pre.y, pre.z, 0.f);
-				glm::vec4 rotated = rotation * rot;
-				Physics.applyForce(900000.f * PxVec3(rotated.x, rotated.y, rotated.z), 1);
-				break;
-			}
-			case(3): {
-				glm::vec3 vehiclePos = Physics.getVehiclePos(1);
-				glm::vec3 enemyPos = Physics.getVehiclePos(2);
-				glm::vec3 direction = enemyPos - vehiclePos;
-				if (glm::length(direction) < 10) {
-					Physics.stopVehicle(2);
-				}
-				break;
-			}
-			}
-			if (!activate.soundPlaying()) { activate.playSound(); }
-			powerUps.erase(powerUps.begin() + i);
+	if (playerPowerUp != 0) {
+		switch (playerPowerUp) {
+		case(1):
+			Physics.applyForce(PxVec3(0.f, 300000.f, 0.f), 1);
+			break;
+		case(2): {
+			glm::mat4 rotation = glm::rotate(glm::mat4{ 1.f }, float(-M_PI / 2.f), glm::vec3(0, 1, 0));
+			PxVec3 pre = (Physics.getRotation() + PxVec3(0.f, 0.02f, 0.f));
+			glm::vec4 rot = glm::vec4(pre.x, pre.y, pre.z, 0.f);
+			glm::vec4 rotated = rotation * rot;
+			Physics.applyForce(900000.f * PxVec3(rotated.x, rotated.y, rotated.z), 1);
 			break;
 		}
+		case(3): {
+			glm::vec3 vehiclePos = Physics.getVehiclePos(1);
+			glm::vec3 enemyPos = Physics.getVehiclePos(2);
+			glm::vec3 direction = enemyPos - vehiclePos;
+			if (glm::length(direction) < 10) {
+				Physics.stopVehicle(2);
+			}
+			break;
+		}
+		}
+		if (!activate.soundPlaying()) { activate.playSound(); }
+		playerPowerUp = 0;
+
 	}
 }
