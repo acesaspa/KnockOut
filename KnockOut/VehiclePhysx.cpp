@@ -25,6 +25,9 @@
 
 #include "VehiclePhysx.h"
 
+#include <chrono>
+#include <ctime> 
+
 using namespace physx;
 using namespace snippetvehicle;
 
@@ -62,6 +65,10 @@ PxRigidStatic* meshBody3 = NULL;
 bool changed = false;
 bool					gIsVehicleInAir = true;
 
+std::chrono::system_clock::time_point last_upright_times[4] = { std::chrono::system_clock::now(), 
+std::chrono::system_clock::now(), 
+std::chrono::system_clock::now(), 
+std::chrono::system_clock::now()};
 
 PxF32 gSteerVsForwardSpeedData[2 * 8] =
 {
@@ -433,7 +440,7 @@ void VehiclePhysx::initPhysics(std::vector<Mesh*> groundMeshes)
 		pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
 		pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
 	}
-	gMaterial = gPhysics->createMaterial(0.6f, 0.6f, 1.f);
+	gMaterial = gPhysics->createMaterial(0.6f, 0.6f, 0.9f);
 
 	gCooking = PxCreateCooking(PX_PHYSICS_VERSION, *gFoundation, PxCookingParams(PxTolerancesScale()));
 
@@ -651,6 +658,27 @@ void VehiclePhysx::stepPhysics()
 
 	}
 
+	for (int i = 0; i < 4; i++) {
+		PxVec3 dir = Vehicles[i]->getRigidDynamicActor()->getGlobalPose().q.getBasisVector1();
+		dir = dir / dir.magnitude();
+		//PxVec3 up = PxVec3(0.f, -1.f, 0.f);
+
+		float dot = (dir.y * -1.f);
+		float angle = acos(dot);
+
+		//std::cout << angle << "\n";
+		if (angle < 0.7854) {
+			std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - last_upright_times[i];
+			if (elapsed_seconds.count() > 2.f) {
+				std::cout << "UPRIGHT " << i << "\n";
+				last_upright_times[i] = std::chrono::system_clock::now();
+				Vehicles[i]->getRigidDynamicActor()->addForce(PxVec3(0.f, 330000.f,0.f));
+			}
+		}
+		else {
+			last_upright_times[i] = std::chrono::system_clock::now();
+		}
+	}
 
 	//Scene update.
 	gScene->simulate(timestep);

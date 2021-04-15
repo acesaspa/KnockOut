@@ -94,7 +94,7 @@ std::chrono::system_clock::time_point last_collision_times[6] = { std::chrono::s
 1 = GAME OVER / YOU WIN SCREEN
 2 = MAIN MENU SCREEN
 */
-int st = 0;
+int st = 2;
 
 OpenALEngine wavPlayer = OpenALEngine();
 float baseVolume = 1.0f;
@@ -130,7 +130,7 @@ int main(int argc, char** argv) {
 	victory.loopSound(false);
 
 	SoundManager gameover = wavPlayer.createSoundPlayer(4);
-	gameover.setVolume(baseVolume * 0.3);
+	gameover.setVolume(baseVolume * 0.5);
 	gameover.loopSound(false);
 
 	SoundManager pickup = wavPlayer.createSoundPlayer(5);
@@ -195,9 +195,8 @@ int main(int argc, char** argv) {
 		aiOpponents[aiOpponents.size() - 1].updateLevelBB(mainRenderer.getLevelBB(), false);
 	}
 	glfwSetKeyCallback(window, key_callback);
-	Physics.setGameStatus(0);
 
-
+	Physics.setGameStatus(-1);
 
 	//MARK: RENDER LOOP ---------------------------------------------------------------------------------------------------------------
 	while (!glfwWindowShouldClose(window)) {
@@ -236,7 +235,7 @@ int main(int argc, char** argv) {
 
 				float dist = glm::length(c1_pos - c2_pos);
 
-				if (dist < 6) {
+				if (dist < 5.5) {
 					if (i == 1) {
 						std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - last_collision_times[j - 2];
 						if (elapsed_seconds.count() >= 1.5f) {
@@ -380,7 +379,7 @@ int main(int argc, char** argv) {
 		else if (Physics.getGameStatus() == 3) {
 
 			//give camera the position of the game over screen
-			mainCamera.updateCamera(0.f, glm::vec3(-26.0f, 6.0f + 1110.f, 10.0f));
+			mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1110.f, 10.0f));
 
 			//Press 1 to go to main menu
 			if (st == 3) {
@@ -393,7 +392,7 @@ int main(int argc, char** argv) {
 		}
 		else if (Physics.getGameStatus() == 4) {
 			//give camera the position of the you win screen
-			mainCamera.updateCamera(0.f, glm::vec3(-26.0f, 6.0f + 1120.f, 10.0f));
+			mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1120.f, 10.0f));
 
 			//Press 1 to go to main menu
 			if (st == 3) {
@@ -406,7 +405,7 @@ int main(int argc, char** argv) {
 		}
 		else if (Physics.getGameStatus() == -1) {
 			//give camera the position of the main menu screen
-			mainCamera.updateCamera(0.f, glm::vec3(-26.0f, 6.0f + 1130.f, 10.0f));
+			mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1129.8f, 10.0f));
 			//Press 1 to play
 			if (st == 0) {
 				reset = true;
@@ -454,6 +453,7 @@ int main(int argc, char** argv) {
 		if (Physics.getGameStatus() == 1) {
 			//Camera will go to game over screen
 			st = 1;
+			powerups.clear();
 			Physics.setGameStatus(3);
 		}
 		//You win
@@ -461,6 +461,7 @@ int main(int argc, char** argv) {
 			//std::cout << "you win\n";
 			//Camera will go to you win screen
 			st = 2;
+			powerups.clear();
 			Physics.setGameStatus(4);
 		}
 		else {
@@ -719,7 +720,7 @@ void playerUsePowerUp() {
 		if (powerUps[i]->isPlayerCollected) {
 			switch (powerUps[i]->Type) {
 			case(1):
-				Physics.applyForce(PxVec3(0.f, 280000.f, 0.f), 1);
+				Physics.applyForce(PxVec3(0.f, 300000.f, 0.f), 1);
 				break;
 			case(2): {
 				glm::mat4 rotation = glm::rotate(glm::mat4{ 1.f }, float(-M_PI / 2.f), glm::vec3(0, 1, 0));

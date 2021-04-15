@@ -61,11 +61,11 @@ void Renderer::setUpRendering(glm::vec3 cameraPos, Shader ourShader, Shader text
 
 	//Screens
 	MainMenuScreen.loadOBJ("menu.obj");
-	MainMenuTexture.loadTexture("MainMenuScreen.jpg", true);
+	MainMenuTexture.loadTexture("Main.jpg", true);
 	GameOverMesh.loadOBJ("menu.obj");
-	GameOverTexture.loadTexture("GameOverScreen.jpg", true);
+	GameOverTexture.loadTexture("Gameover.jpg", true);
 	YouWinMesh.loadOBJ("menu.obj");
-	YouWinTexture.loadTexture("YouWinScreen.jpg", true);
+	YouWinTexture.loadTexture("Youwin.jpg", true);
 
 	//UI
 	NoBoostUI.loadOBJ("boostUI.obj");
