@@ -13,3 +13,7 @@ PowerUp::PowerUp(glm::vec3 location, int type) {
     isCollected = false;
     Type = type;
 }
+
+void PowerUp::foo()
+{
+}

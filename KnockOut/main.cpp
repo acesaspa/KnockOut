@@ -119,10 +119,6 @@ int main(int argc, char** argv) {
 		crashes[i].loopSound(false);
 	}
 
-	//SoundManager crash = wavPlayer.createSoundPlayer(1);
-	//crash.setVolume(baseVolume * 0.8);
-	//crash.loopSound(false);
-
 	SoundManager select = wavPlayer.createSoundPlayer(2);
 	select.setVolume(baseVolume * 0.8);
 	select.loopSound(false);
@@ -144,7 +140,7 @@ int main(int argc, char** argv) {
 	invalid.loopSound(false);
 
 	SoundManager activate = wavPlayer.createSoundPlayer(7);
-	activate.setVolume(baseVolume * 0.5);
+	activate.setVolume(baseVolume * 0.2);
 	activate.loopSound(false);
 
 	SoundManager reving = wavPlayer.createSoundPlayer(8);
@@ -154,6 +150,10 @@ int main(int argc, char** argv) {
 	SoundManager engine = wavPlayer.createSoundPlayer(9);
 	engine.setVolume(baseVolume * 0.3);
 	engine.loopSound(true);
+
+	SoundManager menuMusic = wavPlayer.createSoundPlayer(10);
+	menuMusic.setVolume(baseVolume * 0.5);
+	menuMusic.loopSound(true);
 
 
 	//MARK: Init Glfw
@@ -209,8 +209,6 @@ int main(int argc, char** argv) {
 			Physics.reset();
 		}
 
-
-
 		//MARK: Game Status & Segments
 		if (Physics.getGameStatus() == 0) {
 			Physics.checkGameOver();
@@ -237,7 +235,7 @@ int main(int argc, char** argv) {
 
 				float dist = glm::length(c1_pos - c2_pos);
 
-				if (dist < 5.5) {
+				if (dist < 5.5 and Physics.getGameStatus() == 0) {
 					if (i == 1) {
 						std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - last_collision_times[j - 2];
 						if (elapsed_seconds.count() >= 1.5f) {
@@ -276,8 +274,6 @@ int main(int argc, char** argv) {
 			}
 		}
 
-
-
 		//POWER-UP UP LOGIC (all cars)
 		for (int i = 1; i < 5; i++) { //for all cars (player = 1, AIs = 2-4)
 			for (int j = 0; j < powerUps.size(); j++) { //every power-up still on the map
@@ -301,8 +297,6 @@ int main(int argc, char** argv) {
 		}
 		mainRenderer.setUIBoost(playerPowerUp);
 
-
-
 		//MARK: Frame Start
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
@@ -319,8 +313,14 @@ int main(int argc, char** argv) {
 			pickup.stopSound();
 		}
 
-		if (!bgm.soundPlaying()) { bgm.playSound(); }
-		if (!engine.soundPlaying()) { engine.playSound(); }
+		if (Physics.getGameStatus() == -1) {
+			if (!menuMusic.soundPlaying()) { menuMusic.playSound(); }
+		}
+		else if (Physics.getGameStatus() == 0) {
+			if (!bgm.soundPlaying()) { bgm.playSound(); }
+			if (!engine.soundPlaying()) { engine.playSound(); }
+			menuMusic.stopSound();
+		}
 
 		int axesCount;
 		const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axesCount);
@@ -344,6 +344,9 @@ int main(int argc, char** argv) {
 			bgm.stopSound();
 			engine.stopSound();
 			reving.stopSound();
+			for (int i = 0; i < 6; i++) {
+				crashes[i].stopSound();
+			}
 			if (!gameover.soundPlaying()) { gameover.playSound(); }
 		}
 
@@ -352,6 +355,9 @@ int main(int argc, char** argv) {
 			bgm.stopSound();
 			engine.stopSound();
 			reving.stopSound();
+			for (int i = 0; i < 6; i++) {
+				crashes[i].stopSound();
+			}
 			if (!victory.soundPlaying()) { victory.playSound(); }
 		}
 
@@ -562,7 +568,6 @@ void processInput(GLFWwindow* window) {
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) mainCamera.getCameraPos() += glm::normalize(glm::cross(mainCamera.getCameraFront(), mainCamera.getCameraUp())) * cameraSpeed;
 	}
 	else {
-
 		//GAMEPAD
 		int present = glfwJoystickPresent(GLFW_JOYSTICK_1);
 		if (present) {
@@ -692,11 +697,8 @@ void addPowerUp() {
 						height.y = point.y;
 						height.z = point.z;
 					}
-					//std::cout << vertices[j].x << " " << vertices[j].y << " " << vertices[j].z << "\n";
 				}
 			}
-
-			//std::cout << height.x << " " << height.y << " " << height.z << "\n";
 			PowerUp test3 = PowerUp(height + glm::vec3(0.f, 1.f, 0.f), powerChoice);
 			powerUps.push_back(test3);
 		}
@@ -704,9 +706,6 @@ void addPowerUp() {
 }
 
 void playerUsePowerUp() {
-	activate.setVolume(baseVolume * 0.2);
-	activate.loopSound(false);
-
 	if (playerPowerUp != 0) {
 		switch (playerPowerUp) {
 		case(1):
@@ -732,6 +731,5 @@ void playerUsePowerUp() {
 		}
 		if (!activate.soundPlaying()) { activate.playSound(); }
 		playerPowerUp = 0;
-
 	}
 }
