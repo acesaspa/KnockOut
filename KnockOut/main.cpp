@@ -290,7 +290,6 @@ int main(int argc, char** argv) {
 						powerUps.erase(powerUps.begin() + j);
 						poweruptimestart = std::chrono::system_clock::now();
 					}
-					//std::cout << powerUps[j].Location.x<<" "<< powerUps[j].Location.z << " IS COLLECTED" << std::endl;
 					break;
 				}
 			}
@@ -461,7 +460,6 @@ int main(int argc, char** argv) {
 		}
 		//You win
 		else if (Physics.getGameStatus() == 2) {
-			//std::cout << "you win\n";
 			//Camera will go to you win screen
 			st = 2;
 			powerUps.clear();
@@ -483,17 +481,6 @@ int main(int argc, char** argv) {
 				powerUps,
 				Physics.getGameStatus());
 		}
-		/*
-		if (Physics.getGameStatus() == 1) {
-			mainRenderer.renderText(textShader, "GAME OVER", 300.f, 400.0f, 2.0f, glm::vec3(190 / 255.f, 0.f, 0.f));
-		}
-		else if (Physics.getGameStatus() == 2) {
-			mainRenderer.renderText(textShader, "YOU WIN", 390.f, 400.0f, 2.0f, glm::vec3(57 / 255.f, 1.f, 20 / 255.f));
-		}
-		else {
-			mainRenderer.renderGameFrame(Physics.getVehicleTrans(1), pxOpponents, Physics.getGroundPos(), pxObjects, ourShader, textShader, skyboxShader, view, mainCamera.getCameraPos(), Physics.getGameStatus(), powerups);
-		}
-		*/
 
 		//MARK: Render Imgui
 		{
@@ -510,8 +497,6 @@ int main(int argc, char** argv) {
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-
-
 		//MARK: Frame End
 		glfwSwapInterval(1);
 		glfwSwapBuffers(window);
@@ -527,9 +512,6 @@ int main(int argc, char** argv) {
 	glfwTerminate();
 	return 0;
 }
-
-
-
 
 
 void removeSegment() {
@@ -620,22 +602,19 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	soundSelector.setVolume(baseVolume * 0.5);
 	soundSelector.loopSound(false);
 
-	if (key == GLFW_KEY_1 && action == GLFW_PRESS)
+	if (key == GLFW_KEY_1 && action == GLFW_PRESS && Physics.getGameStatus() != 0)
 	{
 		if (st == 1) {
-			printf("GAME OVER\n");
 			//set game status to MENU
 			st = 3;
 			soundSelector.playSound();
 		}
 		else if (st == 2) {
-			printf("YOU WIN\n");
 			//set game status to MENU
 			st = 3;
 			soundSelector.playSound();
 		}
 		else if (st == 3) {
-			printf("MENU\n");
 			//set game status to PLAY
 			st = 0;
 			soundSelector.playSound();
@@ -643,15 +622,18 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 }
 
+
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 	mainCamera.mouseCallback(window, xpos, ypos);
 }
+
 
 void keyPress(unsigned char key, const PxTransform& camera)
 {
 	PX_UNUSED(camera);
 	PX_UNUSED(key);
 }
+
 
 void addPowerUp() {
 	if (powerUps.size() < 50) {
@@ -710,29 +692,30 @@ void addPowerUp() {
 	}
 }
 
+
 void playerUsePowerUp() {
 	if (playerPowerUp != 0) {
 		switch (playerPowerUp) {
-		case(1):
-			Physics.applyForce(PxVec3(0.f, 300000.f, 0.f), 1);
-			break;
-		case(2): {
-			glm::mat4 rotation = glm::rotate(glm::mat4{ 1.f }, float(-M_PI / 2.f), glm::vec3(0, 1, 0));
-			PxVec3 pre = (Physics.getRotation() + PxVec3(0.f, 0.02f, 0.f));
-			glm::vec4 rot = glm::vec4(pre.x, pre.y, pre.z, 0.f);
-			glm::vec4 rotated = rotation * rot;
-			Physics.applyForce(900000.f * PxVec3(rotated.x, rotated.y, rotated.z), 1);
-			break;
-		}
-		case(3): {
-			glm::vec3 vehiclePos = Physics.getVehiclePos(1);
-			glm::vec3 enemyPos = Physics.getVehiclePos(2);
-			glm::vec3 direction = enemyPos - vehiclePos;
-			if (glm::length(direction) < 10) {
-				Physics.stopVehicle(2);
+			case(1):
+				Physics.applyForce(PxVec3(0.f, 300000.f, 0.f), 1);
+				break;
+			case(2): {
+				glm::mat4 rotation = glm::rotate(glm::mat4{ 1.f }, float(-M_PI / 2.f), glm::vec3(0, 1, 0));
+				PxVec3 pre = (Physics.getRotation() + PxVec3(0.f, 0.02f, 0.f));
+				glm::vec4 rot = glm::vec4(pre.x, pre.y, pre.z, 0.f);
+				glm::vec4 rotated = rotation * rot;
+				Physics.applyForce(900000.f * PxVec3(rotated.x, rotated.y, rotated.z), 1);
+				break;
 			}
-			break;
-		}
+			case(3): {
+				glm::vec3 vehiclePos = Physics.getVehiclePos(1);
+				glm::vec3 enemyPos = Physics.getVehiclePos(2);
+				glm::vec3 direction = enemyPos - vehiclePos;
+				if (glm::length(direction) < 10) {
+					Physics.stopVehicle(2);
+				}
+				break;
+			}
 		}
 		if (!activate.soundPlaying()) { activate.playSound(); }
 		playerPowerUp = 0;
