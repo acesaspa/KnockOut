@@ -190,6 +190,7 @@ int main(int argc, char** argv) {
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 	mainRenderer.setUpRendering(mainCamera.getCameraPos(), mainShader, textShader, skyboxShader, depthShader);
+	mainRenderer.prepText(textShader);
 	Physics.initPhysics(mainRenderer.getGroundMeshes(0));
 
 	for (int i = 0; i < Utils::opponentCount; i++) {
@@ -482,6 +483,9 @@ int main(int argc, char** argv) {
 				Physics.getNumCars(),
 				powerUps,
 				Physics.getGameStatus());
+			if (Physics.getGameStatus() == 0) {
+				mainRenderer.renderText(textShader, "Cars Left: " + std::to_string(Utils::opponentCount-Physics.getNumCars()), 30.f, 750.0f, 0.5f, glm::vec3(190 / 255.f, 0.f, 0.f));
+			}
 		}
 		/*
 		if (Physics.getGameStatus() == 1) {

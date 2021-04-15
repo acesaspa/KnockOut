@@ -31,6 +31,8 @@ public:
 	int getUIBoost();
 	void setUIBoost(int x);
 	void setUpRendering(glm::vec3 cameraPos, Shader ourShader, Shader textShader, Shader skyboxShader, Shader depthShader);
+	void renderText(Shader& shader, std::string text, float x, float y, float scale, glm::vec3 color);
+	void prepText(Shader shader);
 	void renderGameFrame(physx::PxMat44 pxPlayerTrans,
 		physx::PxMat44 pxUITrans,
 		std::vector<physx::PxMat44> pxOpponentsTrans,
