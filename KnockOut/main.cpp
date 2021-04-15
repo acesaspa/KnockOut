@@ -117,6 +117,10 @@ int main(int argc, char** argv) {
 		crashes[i].loopSound(false);
 	}
 
+	//SoundManager crash = wavPlayer.createSoundPlayer(1);
+	//crash.setVolume(baseVolume * 0.8);
+	//crash.loopSound(false);
+
 	SoundManager select = wavPlayer.createSoundPlayer(2);
 	select.setVolume(baseVolume * 0.8);
 	select.loopSound(false);
@@ -138,7 +142,7 @@ int main(int argc, char** argv) {
 	invalid.loopSound(false);
 
 	SoundManager activate = wavPlayer.createSoundPlayer(7);
-	activate.setVolume(baseVolume * 0.2);
+	activate.setVolume(baseVolume * 0.5);
 	activate.loopSound(false);
 
 	SoundManager reving = wavPlayer.createSoundPlayer(8);
@@ -149,9 +153,6 @@ int main(int argc, char** argv) {
 	engine.setVolume(baseVolume * 0.3);
 	engine.loopSound(true);
 
-	SoundManager menuMusic = wavPlayer.createSoundPlayer(10);
-	menuMusic.setVolume(baseVolume * 0.5);
-	menuMusic.loopSound(true);
 
 	//MARK: Init Glfw
 	const char* glsl_version = "#version 130";
@@ -206,6 +207,8 @@ int main(int argc, char** argv) {
 			Physics.reset();
 		}
 
+
+
 		//MARK: Game Status & Segments
 		if (Physics.getGameStatus() == 0) {
 			Physics.checkGameOver();
@@ -232,7 +235,7 @@ int main(int argc, char** argv) {
 
 				float dist = glm::length(c1_pos - c2_pos);
 
-				if (dist < 5.5 and Physics.getGameStatus() == 0) {
+				if (dist < 5.5) {
 					if (i == 1) {
 						std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - last_collision_times[j - 2];
 						if (elapsed_seconds.count() >= 1.5f) {
@@ -271,6 +274,9 @@ int main(int argc, char** argv) {
 			}
 		}
 
+
+
+
 		//PLAYER POWER-UP UI
 		bool playerHasPowerUp = false;
 		for (int i = 0; i < powerUps.size(); i++) { //if player has a power-up -> show UI icon on the car
@@ -281,6 +287,8 @@ int main(int argc, char** argv) {
 			}
 		}
 		if (!playerHasPowerUp) mainRenderer.setUIBoost(0); //no power-up -> no icon
+
+
 
 		//POWER-UP PICK UP LOGIC (all cars)
 		for (int i = 1; i < 5; i++) { //for all cars (player = 1, AIs = 2-4)
@@ -305,6 +313,8 @@ int main(int argc, char** argv) {
 			}
 		}
 
+
+
 		//MARK: Frame Start
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
@@ -321,17 +331,9 @@ int main(int argc, char** argv) {
 			pickup.stopSound();
 		}
 
-		std::cout << Physics.getGameStatus() << std::endl;
+		if (!bgm.soundPlaying()) { bgm.playSound(); }
+		if (!engine.soundPlaying()) { engine.playSound(); }
 
-		if (Physics.getGameStatus() == -1) {
-			if (!menuMusic.soundPlaying()) { menuMusic.playSound(); }
-		}
-		else if (Physics.getGameStatus() == 0) {
-			if (!bgm.soundPlaying()) { bgm.playSound(); }
-			if (!engine.soundPlaying()) { engine.playSound(); }
-			menuMusic.stopSound();
-		}
-		
 		int axesCount;
 		const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axesCount);
 		int present = glfwJoystickPresent(GLFW_JOYSTICK_1);
@@ -354,9 +356,6 @@ int main(int argc, char** argv) {
 			bgm.stopSound();
 			engine.stopSound();
 			reving.stopSound();
-			for (int i = 0; i < 6; i++) {
-				crashes[i].stopSound();
-			}
 			if (!gameover.soundPlaying()) { gameover.playSound(); }
 		}
 
@@ -365,9 +364,6 @@ int main(int argc, char** argv) {
 			bgm.stopSound();
 			engine.stopSound();
 			reving.stopSound();
-			for (int i = 0; i < 6; i++) {
-				crashes[i].stopSound();
-			}
 			if (!victory.soundPlaying()) { victory.playSound(); }
 		}
 
@@ -721,6 +717,8 @@ void addPowerUp() {
 }
 
 void playerUsePowerUp() {
+	activate.setVolume(baseVolume * 0.2);
+	activate.loopSound(false);
 
 	for (int i = 0; i < powerUps.size(); i++) {
 		if (powerUps[i]->isPlayerCollected) {
