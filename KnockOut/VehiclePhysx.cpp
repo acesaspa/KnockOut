@@ -400,13 +400,16 @@ void VehiclePhysx::releaseAllControls()
 }
 
 void VehiclePhysx::removeGround(std::vector<Mesh*> groundMeshes) {
-	if (meshBody1->getScene() != NULL) {
+	if (meshBody1->getScene() != NULL && groundMeshes.size() == 3) {//city
+		std::cout << "remove 1\n";
 		gScene->removeActor(*meshBody1);
 	}
-	if (meshBody2->getScene() != NULL) {
+	if (meshBody2->getScene() != NULL && (groundMeshes.size() == 1 || groundMeshes.size() == 3)) {//grass
+		std::cout << "remove 2\n";
 		gScene->removeActor(*meshBody2);
 	}
-	if (meshBody3->getScene() != NULL) {
+	if (meshBody3->getScene() != NULL) {//desert
+		std::cout << "remove 3\n";
 		gScene->removeActor(*meshBody3);
 	}
 	//gScene->removeActor(*meshBody2);
@@ -457,6 +460,10 @@ void VehiclePhysx::initPhysics(std::vector<Mesh*> groundMeshes)
 	//Create the friction table for each combination of tire and surface type.
 	gFrictionPairs = createFrictionPairs(gMaterial);
 
+	meshBody1 = gPhysics->createRigidStatic(PxTransform(PxVec3(0, 0, 0)));
+	meshBody2 = gPhysics->createRigidStatic(PxTransform(PxVec3(0, 0, 0)));
+	meshBody3 = gPhysics->createRigidStatic(PxTransform(PxVec3(0, 0, 0)));
+
 	//Create/cook level surface.
 	PxFilterData groundPlaneSimFilterData(COLLISION_FLAG_GROUND, COLLISION_FLAG_GROUND_AGAINST, 0, 0);
 	gGroundPlane = createDrivablePlane(groundPlaneSimFilterData, gMaterial, gPhysics);
@@ -468,7 +475,7 @@ void VehiclePhysx::initPhysics(std::vector<Mesh*> groundMeshes)
 	for (int i = 0; i < 4; i++) {
 		VehicleDesc vehicleDesc = initVehicleDesc(1000);
 		Vehicles[i] = createVehicle4W(vehicleDesc, gPhysics, gCooking);
-		PxTransform startTransform(PxVec3(-10.f*i, (vehicleDesc.chassisDims.y * 0.5f + vehicleDesc.wheelRadius + 2.0f), -10.f), PxQuat(PxIdentity));
+		PxTransform startTransform(PxVec3(-10.f * i, (vehicleDesc.chassisDims.y * 0.5f + vehicleDesc.wheelRadius + 2.0f), -10.f), PxQuat(PxIdentity));
 		Vehicles[i]->getRigidDynamicActor()->setGlobalPose(startTransform);
 		gScene->addActor(*Vehicles[i]->getRigidDynamicActor());
 	}
@@ -851,7 +858,7 @@ void VehiclePhysx::cookGroundMeshes(std::vector<Mesh*> groundMeshes) {
 	}
 }
 
-void VehiclePhysx::cookGroundMesh(Mesh* meshToCook,int i) {
+void VehiclePhysx::cookGroundMesh(Mesh* meshToCook, int i) {
 	PxMaterial* gMaterial = gPhysics->createMaterial(vehicleStaticFriction, vehicleDynamicFriction, vehicleRestitution); //create some material
 	PxTriangleMeshDesc meshDesc; //mesh cooking from a triangle mesh
 
@@ -882,8 +889,8 @@ void VehiclePhysx::cookGroundMesh(Mesh* meshToCook,int i) {
 	PxTriangleMesh* triMesh = NULL;
 	PxU32 meshSize = 0;
 	triMesh = gCooking->createTriangleMesh(meshDesc, gPhysics->getPhysicsInsertionCallback()); //insert the cooked mesh directly into PxPhysics
-	if (i == 0) {
-		meshBody1 = NULL;
+	if (i == 0 && meshBody1->getScene() == NULL) {
+		std::cout << "rebuild 1\n";
 		meshBody1 = gPhysics->createRigidStatic(PxTransform(PxVec3(0, 0, 0))); //create a rigid body for the cooked mesh
 		PxShape* meshShape = gPhysics->createShape(PxTriangleMeshGeometry(triMesh), *gMaterial); //create a shape from the cooked mesh
 
@@ -898,8 +905,8 @@ void VehiclePhysx::cookGroundMesh(Mesh* meshToCook,int i) {
 		gScene->addActor(*meshBody1); //and add it to the scene
 		triMesh->release(); //clean up
 	}
-	if (i == 1) {
-		meshBody2 = NULL;
+	if (i == 1 && meshBody2->getScene() == NULL) {
+		std::cout << "rebuild 2\n";
 		meshBody2 = gPhysics->createRigidStatic(PxTransform(PxVec3(0, 0, 0))); //create a rigid body for the cooked mesh
 		PxShape* meshShape = gPhysics->createShape(PxTriangleMeshGeometry(triMesh), *gMaterial); //create a shape from the cooked mesh
 
@@ -914,8 +921,8 @@ void VehiclePhysx::cookGroundMesh(Mesh* meshToCook,int i) {
 		gScene->addActor(*meshBody2); //and add it to the scene
 		triMesh->release(); //clean up
 	}
-	if (i == 2) {
-		meshBody3 = NULL;
+	if (i == 2 && meshBody3->getScene() == NULL) {
+		std::cout << "rebuild 3\n";
 		meshBody3 = gPhysics->createRigidStatic(PxTransform(PxVec3(0, 0, 0))); //create a rigid body for the cooked mesh
 		PxShape* meshShape = gPhysics->createShape(PxTriangleMeshGeometry(triMesh), *gMaterial); //create a shape from the cooked mesh
 

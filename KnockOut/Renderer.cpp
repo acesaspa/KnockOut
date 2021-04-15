@@ -310,8 +310,8 @@ std::vector<Mesh*> Renderer::getGroundMeshes(int index) { //returns pointers to 
 	if (index == 0) {
 		std::vector<Mesh*> meshes;
 		meshes.push_back(&citySurfaceMesh);
-		meshes.push_back(&desertSurfaceMesh);
 		meshes.push_back(&grassSurfaceMesh);
+		meshes.push_back(&desertSurfaceMesh);
 		return meshes;
 	}
 	else if (index == 1) {

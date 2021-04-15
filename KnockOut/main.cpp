@@ -438,7 +438,7 @@ int main(int argc, char** argv) {
 
 
 		//AI OPPONENTs FRAME UPDATE
-		if (Physics.getGameStatus() == 0) {
+		if (false){//Physics.getGameStatus() == 0) {
 			for (int i = 0; i < Utils::opponentCount; i++) {
 				aiOpponents[i].frameUpdate(
 					Physics.getVehDat(i + 1),
