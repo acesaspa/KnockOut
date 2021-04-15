@@ -440,15 +440,17 @@ int main(int argc, char** argv) {
 
 
 		//AI OPPONENTs FRAME UPDATE
-		for (int i = 0; i < Utils::opponentCount; i++) {
-			aiOpponents[i].frameUpdate(
-				Physics.getVehDat(i+1),
-				Physics.getOpponentPos(i + 1),
-				Physics.getOpponentForVec(i + 1),
-				Physics.getVehiclePos(i + 1),
-				Physics.getPlayerForVec(),
-				Physics.getVehicle4W(i + 1),
-				Physics.getVehicle4W(0));
+		if (Physics.getGameStatus() == 0) {
+			for (int i = 0; i < Utils::opponentCount; i++) {
+				aiOpponents[i].frameUpdate(
+					Physics.getVehDat(i + 1),
+					Physics.getOpponentPos(i + 1),
+					Physics.getOpponentForVec(i + 1),
+					Physics.getVehiclePos(i + 1),
+					Physics.getPlayerForVec(),
+					Physics.getVehicle4W(i + 1),
+					Physics.getVehicle4W(0));
+			}
 		}
 
 
