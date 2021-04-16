@@ -97,6 +97,7 @@ std::chrono::system_clock::time_point last_collision_times[6] = { std::chrono::s
 2 = MAIN MENU SCREEN
 */
 int st = 2;
+bool menuClose = true;
 
 OpenALEngine wavPlayer = OpenALEngine();
 float baseVolume = 1.0f;
@@ -208,7 +209,8 @@ int main(int argc, char** argv) {
 		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
 			Physics.setGameStatus(0);
 			Physics.reset();
-		} else if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) {
+		}
+		if (Physics.getGameStatus() == 0 && st == 100) {
 			Physics.setGameStatus(-2);
 		}
 
@@ -384,6 +386,7 @@ int main(int argc, char** argv) {
 
 			//Press 1 to go to main menu
 			if (st == 3) {
+				menuClose = true;
 				Physics.setGameStatus(-1);
 			}
 			//Press 2 to exit
@@ -397,6 +400,7 @@ int main(int argc, char** argv) {
 
 			//Press 1 to go to main menu
 			if (st == 3) {
+				menuClose = true;
 				Physics.setGameStatus(-1);
 			}
 			//Press 2 to exit
@@ -417,7 +421,7 @@ int main(int argc, char** argv) {
 				playerPowerUp = 0;
 			}
 			//Press 2 to exit
-			else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
+			else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && menuClose) {
 				glfwSetWindowShouldClose(window, true);
 			}
 			st = 3;
@@ -426,11 +430,15 @@ int main(int argc, char** argv) {
 			//give camera position of the pause screen
 			mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1139.8f, 10.05f));
 			if (st == 0) {
+				// go back to playing
 				Physics.setGameStatus(0);
 			}
-			else if (st == 2) {
+			else if (st == 3) {
+				// go to main menu
+				menuClose = false;
 				Physics.setGameStatus(-1);
 			}
+
 			else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) {
 				glfwSetWindowShouldClose(window, true);
 			}
@@ -590,20 +598,90 @@ void processInput(GLFWwindow* window) {
 			if (GLFW_PRESS == buttons[10]) { //up
 				if (Physics.getGameStatus() == -2) { //pause screen
 					//ACE TODO: go to main menu from pause screen
+					//give camera position of the pause screen
+					mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1139.8f, 10.05f));
+					if (st == 0) {
+						// go back to playing
+						Physics.setGameStatus(0);
+					}
+					else if (st == 3) {
+						// go to main menu
+						menuClose = false;
+						Physics.setGameStatus(-1);
+					}
+					else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) {
+						glfwSetWindowShouldClose(window, true);
+					}
+
 				}
 				if (Physics.getGameStatus() == -1) { //main menu screen
 					//ACE TODO: properly start the game from main menu
+					//give camera the position of the main menu screen
+					mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1129.8f, 10.05f));
+					//Press 1 to play
+					if (st == 0) {
+						reset = true;
+						Physics.reset();
+						Physics.setGameStatus(0);
+						Physics.updateNumCars();
+						Physics.removeGround(mainRenderer.getGroundMeshes(Physics.getNumCars()));
+						playerPowerUp = 0;
+					}
+					//Press 2 to exit
+					else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && menuClose) {
+						glfwSetWindowShouldClose(window, true);
+					}
+					st = 3;
+
 				}
 				if (Physics.getGameStatus() == 3) { //game over screen
 					//ACE TODO: go to main menu from game over screen
+					//give camera the position of the game over screen
+					mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1110.f, 10.05f));
+
+					//Press 1 to go to main menu
+					if (st == 3) {
+						menuClose = true;
+						Physics.setGameStatus(-1);
+					}
+					//Press 2 to exit
+					else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
+						glfwSetWindowShouldClose(window, true);
+					}
 				}
 				if (Physics.getGameStatus() == 4) {//you win screen
 					//ACE TODO: go to main menu from you win screen
+					//give camera the position of the you win screen
+					mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1120.f, 10.05f));
+
+					//Press 1 to go to main menu
+					if (st == 3) {
+						menuClose = true;
+						Physics.setGameStatus(-1);
+					}
+					//Press 2 to exit
+					else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
+						glfwSetWindowShouldClose(window, true);
+					}
 				}
 			}
 			if (GLFW_PRESS == buttons[13]) { //left
 				if (Physics.getGameStatus() == -2) { //pause screen
 					//ACE TODO: go to main menu from pause screen
+					//give camera position of the pause screen
+					mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1139.8f, 10.05f));
+					if (st == 0) {
+						// go back to playing
+						Physics.setGameStatus(0);
+					}
+					else if (st == 3) {
+						// go to main menu
+						menuClose = false;
+						Physics.setGameStatus(-1);
+					}
+					else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) {
+						glfwSetWindowShouldClose(window, true);
+					}
 				}
 			}
 			if (GLFW_PRESS == buttons[12]) { //down
@@ -667,6 +745,22 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 			st = 0;
 			soundSelector.playSound();
 		}
+	}
+
+	// this block of code is specifically for the PAUSE screen
+	if (key == GLFW_KEY_P && action == GLFW_PRESS && Physics.getGameStatus() == 0) {
+		st = 100;
+	}
+	if (key == GLFW_KEY_1 && action == GLFW_PRESS && Physics.getGameStatus() == -2) {
+		st = 0;
+		soundSelector.playSound();
+	}
+	if (key == GLFW_KEY_2 && action == GLFW_PRESS && Physics.getGameStatus() == -2) {
+		st = 3;
+		soundSelector.playSound();
+	}
+	if (key == GLFW_KEY_2 && action == GLFW_PRESS && Physics.getGameStatus() == -1) {
+		menuClose = true;
 	}
 }
 
