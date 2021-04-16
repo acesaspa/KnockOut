@@ -69,6 +69,7 @@ std::vector<PowerUp> powerUps;
 bool removingSegment = false;
 int numPow = 0;
 int playerPowerUp = 0; //0 = none
+int controllerInputLock = 0;
 
 
 auto start = std::chrono::system_clock::now();
@@ -204,17 +205,12 @@ int main(int argc, char** argv) {
 
 	//MARK: RENDER LOOP ---------------------------------------------------------------------------------------------------------------
 	while (!glfwWindowShouldClose(window)) {
-		addPowerUp();
 
-		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
-			Physics.setGameStatus(0);
-			Physics.reset();
-		}
-		if (Physics.getGameStatus() == 0 && st == 100) {
-			Physics.setGameStatus(-2);
-		}
+		//MISC LOGIC
+		if (controllerInputLock > 0) controllerInputLock--;
+		if (Physics.getGameStatus() == 0 && st == 100) Physics.setGameStatus(-2);
 
-		//MARK: Game Status & Segments
+		//PHYSICS GAME STATUS & SEGMENTS
 		if (Physics.getGameStatus() == 0) {
 			Physics.checkGameOver();
 			Physics.updateNumCars();
@@ -232,12 +228,12 @@ int main(int argc, char** argv) {
 		}
 		if (removingSegment) removeSegment();
 
-		//MARK: COLLISION SOUNDS
+
+		//COLLISION SOUNDS
 		for (int i = 1; i < 5; i++) {//1,2,3,4
 			glm::vec3 c1_pos = Physics.getVehiclePos(i);
 			for (int j = i + 1; j < 5; j++) {
 				glm::vec3 c2_pos = Physics.getVehiclePos(j);
-
 				float dist = glm::length(c1_pos - c2_pos);
 
 				if (dist < 5.5 and Physics.getGameStatus() == 0) {
@@ -274,95 +270,84 @@ int main(int argc, char** argv) {
 							}
 						}
 					}
-
 				}
 			}
 		}
 
-		//POWER-UP UP LOGIC (all cars)
-		for (int i = 1; i < 5; i++) { //for all cars (player = 1, AIs = 2-4)
-			for (int j = 0; j < powerUps.size(); j++) { //every power-up still on the map
-				if (glm::length(Physics.getVehiclePos(i) - powerUps[j].Location) < 2.f) { //if close enough for pick up
-					if (i == 1) {
-						if (playerPowerUp != 0) break;
-						playerPowerUp = powerUps[j].Type;
-						powerUps.erase(powerUps.begin() + j);
-						poweruptimestart = std::chrono::system_clock::now();
+
+		//POWER UPS
+		if (st != 100) { //pause menu
+			addPowerUp();
+			for (int i = 1; i < 5; i++) { //for all cars (player = 1, AIs = 2-4)
+				for (int j = 0; j < powerUps.size(); j++) { //every power-up still on the map
+					if (glm::length(Physics.getVehiclePos(i) - powerUps[j].Location) < 2.f) { //if close enough for pick up
+						if (i == 1) {
+							if (playerPowerUp != 0) break;
+							playerPowerUp = powerUps[j].Type;
+							powerUps.erase(powerUps.begin() + j);
+							poweruptimestart = std::chrono::system_clock::now();
+						}
+						else { //an AI is picking it up
+							if (aiOpponents[i - 2].hasPowerUp()) break;
+							aiOpponents[i - 2].setPowerUp(powerUps[j].Type);
+							powerUps.erase(powerUps.begin() + j);
+							poweruptimestart = std::chrono::system_clock::now();
+						}
+						break;
 					}
-					else { //an AI is picking it up
-						if (aiOpponents[i - 2].hasPowerUp()) break;
-						aiOpponents[i - 2].setPowerUp(powerUps[j].Type);
-						powerUps.erase(powerUps.begin() + j);
-						poweruptimestart = std::chrono::system_clock::now();
-					}
-					break;
 				}
 			}
+			mainRenderer.setUIBoost(playerPowerUp);
 		}
-		mainRenderer.setUIBoost(playerPowerUp);
 
-		//MARK: Frame Start
+
+		//TIME
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
-
 		auto poweruptimeend = std::chrono::system_clock::now();
 		std::chrono::duration<double> elapsed_seconds = poweruptimeend - poweruptimestart;
 		if (elapsed_seconds.count() < 0.65)
 		{
 			if (!pickup.soundPlaying()) { pickup.playSound(); }
 		}
-		else
-		{
-			pickup.stopSound();
-		}
+		else pickup.stopSound();
+		
 
-		// play menu sound when in main menu
-		if (Physics.getGameStatus() == -1) 
-		{
-			if (!menuMusic.soundPlaying()) { menuMusic.playSound(); }
-		}
-		else
-		{
-			menuMusic.stopSound();
-		}
 
-		// play engine and reving sounds when in game
-		if (Physics.getGameStatus() == 0) 
-		{
+
+
+		//MENU MUSIC
+		if (Physics.getGameStatus() == -1) { if (!menuMusic.soundPlaying()) { menuMusic.playSound(); }}
+		else menuMusic.stopSound();
+
+
+		//CAR REVVING SOUND
+		if (Physics.getGameStatus() == 0) {
 			if (!bgm.soundPlaying()) { bgm.playSound(); }
 			if (!engine.soundPlaying()) { engine.playSound(); }
 
-			// sounds for controller input
-			int axesCount;
+			int axesCount; // sounds for controller input
 			const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axesCount);
 			int present = glfwJoystickPresent(GLFW_JOYSTICK_1);
 
 			if ((glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_UP) == GLFW_REPEAT) or (present and axes[1] < -0.5))
-			{
-				if (!reving.soundPlaying()) { reving.playSound(); }
-			}
-			else if ((glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_REPEAT) or (present and axes[1] > 0.5))
-			{
-				if (!reving.soundPlaying()) { reving.playSound(); }
-			}
-			else
-			{
-				reving.stopSound();
-			}
+				if (!reving.soundPlaying()) reving.playSound();
+				else if ((glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_REPEAT) or (present and axes[1] > 0.5))
+					if (!reving.soundPlaying()) reving.playSound();
+					else reving.stopSound();
 		}
 
-		// stop game sounds when game is over
-		if (Physics.getGameStatus() == 3 or Physics.getGameStatus() == 4)
-		{
+
+		//STOP SOUNDS WHEN GAME OVER
+		if (Physics.getGameStatus() == 3 or Physics.getGameStatus() == 4) {
 			bgm.stopSound();
 			engine.stopSound();
 			reving.stopSound();
 			for (int i = 0; i < 6; i++) {
 				crashes[i].stopSound();
 			}
-			// play win/loss sounds on their respective menus
-			if (Physics.getGameStatus() == 3) {
+			if (Physics.getGameStatus() == 3) { // play win/loss sounds on their respective menus
 				if (!gameover.soundPlaying()) { gameover.playSound(); }
 			}
 			else if (Physics.getGameStatus() == 4) {
@@ -370,49 +355,37 @@ int main(int argc, char** argv) {
 			}
 		}
 
-		processInput(window);
-		Physics.stepPhysics();
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
 
-		if (Physics.getGameStatus() == 0) {
-			mainCamera.updateCamera(Physics.getAngleAroundY(), Physics.getVehiclePos(1));
-		}
+
+
+		//NO MENU
+		if (Physics.getGameStatus() == 0) mainCamera.updateCamera(Physics.getAngleAroundY(), Physics.getVehiclePos(1));
+
+		//GAME OVER SCREEN
 		else if (Physics.getGameStatus() == 3) {
-
-			//give camera the position of the game over screen
-			mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1110.f, 10.05f));
-
-			//Press 1 to go to main menu
-			if (st == 3) {
+			mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1110.f, 10.05f)); //give camera the position of the game over screen
+			if (st == 3) { //Press 1 to go to main menu
 				menuClose = true;
 				Physics.setGameStatus(-1);
 			}
-			//Press 2 to exit
-			else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
-				glfwSetWindowShouldClose(window, true);
-			}
+			else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) glfwSetWindowShouldClose(window, true); //Press 2 to exit				
 		}
+
+
+		//YOU WIN SCREEN
 		else if (Physics.getGameStatus() == 4) {
-			//give camera the position of the you win screen
-			mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1120.f, 10.05f));
-
-			//Press 1 to go to main menu
-			if (st == 3) {
+			mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1120.f, 10.05f)); //give camera the position of the you win screen
+			if (st == 3) { //Press 1 to go to main menu
 				menuClose = true;
 				Physics.setGameStatus(-1);
 			}
-			//Press 2 to exit
-			else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
-				glfwSetWindowShouldClose(window, true);
-			}
+			else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) glfwSetWindowShouldClose(window, true); //Press 2 to exit
 		}
+
+		//MAIN MENU SCREEN
 		else if (Physics.getGameStatus() == -1) {
-			//give camera the position of the main menu screen
-			mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1129.8f, 10.05f));
-			//Press 1 to play
-			if (st == 0) {
+			mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1129.8f, 10.05f)); //give camera the position of the main menu screen
+			if (st == 0) { //Press 1 to play
 				reset = true;
 				Physics.reset();
 				Physics.setGameStatus(0);
@@ -420,76 +393,56 @@ int main(int argc, char** argv) {
 				Physics.removeGround(mainRenderer.getGroundMeshes(Physics.getNumCars()));
 				playerPowerUp = 0;
 			}
-			//Press 2 to exit
-			else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && menuClose) {
-				glfwSetWindowShouldClose(window, true);
-			}
+			else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && menuClose) glfwSetWindowShouldClose(window, true); //Press 2 to exit
 			st = 3;
 		}
+
+		//PAUSE MENU SCREEN
 		else if (Physics.getGameStatus() == -2) {
-			//give camera position of the pause screen
-			mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1139.8f, 10.05f));
-			if (st == 0) {
-				// go back to playing
-				Physics.setGameStatus(0);
-			}
-			else if (st == 3) {
-				// go to main menu
+			mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1139.8f, 10.05f)); //give camera position of the pause screen
+			if (st == 0) Physics.setGameStatus(0); // go back to playing
+			else if (st == 3) { // go to main menu
 				menuClose = false;
 				Physics.setGameStatus(-1);
 			}
-
-			else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) {
-				glfwSetWindowShouldClose(window, true);
-			}
+			else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) glfwSetWindowShouldClose(window, true);
 		}
 		glm::mat4 view = mainCamera.getViewMatrix();
 
 
+		//AI UPDATE
+		for (int i = 0; i < Utils::opponentCount; i++) {
+			aiOpponents[i].frameUpdate(
+				Physics.getVehDat(i + 1),
+				Physics.getOpponentPos(i + 1),
+				Physics.getOpponentForVec(i + 1),
+				Physics.getVehiclePos(i + 1),
+				Physics.getPlayerForVec(),
+				Physics.getVehicle4W(i + 1),
+				Physics.getVehicle4W(0));
+		}
 
-		//MARK: Render Scene
+
+		//RENDERING
 		glClearColor(0.53f, 0.81f, 0.92f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		std::vector<PxTransform> pxObjects; //ideally this "arrayization" should be done in PhysX
-		//pxObjects.push_back(Physics.getBoxTrans(1));
-		//pxObjects.push_back(Physics.getBoxTrans(2));
-		//pxObjects.push_back(Physics.getBoxTrans(3));
+		std::vector<PxTransform> pxObjects;
 		std::vector<PxMat44> pxOpponents;
 		pxOpponents.push_back(Physics.getVehicleTrans(2));
 		pxOpponents.push_back(Physics.getVehicleTrans(3));
 		pxOpponents.push_back(Physics.getVehicleTrans(4));
 
-
-
-		//AI OPPONENTs FRAME UPDATE
-		//if (false){
-			for (int i = 0; i < Utils::opponentCount; i++) {
-				aiOpponents[i].frameUpdate(
-					Physics.getVehDat(i + 1),
-					Physics.getOpponentPos(i + 1),
-					Physics.getOpponentForVec(i + 1),
-					Physics.getVehiclePos(i + 1),
-					Physics.getPlayerForVec(),
-					Physics.getVehicle4W(i + 1),
-					Physics.getVehicle4W(0));
-			}
-		//}
-
-
-		if (Physics.getGameStatus() == 1) {
-			//Camera will go to game over screen
+		if (Physics.getGameStatus() == 1) { //Game over
 			st = 1;
 			powerUps.clear();
 			Physics.setGameStatus(3);
 		}
-		//You win
-		else if (Physics.getGameStatus() == 2) {
-			//Camera will go to you win screen
+		else if (Physics.getGameStatus() == 2) { //You win
 			st = 2;
 			powerUps.clear();
 			Physics.setGameStatus(4);
 		}
-		else {
+		else { //Game
 			mainRenderer.renderGameFrame(Physics.getVehicleTrans(1),
 				Physics.getVehicleTrans(1),
 				pxOpponents,
@@ -505,18 +458,29 @@ int main(int argc, char** argv) {
 				powerUps,
 				Physics.getGameStatus());
 			if (Physics.getGameStatus() == 0) {
-				mainRenderer.renderText(textShader, "Cars Left: " + std::to_string(Utils::opponentCount-Physics.getNumCars()), 30.f, 750.0f, 0.5f, glm::vec3(190 / 255.f, 0.f, 0.f));
+				mainRenderer.renderText(textShader, "Cars Left: " + std::to_string(Utils::opponentCount - Physics.getNumCars()), 30.f, 750.0f, 0.5f, glm::vec3(190 / 255.f, 0.f, 0.f));
 			}
 		}
 
-		//MARK: Render Imgui
+
+
+
+		//INPUT & STEP PHYSX
+		processInput(window);
+		if (st != 100) Physics.stepPhysics(); //only if not paused
+
+
+
+
+		//IMGUI
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
 		{
 			ImGui::Begin("Debug Menu");
-
 			ImGui::Text("Vehicle Position");
 			ImGui::Text("x: %.1f    y: %.1f    z: %.1f", Physics.getVehiclePos(1).x, Physics.getVehiclePos(1).y, Physics.getVehiclePos(1).z);
 			ImGui::Text("-----------------------------------------------");
-
 			ImGui::Text("");
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 			ImGui::End();
@@ -524,7 +488,7 @@ int main(int argc, char** argv) {
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-		//MARK: Frame End
+		//GLFW FRAME END
 		glfwSwapInterval(1);
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -593,105 +557,59 @@ void processInput(GLFWwindow* window) {
 			int buttonCount;
 			const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &buttonCount);
 			if (GLFW_PRESS == buttons[0]) playerUsePowerUp(); //A button
-			if (GLFW_PRESS == buttons[3]) Physics.setGameStatus(-2); //Y button
 
-			if (GLFW_PRESS == buttons[10]) { //up
-				if (Physics.getGameStatus() == -2) { //pause screen
-					//ACE TODO: go to main menu from pause screen
-					//give camera position of the pause screen
-					mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1139.8f, 10.05f));
-					if (st == 0) {
-						// go back to playing
-						Physics.setGameStatus(0);
-					}
-					else if (st == 3) {
-						// go to main menu
-						menuClose = false;
-						Physics.setGameStatus(-1);
-					}
-					else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) {
-						glfwSetWindowShouldClose(window, true);
-					}
-
+			if (controllerInputLock <= 0) {
+				if (GLFW_PRESS == buttons[3]) { //Y
+					soundSelector.playSound();
+					Physics.setGameStatus(-2);
+					st = 100;
 				}
-				if (Physics.getGameStatus() == -1) { //main menu screen
-					//ACE TODO: properly start the game from main menu
-					//give camera the position of the main menu screen
-					mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1129.8f, 10.05f));
-					//Press 1 to play
-					if (st == 0) {
+
+				if (GLFW_PRESS == buttons[10]) { //UP
+					controllerInputLock = 30; //lock menu selection using the controller for half a sec
+					soundSelector.playSound();
+					if (Physics.getGameStatus() == -2) { //pause screen
+						Physics.setGameStatus(0);
+						st = 0;
+					}
+					if (Physics.getGameStatus() == -1) { //main menu screen
 						reset = true;
 						Physics.reset();
 						Physics.setGameStatus(0);
 						Physics.updateNumCars();
 						Physics.removeGround(mainRenderer.getGroundMeshes(Physics.getNumCars()));
 						playerPowerUp = 0;
+						st = 3;
 					}
-					//Press 2 to exit
-					else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && menuClose) {
-						glfwSetWindowShouldClose(window, true);
-					}
-					st = 3;
-
-				}
-				if (Physics.getGameStatus() == 3) { //game over screen
-					//ACE TODO: go to main menu from game over screen
-					//give camera the position of the game over screen
-					mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1110.f, 10.05f));
-
-					//Press 1 to go to main menu
-					if (st == 3) {
+					if (Physics.getGameStatus() == 3) { //game over screen
 						menuClose = true;
 						Physics.setGameStatus(-1);
 					}
-					//Press 2 to exit
-					else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
-						glfwSetWindowShouldClose(window, true);
-					}
-				}
-				if (Physics.getGameStatus() == 4) {//you win screen
-					//ACE TODO: go to main menu from you win screen
-					//give camera the position of the you win screen
-					mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1120.f, 10.05f));
-
-					//Press 1 to go to main menu
-					if (st == 3) {
+					if (Physics.getGameStatus() == 4) {//you win screen
 						menuClose = true;
 						Physics.setGameStatus(-1);
 					}
-					//Press 2 to exit
-					else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
-						glfwSetWindowShouldClose(window, true);
-					}
 				}
-			}
-			if (GLFW_PRESS == buttons[13]) { //left
-				if (Physics.getGameStatus() == -2) { //pause screen
-					//ACE TODO: go to main menu from pause screen
-					//give camera position of the pause screen
-					mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1139.8f, 10.05f));
-					if (st == 0) {
-						// go back to playing
-						Physics.setGameStatus(0);
-					}
-					else if (st == 3) {
-						// go to main menu
+				if (GLFW_PRESS == buttons[13]) { //LEFT
+					controllerInputLock = 30;
+					soundSelector.playSound();
+					if (Physics.getGameStatus() == -2) { //pause screen
 						menuClose = false;
 						Physics.setGameStatus(-1);
 					}
-					else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) {
-						glfwSetWindowShouldClose(window, true);
+				}
+				if (GLFW_PRESS == buttons[12]) { //DOWN
+					controllerInputLock = 30;
+					soundSelector.playSound();
+					if (Physics.getGameStatus() == -2) glfwSetWindowShouldClose(window, true); //pause
+					if (Physics.getGameStatus() == -1) {
+						glfwSetWindowShouldClose(window, true); //main menu
+						st = 3;
 					}
+					if (Physics.getGameStatus() == 3) glfwSetWindowShouldClose(window, true); //game over
+					if (Physics.getGameStatus() == 4) glfwSetWindowShouldClose(window, true); //you win
 				}
 			}
-			if (GLFW_PRESS == buttons[12]) { //down
-				if (Physics.getGameStatus() == -2) glfwSetWindowShouldClose(window, true); //pause
-				if (Physics.getGameStatus() == -1) glfwSetWindowShouldClose(window, true); //main menu
-
-				if (Physics.getGameStatus() == 3) glfwSetWindowShouldClose(window, true); //game over
-				if (Physics.getGameStatus() == 4) glfwSetWindowShouldClose(window, true); //you win
-			}
-			
 		}
 
 		//KEYBOARD
