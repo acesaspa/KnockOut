@@ -160,7 +160,7 @@ int main(int argc, char** argv) {
 	const char* glsl_version = "#version 130";
 	GLFWwindow* window;
 	if (!glfwInit()) return -1;
-	window = glfwCreateWindow(1200, 800, "Knock Out", NULL, NULL);
+	window = glfwCreateWindow(Utils::windowWidth, Utils::windowHeight, "Knock Out", NULL, NULL);
 	if (!window) {
 		glfwTerminate();
 		return -1;
@@ -208,6 +208,8 @@ int main(int argc, char** argv) {
 		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
 			Physics.setGameStatus(0);
 			Physics.reset();
+		} else if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) {
+			Physics.setGameStatus(-2);
 		}
 
 		//MARK: Game Status & Segments
@@ -276,7 +278,6 @@ int main(int argc, char** argv) {
 		}
 
 		//POWER-UP UP LOGIC (all cars)
-		std::cout << "has power up: " << aiOpponents[0].hasPowerUp() << std::endl;
 		for (int i = 1; i < 5; i++) { //for all cars (player = 1, AIs = 2-4)
 			for (int j = 0; j < powerUps.size(); j++) { //every power-up still on the map
 				if (glm::length(Physics.getVehiclePos(i) - powerUps[j].Location) < 2.f) { //if close enough for pick up
@@ -379,7 +380,7 @@ int main(int argc, char** argv) {
 		else if (Physics.getGameStatus() == 3) {
 
 			//give camera the position of the game over screen
-			mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1110.f, 10.0f));
+			mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1110.f, 10.05f));
 
 			//Press 1 to go to main menu
 			if (st == 3) {
@@ -392,7 +393,7 @@ int main(int argc, char** argv) {
 		}
 		else if (Physics.getGameStatus() == 4) {
 			//give camera the position of the you win screen
-			mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1120.f, 10.0f));
+			mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1120.f, 10.05f));
 
 			//Press 1 to go to main menu
 			if (st == 3) {
@@ -405,7 +406,7 @@ int main(int argc, char** argv) {
 		}
 		else if (Physics.getGameStatus() == -1) {
 			//give camera the position of the main menu screen
-			mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1129.8f, 10.0f));
+			mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1129.8f, 10.05f));
 			//Press 1 to play
 			if (st == 0) {
 				reset = true;
@@ -420,6 +421,19 @@ int main(int argc, char** argv) {
 				glfwSetWindowShouldClose(window, true);
 			}
 			st = 3;
+		}
+		else if (Physics.getGameStatus() == -2) {
+			//give camera position of the pause screen
+			mainCamera.updateCamera(0.f, glm::vec3(-25.5f, 6.0f + 1139.8f, 10.05f));
+			if (st == 0) {
+				Physics.setGameStatus(0);
+			}
+			else if (st == 2) {
+				Physics.setGameStatus(-1);
+			}
+			else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) {
+				glfwSetWindowShouldClose(window, true);
+			}
 		}
 		glm::mat4 view = mainCamera.getViewMatrix();
 
@@ -571,6 +585,35 @@ void processInput(GLFWwindow* window) {
 			int buttonCount;
 			const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &buttonCount);
 			if (GLFW_PRESS == buttons[0]) playerUsePowerUp(); //A button
+			if (GLFW_PRESS == buttons[3]) Physics.setGameStatus(-2); //Y button
+
+			if (GLFW_PRESS == buttons[10]) { //up
+				if (Physics.getGameStatus() == -2) { //pause screen
+					//ACE TODO: go to main menu from pause screen
+				}
+				if (Physics.getGameStatus() == -1) { //main menu screen
+					//ACE TODO: properly start the game from main menu
+				}
+				if (Physics.getGameStatus() == 3) { //game over screen
+					//ACE TODO: go to main menu from game over screen
+				}
+				if (Physics.getGameStatus() == 4) {//you win screen
+					//ACE TODO: go to main menu from you win screen
+				}
+			}
+			if (GLFW_PRESS == buttons[13]) { //left
+				if (Physics.getGameStatus() == -2) { //pause screen
+					//ACE TODO: go to main menu from pause screen
+				}
+			}
+			if (GLFW_PRESS == buttons[12]) { //down
+				if (Physics.getGameStatus() == -2) glfwSetWindowShouldClose(window, true); //pause
+				if (Physics.getGameStatus() == -1) glfwSetWindowShouldClose(window, true); //main menu
+
+				if (Physics.getGameStatus() == 3) glfwSetWindowShouldClose(window, true); //game over
+				if (Physics.getGameStatus() == 4) glfwSetWindowShouldClose(window, true); //you win
+			}
+			
 		}
 
 		//KEYBOARD
@@ -641,7 +684,7 @@ void keyPress(unsigned char key, const PxTransform& camera)
 
 
 void addPowerUp() {
-	if (powerUps.size() < 50) {
+	if (powerUps.size() < 25) {
 		auto end = std::chrono::system_clock::now();
 		std::chrono::duration<double> elapsed_seconds = end - start;
 

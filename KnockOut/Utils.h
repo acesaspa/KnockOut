@@ -20,6 +20,8 @@ public:
 	static std::vector<float> getBBcords(float cornerCoords[]);
 	static std::vector<glm::vec2> aiPoints;
 	static int opponentCount;
+	static int windowHeight;
+	static int windowWidth;
 };
 
 #endif

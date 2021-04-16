@@ -70,6 +70,8 @@ void Renderer::setUpRendering(glm::vec3 cameraPos, Shader ourShader, Shader text
 	GameOverTexture.loadTexture("Gameover.jpg", true);
 	YouWinMesh.loadOBJ("menu.obj");
 	YouWinTexture.loadTexture("Youwin.jpg", true);
+	treeMesh.loadOBJ("menu.obj");
+	treeTexture.loadTexture("Pause.jpg", true);
 
 	//UI
 	NoBoostUI.loadOBJ("boostUI.obj");
@@ -100,11 +102,11 @@ void Renderer::setUpRendering(glm::vec3 cameraPos, Shader ourShader, Shader text
 	aiOpponentTextures.push_back(greenVehicleTexture);
 
 	//Level
-	citySurfaceMesh.loadOBJ("cityLevel3.obj");
+	citySurfaceMesh.loadOBJ("cityLevel4.obj");
 	cityTexture.loadTexture("cityLevel3.png", true);
-	grassSurfaceMesh.loadOBJ("grassLevel3.obj");
+	grassSurfaceMesh.loadOBJ("grassLevel4.obj");
 	grassTexture.loadTexture("grasslevelUV.png", true);
-	desertSurfaceMesh.loadOBJ("sandLevel3.obj");
+	desertSurfaceMesh.loadOBJ("sandLevel4.obj");
 	desertSurfaceMesh.setIsMostOuterLevel(true); //used to determine the bounding box of the entire level
 	desertTexture.loadTexture("sandLevel3.png", true);
 
@@ -115,7 +117,7 @@ void Renderer::setUpRendering(glm::vec3 cameraPos, Shader ourShader, Shader text
 	objectTextures.push_back(cubeTexture);
 
 	//Other
-	glm::mat4 projection = glm::perspective(glm::radians(50.0f), (float)1200 / (float)800, 0.1f, 500.0f); //how to show perspective (fov, aspect ratio)
+	glm::mat4 projection = glm::perspective(glm::radians(50.0f), (float)Utils::windowWidth / (float)Utils::windowHeight, 0.1f, 500.0f); //how to show perspective (fov, aspect ratio)
 	ourShader.setMat4("projection", projection); //pass the projection matrix to the fragment shader
 	ourShader.setInt("shadowMap", 1);
 	skybox = Skybox(skyboxShader);
@@ -175,7 +177,7 @@ void Renderer::renderGameFrame(physx::PxMat44 pxPlayerTrans,
 	setDepthShader(depthShader, lightPos);
 	renderScene(depthShader, pxPlayerTrans, pxUITrans, pxOpponentsTrans, pxLevelPos, pxObjectsTrans, view, cameraPos, carsRemoved, powerUps, gameStatus);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glViewport(0, 0, 1200, 800); //reset viewport
+	glViewport(0, 0, Utils::windowWidth, Utils::windowHeight); //reset viewport
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	setMainShader(mainShader, cameraPos, view, gameStatus);
@@ -248,6 +250,7 @@ void Renderer::renderScene(Shader& shader,
 	renderObject(shader, &GameOverMesh, &GameOverTexture, glm::vec3(-30.0f, 10.0f + 1110.f, 10.0f), screenRotation, screenRotDeg, screenScale); //menu screens
 	renderObject(shader, &YouWinMesh, &YouWinTexture, glm::vec3(-30.0f, 10.0f + 1120.f, 10.0f), screenRotation, screenRotDeg, screenScale);
 	renderObject(shader, &MainMenuScreen, &MainMenuTexture, glm::vec3(-30.0f, 10.0f + 1130.f, 10.0f), screenRotation, screenRotDeg, screenScale);
+	renderObject(shader, &treeMesh, &treeTexture, glm::vec3(-30.0f, 10.0f + 1140.f, 10.0f), screenRotation, screenRotDeg, screenScale);
 }
 
 
@@ -372,7 +375,7 @@ void Renderer::prepText(Shader shader) {
 
 	// compile and setup the shader
 	// ----------------------------
-	glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(1200), 0.0f, static_cast<float>(800));
+	glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(Utils::windowWidth), 0.0f, static_cast<float>(Utils::windowHeight));
 	shader.use();
 	glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 

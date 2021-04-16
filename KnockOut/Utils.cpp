@@ -180,6 +180,9 @@ std::vector<glm::vec2> Utils::aiPoints = {
 
 int Utils::opponentCount = 3;
 
+int Utils::windowHeight = 800;
+int Utils::windowWidth = 1200;
+
 
 
 
