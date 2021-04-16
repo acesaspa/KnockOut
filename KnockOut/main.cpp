@@ -276,6 +276,7 @@ int main(int argc, char** argv) {
 		}
 
 		//POWER-UP UP LOGIC (all cars)
+		std::cout << "has power up: " << aiOpponents[0].hasPowerUp() << std::endl;
 		for (int i = 1; i < 5; i++) { //for all cars (player = 1, AIs = 2-4)
 			for (int j = 0; j < powerUps.size(); j++) { //every power-up still on the map
 				if (glm::length(Physics.getVehiclePos(i) - powerUps[j].Location) < 2.f) { //if close enough for pick up
@@ -439,7 +440,7 @@ int main(int argc, char** argv) {
 
 
 		//AI OPPONENTs FRAME UPDATE
-		if (false){//Physics.getGameStatus() == 0) {
+		//if (false){
 			for (int i = 0; i < Utils::opponentCount; i++) {
 				aiOpponents[i].frameUpdate(
 					Physics.getVehDat(i + 1),
@@ -450,7 +451,7 @@ int main(int argc, char** argv) {
 					Physics.getVehicle4W(i + 1),
 					Physics.getVehicle4W(0));
 			}
-		}
+		//}
 
 
 		if (Physics.getGameStatus() == 1) {

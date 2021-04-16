@@ -128,21 +128,25 @@ void Opponent::adjustCourse() { //finds the closest
 			carInputData->setAnalogSteer(currentAnalogSteer);
 		}
 		else if (closestDist < 20.f) { //SOMEWHAT CLOSE, SLOW DOWN & TURN
-			currentSpeedMultiplier = 0.5;
+			currentSpeedMultiplier = 0.3;
 			if (turnDir == 1) currentAnalogSteer = -1.f;
 			else if (turnDir == 2) currentAnalogSteer = 1.f;
 			setSpeed(currentSpeedMultiplier * maxSpeed);
 			carInputData->setAnalogSteer(currentAnalogSteer);
 		}
-		else if (holesInPath) { //NO EDGES OR HOLES CLOSE BUT HOLES BETWEEN THE CAR AND THE CURRENT WAYPOINT
+		else if (holesInPath && currentPowerUp == none) { //NO EDGES OR HOLES CLOSE BUT HOLES BETWEEN THE CAR AND THE CURRENT WAYPOINT
 			currentSpeedMultiplier = 0.5;
 			currentAnalogSteer = -0.3f;
 			setSpeed(currentSpeedMultiplier * maxSpeed);
 			carInputData->setAnalogSteer(currentAnalogSteer);
 		}
 		else { //CLEAR PATH & NOTHING CLOSE
-			if(currentPowerUp == none) pursueCurrentWayPoint();
-			else if (currentPowerUp == attack) attackPlayer();
+			if (currentPowerUp == none) {
+				pursueCurrentWayPoint();
+			}
+			else if (currentPowerUp == attack) {
+				attackPlayer();
+			}
 		}
 	}
 	else { //BEHAVIOR LOCKDOWN (just keep going with the currently locked behavior)
@@ -319,8 +323,7 @@ void Opponent::updateLevelBB(std::vector<glm::vec3> lvlBB, bool lastSegment) {
 }
 
 void Opponent::startEvac() {
-	returnState = currentState;
-	currentState = evac;
+	std::cout << "evac started" << std::endl;
 	currentWayPoint = glm::vec3(0.f, 0.f, 0.f);
 }
 
